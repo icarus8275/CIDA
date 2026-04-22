@@ -11,6 +11,7 @@ export function TermSetupForm() {
   const [sLabel, setSLabel] = useState("");
   const [termY, setTermY] = useState("");
   const [termS, setTermS] = useState("");
+  const [addTermError, setAddTermError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const [y, se] = await Promise.all([
@@ -25,6 +26,14 @@ export function TermSetupForm() {
 
   useEffect(() => {
     void load();
+  }, [load]);
+
+  useEffect(() => {
+    const onRefresh = () => {
+      void load();
+    };
+    window.addEventListener("schedule-refresh", onRefresh);
+    return () => window.removeEventListener("schedule-refresh", onRefresh);
   }, [load]);
 
   return (
@@ -92,6 +101,10 @@ export function TermSetupForm() {
             onChange={(e) => setSKey(e.target.value)}
             placeholder="winter"
           />
+          <p className="mt-1 max-w-xs text-[11px] text-slate-500">
+            Short id for a season <span className="italic">type</span> (e.g. fall, spring), not a full
+            term. You pair it with a year below using &quot;Add term&quot;.
+          </p>
         </div>
         <div>
           <div className="text-xs text-slate-400">Label</div>
@@ -108,23 +121,40 @@ export function TermSetupForm() {
       </form>
 
       <form
-        className="flex flex-wrap items-end gap-2"
+        className="flex flex-col gap-1"
         onSubmit={async (e) => {
           e.preventDefault();
+          setAddTermError(null);
           if (!termY || !termS) return;
-          await fetch("/api/admin/terms", {
+          const r = await fetch("/api/admin/terms", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ academicYearId: termY, termSeasonId: termS }),
           });
-          await load();
+          if (!r.ok) {
+            const j = (await r.json().catch(() => ({}))) as { message?: string };
+            if (r.status === 409) {
+              setAddTermError(
+                j.message ||
+                  "This year + season is already a term. Duplicates are not allowed."
+              );
+            } else {
+              setAddTermError(j.message || "Could not add term.");
+            }
+            return;
+          }
+          window.dispatchEvent(new Event("schedule-refresh"));
         }}
       >
+        <div className="flex flex-wrap items-end gap-2">
         <select
           className="input-glass px-2 py-1"
           value={termY}
           onChange={(e) => setTermY(e.target.value)}
         >
+          {years.length === 0 && (
+            <option value="">Add a year first</option>
+          )}
           {years.map((y) => (
             <option key={y.id} value={y.id}>
               {y.label}
@@ -136,6 +166,9 @@ export function TermSetupForm() {
           value={termS}
           onChange={(e) => setTermS(e.target.value)}
         >
+          {seasons.length === 0 && (
+            <option value="">Add a season first</option>
+          )}
           {seasons.map((s) => (
             <option key={s.id} value={s.id}>
               {s.label}
@@ -145,6 +178,10 @@ export function TermSetupForm() {
         <button type="submit" className="btn-glass px-2 py-1 text-sm">
           Add term
         </button>
+        </div>
+        {addTermError && (
+          <p className="text-xs text-rose-200">{addTermError}</p>
+        )}
       </form>
     </div>
   );

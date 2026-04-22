@@ -89,6 +89,17 @@ body {
     box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.22);
   }
 
+  /* <select> closed + open list: avoid white-on-white options (OS defaults) */
+  select.input-glass {
+    color: #f1f5f9;
+    background-color: rgba(15, 23, 42, 0.92);
+  }
+  select.input-glass option,
+  select.input-glass optgroup {
+    background-color: #0f172a;
+    color: #e2e8f0;
+  }
+
   .btn-glass {
     border-radius: 0.5rem;
     border: 1px solid rgba(255, 255, 255, 0.18);

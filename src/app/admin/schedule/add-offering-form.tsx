@@ -7,6 +7,7 @@ export function AddOfferingForm() {
   const [terms, setTerms] = useState<{ id: string; label: string }[]>([]);
   const [courseId, setCourseId] = useState("");
   const [termId, setTermId] = useState("");
+  const [formErr, setFormErr] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const [c, tList] = await Promise.all([
@@ -29,23 +30,40 @@ export function AddOfferingForm() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    const fn = () => {
+      void load();
+    };
+    window.addEventListener("schedule-refresh", fn);
+    return () => window.removeEventListener("schedule-refresh", fn);
+  }, [load]);
+
   return (
     <form
-      className="glass glass-dashed mb-4 flex flex-wrap items-end gap-2 p-3 text-sm text-slate-200"
+      className="glass glass-dashed mb-4 flex flex-col gap-1 p-3 text-sm text-slate-200"
       onSubmit={async (e) => {
         e.preventDefault();
+        setFormErr(null);
         if (!courseId || !termId) return;
         const r = await fetch("/api/admin/course-offerings", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ courseId, termId }),
         });
+        if (r.status === 409) {
+          const j = (await r.json().catch(() => ({}))) as { message?: string };
+          setFormErr(j.message || "This course is already in that term.");
+          return;
+        }
         if (r.ok) {
           setCourseId("");
-          window.location.reload();
+          window.dispatchEvent(new Event("schedule-refresh"));
+        } else {
+          setFormErr("Could not add the course to that term.");
         }
       }}
     >
+      <div className="flex flex-wrap items-end gap-2">
       <span className="font-medium text-slate-200">
         Schedule a course in a term:
       </span>
@@ -78,6 +96,8 @@ export function AddOfferingForm() {
       <button type="submit" className="btn-glass-primary px-3 py-1.5 text-sm">
         Add
       </button>
+      </div>
+      {formErr && <p className="text-xs text-rose-200">{formErr}</p>}
     </form>
   );
 }

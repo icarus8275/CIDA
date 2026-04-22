@@ -3,6 +3,15 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { NextResponse } from "next/server";
 
+function isPrismaUniqueViolation(e: unknown): boolean {
+  return (
+    typeof e === "object" &&
+    e !== null &&
+    "code" in e &&
+    (e as { code: string }).code === "P2002"
+  );
+}
+
 const postSchema = z.object({
   academicYearId: z.string().min(1),
   termSeasonId: z.string().min(1),
@@ -35,15 +44,29 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const body = postSchema.parse(await req.json());
-  const term = await prisma.term.create({
-    data: {
-      academicYearId: body.academicYearId,
-      termSeasonId: body.termSeasonId,
-      sortOrder: body.sortOrder ?? 0,
-    },
-    include: { academicYear: true, termSeason: true },
-  });
-  return NextResponse.json(term);
+  try {
+    const term = await prisma.term.create({
+      data: {
+        academicYearId: body.academicYearId,
+        termSeasonId: body.termSeasonId,
+        sortOrder: body.sortOrder ?? 0,
+      },
+      include: { academicYear: true, termSeason: true },
+    });
+    return NextResponse.json(term);
+  } catch (e) {
+    if (isPrismaUniqueViolation(e)) {
+      return NextResponse.json(
+        {
+          error: "duplicate_term",
+          message:
+            "This academic year and season are already combined. Each pair can only exist once.",
+        },
+        { status: 409 }
+      );
+    }
+    throw e;
+  }
 }
 
 export async function PATCH(req: Request) {

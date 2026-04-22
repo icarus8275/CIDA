@@ -12,6 +12,12 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
+import { X } from "lucide-react";
+
+const POOL = "__pool__";
+const D_TERM = (id: string) => `term:${id}`;
+const D_OFFER = (id: string) => `offer:${id}`;
+const D_CAT = (id: string) => `cat:${id}`;
 
 type TermRow = {
   id: string;
@@ -23,19 +29,87 @@ type TermRow = {
 type OffRow = {
   id: string;
   sortOrder: number;
+  courseId: string;
   course: { name: string };
   termId: string;
 };
+
+type CourseRow = { id: string; name: string; sortOrder: number };
 
 function termLabel(t: TermRow) {
   return `${t.academicYear.label} · ${t.termSeason.label}`;
 }
 
-function DraggableCard({ off }: { off: OffRow }) {
+function parseDropTarget(
+  overId: string,
+  offers: OffRow[]
+): { kind: "term" | "pool"; termId: string } | null {
+  if (overId.startsWith("term:")) {
+    const rest = overId.slice(5);
+    if (rest === POOL) {
+      return { kind: "pool", termId: POOL };
+    }
+    return { kind: "term", termId: rest };
+  }
+  if (overId.startsWith("offer:")) {
+    const oid = overId.slice(6);
+    const t = offers.find((x) => x.id === oid)?.termId;
+    return t ? { kind: "term", termId: t } : null;
+  }
+  return null;
+}
+
+/** When dragging an offering, landing on a catalog card still means "unscheduled" pool. */
+function resolveDropTarget(
+  overId: string,
+  activeId: string,
+  offers: OffRow[]
+): { kind: "term" | "pool"; termId: string } | null {
+  if (overId.startsWith("cat:") && activeId.startsWith("offer:")) {
+    return { kind: "pool", termId: POOL };
+  }
+  return parseDropTarget(overId, offers);
+}
+
+function UnscheduledPool({
+  courseIds,
+  courseById,
+}: {
+  courseIds: string[];
+  courseById: Map<string, CourseRow>;
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id: D_TERM(POOL) });
+  return (
+    <div
+      ref={setNodeRef}
+      className={`group/pool glass flex min-h-56 min-w-[220px] max-w-md flex-1 flex-col gap-2 p-3 ${
+        isOver ? "ring-1 ring-cyan-400/40" : ""
+      }`}
+    >
+      <h3 className="text-sm font-semibold text-slate-100">
+        Unscheduled courses
+      </h3>
+      <p className="text-xs text-slate-400">
+        Drag a course from the catalog into a term column, or return a
+        scheduled course here to unschedule.
+      </p>
+      <div className="flex min-h-32 flex-1 flex-col gap-2">
+        {courseIds.length === 0 && (
+          <p className="text-xs text-slate-500">All catalog courses are placed in a term.</p>
+        )}
+        {courseIds.map((cid) => {
+          const c = courseById.get(cid);
+          if (!c) return null;
+          return <CatalogDraggable key={cid} course={c} />;
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CatalogDraggable({ course }: { course: CourseRow }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({
-      id: off.id,
-    });
+    useDraggable({ id: D_CAT(course.id) });
   return (
     <div
       ref={setNodeRef}
@@ -43,34 +117,95 @@ function DraggableCard({ off }: { off: OffRow }) {
         transform: CSS.Translate.toString(transform),
         opacity: isDragging ? 0.5 : 1,
       }}
-      className="glass cursor-grab p-2 text-sm active:cursor-grabbing"
+      className="glass group/cat relative cursor-grab p-2 pr-8 text-sm active:cursor-grabbing"
       {...listeners}
       {...attributes}
     >
-      <div className="font-medium text-slate-100">{off.course.name}</div>
+      <div className="font-medium text-slate-100">{course.name}</div>
     </div>
   );
 }
 
-function TermColumn({ term, offerings }: { term: TermRow; offerings: OffRow[] }) {
-  const { setNodeRef, isOver } = useDroppable({
-    id: `term:${term.id}`,
-  });
+function OfferingCard({
+  off,
+  onRemove,
+}: {
+  off: OffRow;
+  onRemove: (id: string) => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({ id: D_OFFER(off.id) });
   return (
     <div
       ref={setNodeRef}
-      className={`glass flex min-h-56 min-w-[200px] flex-1 flex-col gap-2 p-2 ${
+      style={{
+        transform: CSS.Translate.toString(transform),
+        opacity: isDragging ? 0.5 : 1,
+      }}
+      className="group/offer glass relative cursor-grab p-2 pr-8 text-sm active:cursor-grabbing"
+      {...listeners}
+      {...attributes}
+    >
+      <div className="font-medium text-slate-100">{off.course.name}</div>
+      <button
+        type="button"
+        aria-label="Remove from schedule"
+        className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-md text-rose-300/90 opacity-0 transition hover:bg-rose-500/20 group-hover/offer:opacity-100"
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          onRemove(off.id);
+        }}
+      >
+        <X className="h-3.5 w-3.5" strokeWidth={2.5} />
+      </button>
+    </div>
+  );
+}
+
+function TermColumn({
+  term,
+  offerings,
+  onDeleteTerm,
+  onRemoveOffering,
+}: {
+  term: TermRow;
+  offerings: OffRow[];
+  onDeleteTerm: (id: string) => void;
+  onRemoveOffering: (id: string) => void;
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id: D_TERM(term.id) });
+  return (
+    <div
+      ref={setNodeRef}
+      className={`group/term glass relative flex min-h-56 min-w-[200px] flex-1 flex-col gap-2 p-2 ${
         isOver
           ? "border-cyan-400/40 bg-cyan-500/10 ring-1 ring-cyan-400/30"
           : ""
       }`}
     >
-      <h3 className="text-sm font-semibold text-slate-100">
-        {termLabel(term)}
-      </h3>
+      <div className="flex items-start justify-between gap-1 pr-1">
+        <h3 className="text-sm font-semibold leading-tight text-slate-100">
+          {termLabel(term)}
+        </h3>
+        <button
+          type="button"
+          aria-label="Delete term"
+          title="Delete this term and its scheduled courses in this app"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-rose-300/90 opacity-0 transition hover:bg-rose-500/20 group-hover/term:opacity-100"
+          onClick={() => onDeleteTerm(term.id)}
+        >
+          <X className="h-3.5 w-3.5" strokeWidth={2.5} />
+        </button>
+      </div>
       <div className="flex flex-col gap-2">
         {offerings.map((o) => (
-          <DraggableCard key={o.id} off={o} />
+          <OfferingCard
+            key={o.id}
+            off={o}
+            onRemove={onRemoveOffering}
+          />
         ))}
       </div>
     </div>
@@ -80,15 +215,24 @@ function TermColumn({ term, offerings }: { term: TermRow; offerings: OffRow[] })
 export function ScheduleBoard() {
   const [terms, setTerms] = useState<TermRow[]>([]);
   const [offers, setOffers] = useState<OffRow[]>([]);
+  const [courses, setCourses] = useState<CourseRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    const [tRes, oRes] = await Promise.all([
+    const [tRes, oRes, cRes] = await Promise.all([
       fetch("/api/admin/terms", { cache: "no-store" }),
       fetch("/api/admin/course-offerings", { cache: "no-store" }),
+      fetch("/api/admin/courses", { cache: "no-store" }),
     ]);
-    if (tRes.ok) setTerms(await tRes.json());
-    if (oRes.ok) setOffers(await oRes.json());
+    if (tRes.ok) {
+      setTerms(await tRes.json());
+    }
+    if (oRes.ok) {
+      setOffers(await oRes.json());
+    }
+    if (cRes.ok) {
+      setCourses(await cRes.json());
+    }
     setLoading(false);
   }, []);
 
@@ -96,55 +240,126 @@ export function ScheduleBoard() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    const onRefresh = () => {
+      void load();
+    };
+    window.addEventListener("schedule-refresh", onRefresh);
+    return () => window.removeEventListener("schedule-refresh", onRefresh);
+  }, [load]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
   );
+
+  const courseById = new Map(courses.map((c) => [c.id, c]));
+  const offerCourseIds = new Set(offers.map((o) => o.courseId));
+  const unscheduledIds = courses
+    .map((c) => c.id)
+    .filter((id) => !offerCourseIds.has(id))
+    .sort((a, b) => {
+      const ca = courseById.get(a);
+      const cb = courseById.get(b);
+      return (ca?.sortOrder ?? 0) - (cb?.sortOrder ?? 0) || (ca?.name ?? "").localeCompare(cb?.name ?? "");
+    });
 
   const byTerm = (tid: string) =>
     offers
       .filter((o) => o.termId === tid)
       .sort((a, b) => a.sortOrder - b.sortOrder);
 
-  const resolveTargetTermId = (overId: string, list: OffRow[]) => {
-    if (overId.startsWith("term:")) {
-      return overId.slice(5);
+  const removeOffering = useCallback(async (offeringId: string) => {
+    const r = await fetch(
+      `/api/admin/course-offerings?id=${encodeURIComponent(offeringId)}`,
+      { method: "DELETE" }
+    );
+    if (r.ok) {
+      window.dispatchEvent(new Event("schedule-refresh"));
     }
-    const hit = list.find((x) => x.id === overId);
-    return hit?.termId ?? null;
-  };
+  }, []);
+
+  const deleteTerm = useCallback(async (termId: string) => {
+    if (
+      !confirm(
+        "Delete this term? All course placements and sections in this term will be removed."
+      )
+    ) {
+      return;
+    }
+    const r = await fetch(
+      `/api/admin/terms?id=${encodeURIComponent(termId)}`,
+      { method: "DELETE" }
+    );
+    if (r.ok) {
+      window.dispatchEvent(new Event("schedule-refresh"));
+    }
+  }, []);
 
   const onDragEnd = async (e: DragEndEvent) => {
     const { active, over } = e;
     if (!over) return;
-    const offerId = String(active.id);
-    const o = offers.find((x) => x.id === offerId);
-    if (!o) return;
-    const targetTermId = resolveTargetTermId(String(over.id), offers);
-    if (!targetTermId) return;
-    if (o.termId === targetTermId) return;
+    const overId = String(over.id);
+    const activeId = String(active.id);
+    const target = resolveDropTarget(overId, activeId, offers);
+    if (!target) return;
 
-    const sourceTermId = o.termId;
-    const sourceIds = offers
-      .filter((x) => x.termId === sourceTermId && x.id !== offerId)
-      .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map((x) => x.id);
-    const targetIds = offers
-      .filter((x) => x.termId === targetTermId)
-      .sort((a, b) => a.sortOrder - b.sortOrder)
-      .map((x) => x.id);
-    const newTarget = [...targetIds, offerId];
+    if (activeId.startsWith("cat:")) {
+      const courseId = activeId.slice(4);
+      if (target.kind === "pool") return;
+      const r = await fetch("/api/admin/course-offerings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ courseId, termId: target.termId }),
+      });
+      if (r.status === 409) {
+        const j = (await r.json().catch(() => ({}))) as { message?: string };
+        alert(j.message || "This course is already in that term.");
+        return;
+      }
+      if (r.ok) {
+        window.dispatchEvent(new Event("schedule-refresh"));
+      } else {
+        const j = (await r.json().catch(() => ({}))) as { message?: string };
+        alert(j.message || "Could not add course.");
+      }
+      return;
+    }
 
-    await fetch("/api/admin/course-offerings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ termId: sourceTermId, offeringIds: sourceIds }),
-    });
-    await fetch("/api/admin/course-offerings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ termId: targetTermId, offeringIds: newTarget }),
-    });
-    await load();
+    if (activeId.startsWith("offer:")) {
+      const offerId = activeId.slice(6);
+      const o = offers.find((x) => x.id === offerId);
+      if (!o) return;
+      if (target.kind === "pool") {
+        await removeOffering(offerId);
+        return;
+      }
+      if (o.termId === target.termId) return;
+
+      const sourceTermId = o.termId;
+      const sourceIds = offers
+        .filter((x) => x.termId === sourceTermId && x.id !== offerId)
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((x) => x.id);
+      const targetIds = offers
+        .filter((x) => x.termId === target.termId)
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((x) => x.id);
+      const newTarget = [...targetIds, offerId];
+
+      const r1 = await fetch("/api/admin/course-offerings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ termId: sourceTermId, offeringIds: sourceIds }),
+      });
+      const r2 = await fetch("/api/admin/course-offerings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ termId: target.termId, offeringIds: newTarget }),
+      });
+      if (r1.ok && r2.ok) {
+        window.dispatchEvent(new Event("schedule-refresh"));
+      }
+    }
   };
 
   if (loading) {
@@ -152,16 +367,31 @@ export function ScheduleBoard() {
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={pointerWithin}
-      onDragEnd={onDragEnd}
-    >
-      <div className="flex flex-wrap gap-3">
-        {terms.map((term) => (
-          <TermColumn key={term.id} term={term} offerings={byTerm(term.id)} />
-        ))}
-      </div>
-    </DndContext>
+    <div className="space-y-3">
+      <DndContext
+        sensors={sensors}
+        collisionDetection={pointerWithin}
+        onDragEnd={onDragEnd}
+      >
+        <div className="flex flex-wrap items-stretch gap-3">
+          <UnscheduledPool courseIds={unscheduledIds} courseById={courseById} />
+          {terms.map((term) => (
+            <TermColumn
+              key={term.id}
+              term={term}
+              offerings={byTerm(term.id)}
+              onDeleteTerm={deleteTerm}
+              onRemoveOffering={removeOffering}
+            />
+          ))}
+        </div>
+      </DndContext>
+      {terms.length === 0 && (
+        <p className="text-sm text-amber-200/80">
+          No terms yet. Add an academic year and a season, then use &quot;Add
+          term&quot; above. Each (year, season) pair can only exist once.
+        </p>
+      )}
+    </div>
   );
 }

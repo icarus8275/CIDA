@@ -3,6 +3,15 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { NextResponse } from "next/server";
 
+function isPrismaUniqueViolation(e: unknown): boolean {
+  return (
+    typeof e === "object" &&
+    e !== null &&
+    "code" in e &&
+    (e as { code: string }).code === "P2002"
+  );
+}
+
 const postSchema = z.object({
   courseId: z.string().min(1),
   termId: z.string().min(1),
@@ -48,15 +57,28 @@ export async function POST(req: Request) {
     where: { termId: body.termId },
     _max: { sortOrder: true },
   });
-  const row = await prisma.courseOffering.create({
-    data: {
-      courseId: body.courseId,
-      termId: body.termId,
-      sortOrder: body.sortOrder ?? (max._max.sortOrder ?? 0) + 1,
-    },
-    include: { course: true },
-  });
-  return NextResponse.json(row);
+  try {
+    const row = await prisma.courseOffering.create({
+      data: {
+        courseId: body.courseId,
+        termId: body.termId,
+        sortOrder: body.sortOrder ?? (max._max.sortOrder ?? 0) + 1,
+      },
+      include: { course: true },
+    });
+    return NextResponse.json(row);
+  } catch (e) {
+    if (isPrismaUniqueViolation(e)) {
+      return NextResponse.json(
+        {
+          error: "duplicate_offering",
+          message: "This course is already scheduled in that term.",
+        },
+        { status: 409 }
+      );
+    }
+    throw e;
+  }
 }
 
 export async function PATCH(req: Request) {
