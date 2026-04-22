@@ -1,11 +1,16 @@
+import { t } from "@/lib/i18n/messages";
+import { getServerLocale } from "@/lib/i18n/server";
 import { AdminUsersForm } from "./admin-users-form";
 
-export default function AdminUsersPage() {
+export default async function AdminUsersPage() {
+  const locale = await getServerLocale();
   return (
     <div>
-      <h1 className="mb-2 text-lg font-bold text-white">Users</h1>
+      <h1 className="mb-2 text-lg font-bold text-white">
+        {t(locale, "admin.usersPageTitle")}
+      </h1>
       <p className="mb-4 text-sm text-slate-400">
-        Create accounts with email and password. CIDA = read-only explore.
+        {t(locale, "admin.usersPageBody")}
       </p>
       <AdminUsersForm />
     </div>

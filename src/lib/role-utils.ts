@@ -8,15 +8,3 @@ import type { UserRole } from "@/generated/prisma/enums";
 export function hasFacultyAccess(role: UserRole | string): boolean {
   return role === "ADMIN" || role === "PROFESSOR";
 }
-
-export function newUserRoleOptionLabel(
-  value: "ADMIN" | "PROFESSOR" | "CIDA"
-): string {
-  if (value === "ADMIN") {
-    return "Admin (management + teaching)";
-  }
-  if (value === "PROFESSOR") {
-    return "Professor (teaching)";
-  }
-  return "CIDA (read-only explore)";
-}

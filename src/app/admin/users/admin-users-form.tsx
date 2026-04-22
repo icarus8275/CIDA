@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useCallback, useEffect, useState } from "react";
-import { newUserRoleOptionLabel } from "@/lib/role-utils";
+import { useI18n } from "@/components/locale/locale-provider";
 
 type UserRow = {
   id: string;
@@ -15,6 +15,7 @@ const CreateUserForm = memo(function CreateUserForm({
 }: {
   onUserCreated: () => void;
 }) {
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -44,7 +45,7 @@ const CreateUserForm = memo(function CreateUserForm({
           });
           if (!r.ok) {
             const j = await r.json().catch(() => ({}));
-            setErr((j as { error?: string }).error || "Failed");
+            setErr((j as { error?: string }).error || t("admin.usersCreateFail"));
             return;
           }
           setEmail("");
@@ -55,16 +56,15 @@ const CreateUserForm = memo(function CreateUserForm({
           onUserCreated();
         }}
       >
-        <h2 className="text-sm font-semibold text-slate-100">New user</h2>
-        <p className="text-xs text-slate-500">
-          Admins use /admin and always have the same teaching access as
-          professors (sections, /teach).
-        </p>
+        <h2 className="text-sm font-semibold text-slate-100">
+          {t("admin.usersNewUser")}
+        </h2>
+        <p className="text-xs text-slate-500">{t("admin.usersNewHint")}</p>
         <input
           className="input-glass w-full px-2 py-1.5"
           type="email"
           name="new-user-email"
-          placeholder="Email"
+          placeholder={t("admin.usersEmailPh")}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -74,7 +74,7 @@ const CreateUserForm = memo(function CreateUserForm({
           type="password"
           name="new-user-password"
           autoComplete="new-password"
-          placeholder="Password (8+)"
+          placeholder={t("admin.usersPasswordPh")}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           minLength={8}
@@ -83,7 +83,7 @@ const CreateUserForm = memo(function CreateUserForm({
         <input
           className="input-glass w-full px-2 py-1.5"
           name="new-user-name"
-          placeholder="Name (optional)"
+          placeholder={t("admin.usersNamePh")}
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
@@ -95,18 +95,12 @@ const CreateUserForm = memo(function CreateUserForm({
             setRole(e.target.value as "PROFESSOR" | "ADMIN" | "CIDA")
           }
         >
-          <option value="PROFESSOR">
-            {newUserRoleOptionLabel("PROFESSOR")}
-          </option>
-          <option value="ADMIN">
-            {newUserRoleOptionLabel("ADMIN")}
-          </option>
-          <option value="CIDA">
-            {newUserRoleOptionLabel("CIDA")}
-          </option>
+          <option value="PROFESSOR">{t("admin.usersRoleOptProf")}</option>
+          <option value="ADMIN">{t("admin.usersRoleOptAdmin")}</option>
+          <option value="CIDA">{t("admin.usersRoleOptCida")}</option>
         </select>
         <button type="submit" className="btn-glass-primary w-full py-2 text-sm">
-          Create user
+          {t("admin.usersCreate")}
         </button>
       </form>
     </div>
@@ -120,6 +114,7 @@ function EditableUserName({
   user: UserRow;
   onSaved: () => void;
 }) {
+  const { t } = useI18n();
   const [value, setValue] = useState(user.name ?? "");
   useEffect(() => {
     setValue(user.name ?? "");
@@ -127,11 +122,11 @@ function EditableUserName({
 
   return (
     <label className="flex w-full min-w-0 max-w-sm flex-col gap-0.5 sm:max-w-md">
-      <span className="text-[11px] text-slate-500">Name</span>
+      <span className="text-[11px] text-slate-500">{t("admin.usersNameLabel")}</span>
       <input
         className="input-glass w-full px-2 py-1.5 text-sm"
         value={value}
-        placeholder="Display name (optional)"
+        placeholder={t("admin.usersDisplayNamePh")}
         onChange={(e) => setValue(e.target.value)}
         onBlur={async () => {
           const next = value.trim() || null;
@@ -154,6 +149,7 @@ function EditableUserName({
 }
 
 export function AdminUsersForm() {
+  const { t } = useI18n();
   const [list, setList] = useState<UserRow[]>([]);
 
   const load = useCallback(async () => {
@@ -182,22 +178,26 @@ export function AdminUsersForm() {
           >
             <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-end sm:gap-4">
               <div className="min-w-0 sm:max-w-xs">
-                <div className="text-[11px] text-slate-500">Email</div>
+                <div className="text-[11px] text-slate-500">
+                  {t("admin.usersEmailLabel")}
+                </div>
                 <div className="font-medium text-slate-100 break-all">
                   {u.email}
                 </div>
                 {u.role === "ADMIN" ? (
                   <span className="mt-0.5 inline-block text-xs text-slate-400">
-                    ADMIN
-                    <span className="text-cyan-200/80"> + faculty</span>
+                    {t("admin.usersBadgeAdmin")}
+                    <span className="text-cyan-200/80">
+                      {t("admin.usersBadgeAdminPlus")}
+                    </span>
                   </span>
                 ) : u.role === "PROFESSOR" ? (
                   <span className="mt-0.5 inline-block text-xs text-slate-400">
-                    PROFESSOR
+                    {t("admin.usersBadgeProf")}
                   </span>
                 ) : (
                   <span className="mt-0.5 inline-block text-xs text-slate-400">
-                    CIDA
+                    {t("admin.usersBadgeCida")}
                   </span>
                 )}
               </div>
@@ -218,29 +218,29 @@ export function AdminUsersForm() {
                     const j = (await r.json().catch(() => ({}))) as {
                       message?: string;
                     };
-                    alert(j.message || "Could not update role.");
+                    alert(j.message || t("admin.usersRoleFail"));
                     await load();
                     return;
                   }
                   await load();
                 }}
               >
-                <option value="PROFESSOR">PROFESSOR (teaching)</option>
-                <option value="ADMIN">ADMIN (management + teaching)</option>
-                <option value="CIDA">CIDA (read-only)</option>
+                <option value="PROFESSOR">{t("admin.usersRoleOptProf")}</option>
+                <option value="ADMIN">{t("admin.usersRoleOptAdmin")}</option>
+                <option value="CIDA">{t("admin.usersRoleOptCida")}</option>
               </select>
               <button
                 type="button"
                 className="text-sm text-red-300"
                 onClick={async () => {
-                  if (!confirm("Delete this user?")) return;
+                  if (!confirm(t("admin.usersDeleteConfirm"))) return;
                   await fetch(`/api/admin/users?id=${encodeURIComponent(u.id)}`, {
                     method: "DELETE",
                   });
                   await load();
                 }}
               >
-                Delete
+                {t("admin.usersDelete")}
               </button>
             </div>
           </li>

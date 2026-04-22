@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
-import { LOCALE_COOKIE, type Locale } from "@/lib/i18n/types";
+import { isEnglishOnlyI18n, LOCALE_COOKIE, type Locale } from "@/lib/i18n/types";
 import { t } from "@/lib/i18n/messages";
 
 type Ctx = {
@@ -31,11 +31,14 @@ export function LocaleProvider({
   const router = useRouter();
 
   useEffect(() => {
-    setLoc(initialLocale);
+    setLoc(isEnglishOnlyI18n() ? "en" : initialLocale);
   }, [initialLocale]);
 
   const setLocale = useCallback(
     (l: Locale) => {
+      if (isEnglishOnlyI18n() && l === "ko") {
+        return;
+      }
       document.cookie = `${LOCALE_COOKIE}=${l};path=/;max-age=31536000;SameSite=Lax`;
       setLoc(l);
       router.refresh();

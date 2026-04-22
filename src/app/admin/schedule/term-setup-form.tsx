@@ -1,8 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useI18n } from "@/components/locale/locale-provider";
 
 export function TermSetupForm() {
+  const { t } = useI18n();
   const [years, setYears] = useState<{ id: string; label: string }[]>([]);
   const [seasons, setSeasons] = useState<{ id: string; label: string }[]>([]);
   const [yLabel, setYLabel] = useState("");
@@ -42,17 +44,12 @@ export function TermSetupForm() {
 
   return (
     <div className="glass glass-dashed mb-6 p-4 text-sm text-slate-200">
-      <p className="mb-4 text-xs text-slate-400">
-        Set up years and season <span className="text-slate-300">types</span>, then
-        combine them into terms. On the schedule below, Fall uses the first
-        calendar year of the range, Spring the second (e.g. 2024 Fall, 2025
-        Spring).
-      </p>
+      <p className="mb-4 text-xs text-slate-400">{t("admin.schedYearBlurb")}</p>
 
       <div className="space-y-4">
         <section className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
           <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-            1 · Academic year
+            {t("admin.sched1Title")}
           </h3>
           <form
             className="flex flex-wrap items-end gap-4"
@@ -69,7 +66,9 @@ export function TermSetupForm() {
             }}
           >
             <label className="flex min-w-[10rem] flex-col gap-1">
-              <span className="text-xs text-slate-400">Display label</span>
+              <span className="text-xs text-slate-400">
+                {t("admin.schedLabelDisplay")}
+              </span>
               <input
                 className="input-glass px-2 py-1.5"
                 value={yLabel}
@@ -78,7 +77,9 @@ export function TermSetupForm() {
               />
             </label>
             <label className="flex w-28 flex-col gap-1">
-              <span className="text-xs text-slate-400">Start year</span>
+              <span className="text-xs text-slate-400">
+                {t("admin.schedStartYear")}
+              </span>
               <input
                 type="number"
                 className="input-glass px-2 py-1.5"
@@ -87,14 +88,14 @@ export function TermSetupForm() {
               />
             </label>
             <button type="submit" className="btn-glass px-4 py-2 text-sm">
-              Add year
+              {t("admin.schedAddYear")}
             </button>
           </form>
         </section>
 
         <section className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
           <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-            2 · Season type (reusable)
+            {t("admin.sched2Title")}
           </h3>
           <form
             className="flex flex-wrap items-end gap-4"
@@ -115,7 +116,7 @@ export function TermSetupForm() {
             }}
           >
             <label className="flex w-32 flex-col gap-1">
-              <span className="text-xs text-slate-400">Key (slug)</span>
+              <span className="text-xs text-slate-400">{t("admin.schedKey")}</span>
               <input
                 className="input-glass px-2 py-1.5"
                 value={sKey}
@@ -124,7 +125,7 @@ export function TermSetupForm() {
               />
             </label>
             <label className="flex min-w-[8rem] flex-col gap-1">
-              <span className="text-xs text-slate-400">Label</span>
+              <span className="text-xs text-slate-400">{t("admin.schedLabel")}</span>
               <input
                 className="input-glass px-2 py-1.5"
                 value={sLabel}
@@ -133,19 +134,17 @@ export function TermSetupForm() {
               />
             </label>
             <button type="submit" className="btn-glass px-4 py-2 text-sm">
-              Add season
+              {t("admin.schedAddSeason")}
             </button>
           </form>
           <p className="mt-2 text-[11px] leading-relaxed text-slate-500">
-            Short id (e.g. <span className="text-slate-400">fall</span>,{" "}
-            <span className="text-slate-400">spring</span>) plus a display name. This
-            is not a dated term by itself — you pair it with a year in step 3.
+            {t("admin.schedSeasonHelp")}
           </p>
         </section>
 
         <section className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
           <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
-            3 · Create term (year + season)
+            {t("admin.sched3Title")}
           </h3>
           <form
             className="flex flex-col gap-2"
@@ -167,11 +166,10 @@ export function TermSetupForm() {
                 };
                 if (r.status === 409) {
                   setAddTermError(
-                    j.message ||
-                      "This year + season is already a term. Duplicates are not allowed."
+                    j.message || t("admin.schedErrTermDup")
                   );
                 } else {
-                  setAddTermError(j.message || "Could not add term.");
+                  setAddTermError(j.message || t("admin.schedErrTerm"));
                 }
                 return;
               }
@@ -180,14 +178,16 @@ export function TermSetupForm() {
           >
             <div className="flex flex-wrap items-end gap-3">
               <label className="flex min-w-[11rem] flex-col gap-1">
-                <span className="text-xs text-slate-400">Academic year</span>
+                <span className="text-xs text-slate-400">
+                  {t("admin.schedAcademicYear")}
+                </span>
                 <select
                   className="input-glass px-2 py-1.5"
                   value={termY}
                   onChange={(e) => setTermY(e.target.value)}
                 >
                   {years.length === 0 && (
-                    <option value="">Add a year in step 1</option>
+                    <option value="">{t("admin.schedPickYear")}</option>
                   )}
                   {years.map((y) => (
                     <option key={y.id} value={y.id}>
@@ -197,14 +197,16 @@ export function TermSetupForm() {
                 </select>
               </label>
               <label className="flex min-w-[11rem] flex-col gap-1">
-                <span className="text-xs text-slate-400">Season</span>
+                <span className="text-xs text-slate-400">
+                  {t("admin.schedSeason")}
+                </span>
                 <select
                   className="input-glass px-2 py-1.5"
                   value={termS}
                   onChange={(e) => setTermS(e.target.value)}
                 >
                   {seasons.length === 0 && (
-                    <option value="">Add a season in step 2</option>
+                    <option value="">{t("admin.schedPickSeason")}</option>
                   )}
                   {seasons.map((s) => (
                     <option key={s.id} value={s.id}>
@@ -214,7 +216,7 @@ export function TermSetupForm() {
                 </select>
               </label>
               <button type="submit" className="btn-glass px-4 py-2 text-sm">
-                Add term
+                {t("admin.schedAddTerm")}
               </button>
             </div>
             {addTermError && (

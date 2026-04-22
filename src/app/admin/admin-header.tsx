@@ -33,7 +33,7 @@ export function AdminHeader({
             {t("admin.home")}
           </Link>
           <Link href="/admin/users" className="link-app">
-            Users
+            {t("admin.usersNav")}
           </Link>
           <Link href="/admin/courses" className="link-app">
             {t("admin.courses")}

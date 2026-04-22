@@ -1,13 +1,14 @@
 "use client";
 
 import { useI18n } from "./locale-provider";
+import { isEnglishOnlyI18n } from "@/lib/i18n/types";
 
 const SHOW =
   typeof process !== "undefined" &&
   process.env.NEXT_PUBLIC_SHOW_LOCALE_SWITCHER !== "false";
 
 export function LocaleSwitcher() {
-  if (!SHOW) {
+  if (!SHOW || isEnglishOnlyI18n()) {
     return null;
   }
   const { locale, setLocale, t } = useI18n();

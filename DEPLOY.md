@@ -56,6 +56,7 @@ git push origin main
 | `AUTH_URL` | **필수** | 프로덕션 사이트 URL, 예: `https://본인프로젝트.vercel.app` (슬래시 없음) |
 | `BOOTSTRAP_ADMIN_EMAILS` | 선택 | 쉼표로 구분한 이메일. **이미 DB에 있는 사용자**가 로그인하면 `ADMIN` 역할로 올림(초기 관리자용) |
 | `NEXT_PUBLIC_SHOW_LOCALE_SWITCHER` | 선택 | **`false`** 이면 화면 우측 상단 **EN/한** 전환을 숨김. 안 넣으면 기본으로 스위처 표시 |
+| `NEXT_PUBLIC_I18N_ENGLISH_ONLY` | 선택 | **`true`** 이면 **한국어 UI를 쓰지 않음**: 쿠키와 관계없이 **항상 영문**만, 전환기도 숨김(배포 한 번으로 영어 전용). 별칭: `NEXT_PUBLIC_ENGLISH_ONLY` |
 | `AUTH_DEBUG` | 선택 | `true` 로 두면 Auth.js 디버그(문제 조사용, 운영에서는 보통 끔) |
 
 **더 이상 필요 없음(이전 Entra/OAuth 버전용):**  

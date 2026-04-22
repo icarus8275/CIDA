@@ -1,14 +1,14 @@
 import Link from "next/link";
+import { t } from "@/lib/i18n/messages";
+import { getServerLocale } from "@/lib/i18n/server";
 
-export default function ProfessorsPage() {
+export default async function ProfessorsPage() {
+  const locale = await getServerLocale();
   return (
     <div className="glass space-y-3 p-4 text-sm text-slate-300">
-      <p>
-        Faculty-to-section assignment has moved to the Schedule page (drag courses
-        by term, add sections, assign instructors).
-      </p>
+      <p>{t(locale, "admin.profPageBody")}</p>
       <Link href="/admin/schedule" className="font-medium text-cyan-200 hover:underline">
-        Open Schedule
+        {t(locale, "admin.profPageLink")}
       </Link>
     </div>
   );

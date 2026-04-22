@@ -264,7 +264,7 @@ export function CourseCodeExplorer({
               rel="noreferrer"
               className="inline-block text-sm text-cyan-200 hover:underline"
             >
-              {item.linkTitle || "OneDrive / file link"}
+              {item.linkTitle || t("explore.fileLinkDefault")}
             </a>
           )}
           <div className="flex flex-wrap gap-2 pt-2">

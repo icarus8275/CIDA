@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { AuthProvider } from "@/components/auth-provider";
 import { LocaleProvider } from "@/components/locale/locale-provider";
 import { LocaleSwitcher } from "@/components/locale/locale-switcher";
-import { LOCALE_COOKIE, parseLocale, type Locale } from "@/lib/i18n/types";
+import { LOCALE_COOKIE, resolveLocale, type Locale } from "@/lib/i18n/types";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 
 async function getLocaleFromRequest(): Promise<Locale> {
   const c = await cookies();
-  return parseLocale(c.get(LOCALE_COOKIE)?.value);
+  return resolveLocale(c.get(LOCALE_COOKIE)?.value);
 }
 
 export default async function RootLayout({

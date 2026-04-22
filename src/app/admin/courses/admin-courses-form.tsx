@@ -90,7 +90,9 @@ export function AdminCoursesForm() {
           await load();
         }}
       >
-        <label className="text-xs text-slate-400">Bulk add (one per line or comma)</label>
+        <label className="text-xs text-slate-400">
+          {t("admin.coursesBulkLabel")}
+        </label>
         <textarea
           value={bulkText}
           onChange={(e) => setBulkText(e.target.value)}
@@ -101,7 +103,7 @@ export function AdminCoursesForm() {
           type="submit"
           className="btn-glass mt-2 px-3 py-1.5 text-sm"
         >
-          Add all
+          {t("admin.coursesBulkAddAll")}
         </button>
       </form>
 

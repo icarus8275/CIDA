@@ -13,15 +13,14 @@ export default async function AdminSchedulePage() {
         {t(locale, "admin.scheduleTitle")}
       </h1>
       <p className="text-sm text-slate-400">
-        Drag a course into a term column to schedule it. Add sections and assign
-        faculty below.
+        {t(locale, "admin.schedIntro")}
       </p>
       <TermSetupForm />
       <AddOfferingForm />
       <ScheduleBoard />
       <section className="border-t border-white/10 pt-6">
         <h2 className="mb-3 text-lg font-semibold text-slate-100">
-          Sections & faculty
+          {t(locale, "admin.schedSectionsTitle")}
         </h2>
         <SectionInstructorPanel />
       </section>

@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { formatTermForDisplay } from "@/lib/term-display";
+import { useI18n } from "@/components/locale/locale-provider";
 
 export function AddOfferingForm() {
+  const { t } = useI18n();
   const [courses, setCourses] = useState<{ id: string; name: string }[]>([]);
   const [terms, setTerms] = useState<{ id: string; label: string }[]>([]);
   const [courseId, setCourseId] = useState("");
@@ -53,20 +55,20 @@ export function AddOfferingForm() {
         });
         if (r.status === 409) {
           const j = (await r.json().catch(() => ({}))) as { message?: string };
-          setFormErr(j.message || "This course is already in that term.");
+          setFormErr(j.message || t("admin.schedErrCourseInTerm"));
           return;
         }
         if (r.ok) {
           setCourseId("");
           window.dispatchEvent(new Event("schedule-refresh"));
         } else {
-          setFormErr("Could not add the course to that term.");
+          setFormErr(t("admin.schedErrAddFail"));
         }
       }}
     >
       <div className="flex flex-wrap items-end gap-2">
       <span className="font-medium text-slate-200">
-        Schedule a course in a term:
+        {t("admin.schedAddCourseRow")}
       </span>
       <select
         className="input-glass px-2 py-1.5"
@@ -74,7 +76,7 @@ export function AddOfferingForm() {
         onChange={(e) => setCourseId(e.target.value)}
         required
       >
-        <option value="">Course</option>
+        <option value="">{t("admin.schedCourse")}</option>
         {courses.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name}
@@ -87,7 +89,7 @@ export function AddOfferingForm() {
         onChange={(e) => setTermId(e.target.value)}
         required
       >
-        <option value="">Term</option>
+        <option value="">{t("admin.schedTerm")}</option>
         {terms.map((t) => (
           <option key={t.id} value={t.id}>
             {t.label}
@@ -95,7 +97,7 @@ export function AddOfferingForm() {
         ))}
       </select>
       <button type="submit" className="btn-glass-primary px-3 py-1.5 text-sm">
-        Add
+        {t("admin.schedAdd")}
       </button>
       </div>
       {formErr && <p className="text-xs text-rose-200">{formErr}</p>}

@@ -321,7 +321,9 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
                   </span>
                 </div>
                 <div className="mb-2 space-y-1">
-                  <label className="text-xs text-slate-400">Title (optional)</label>
+                  <label className="text-xs text-slate-400">
+                    {t("teach.itemTitleOpt")}
+                  </label>
                   <input
                     className="input-glass w-full px-2 py-1 text-sm"
                     value={title}
@@ -338,11 +340,13 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
                       });
                       await load();
                     }}
-                    placeholder="Custom title"
+                    placeholder={t("teach.customTitle")}
                   />
                 </div>
                 <div className="mb-2 space-y-1">
-                  <label className="text-xs text-slate-400">OneDrive share link</label>
+                  <label className="text-xs text-slate-400">
+                    {t("teach.odShareLink")}
+                  </label>
                   <div className="flex flex-wrap gap-2">
                     <input
                       className="input-glass min-w-0 flex-1 px-2 py-1 text-sm"
@@ -364,7 +368,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
                           [it.id]: { ...le, title: e.target.value },
                         }))
                       }
-                      placeholder="Link label (optional)"
+                      placeholder={t("teach.linkLabelOpt")}
                     />
                     <button
                       type="button"
@@ -395,7 +399,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
                       rel="noreferrer"
                       className="text-sm text-cyan-200 hover:underline"
                     >
-                      {it.linkTitle || "Open file"}
+                      {it.linkTitle || t("teach.openFile")}
                     </a>
                   )}
                 </div>

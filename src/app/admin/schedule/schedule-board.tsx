@@ -14,6 +14,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { X } from "lucide-react";
 import { formatTermForDisplay } from "@/lib/term-display";
+import { useI18n } from "@/components/locale/locale-provider";
 
 const POOL = "__pool__";
 const D_TERM = (id: string) => `term:${id}`;
@@ -75,6 +76,7 @@ function UnscheduledPool({
   courseIds: string[];
   courseById: Map<string, CourseRow>;
 }) {
+  const { t } = useI18n();
   const { setNodeRef, isOver } = useDroppable({ id: D_TERM(POOL) });
   return (
     <div
@@ -84,16 +86,15 @@ function UnscheduledPool({
       }`}
     >
       <h3 className="text-sm font-semibold text-slate-100">
-        Unscheduled courses
+        {t("admin.schedUnscheduled")}
       </h3>
       <p className="text-xs text-slate-400">
-        Drag into a term column below, or drop a scheduled course here to
-        unschedule. Up to three courses per row.
+        {t("admin.schedUnscheduledHelp")}
       </p>
       <div className="mt-1 min-h-24">
         {courseIds.length === 0 && (
           <p className="text-xs text-slate-500">
-            All catalog courses are placed in a term.
+            {t("admin.schedAllInTerms")}
           </p>
         )}
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -134,6 +135,7 @@ function OfferingCard({
   off: OffRow;
   onRemove: (id: string) => void;
 }) {
+  const { t } = useI18n();
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: D_OFFER(off.id) });
   return (
@@ -150,7 +152,7 @@ function OfferingCard({
       <div className="font-medium text-slate-100">{off.course.name}</div>
       <button
         type="button"
-        aria-label="Remove from schedule"
+        aria-label={t("admin.schedARemove")}
         className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-md text-rose-300/90 opacity-0 transition hover:bg-rose-500/20 group-hover/offer:opacity-100"
         onPointerDown={(e) => e.stopPropagation()}
         onClick={(e) => {
@@ -176,6 +178,7 @@ function TermColumn({
   onDeleteTerm: (id: string) => void;
   onRemoveOffering: (id: string) => void;
 }) {
+  const { t } = useI18n();
   const { setNodeRef, isOver } = useDroppable({ id: D_TERM(term.id) });
   return (
     <div
@@ -192,8 +195,8 @@ function TermColumn({
         </h3>
         <button
           type="button"
-          aria-label="Delete term"
-          title="Delete this term and its scheduled courses in this app"
+          aria-label={t("admin.schedTDelete")}
+          title={t("admin.schedTDeleteTitle")}
           className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-rose-300/90 opacity-0 transition hover:bg-rose-500/20 group-hover/term:opacity-100"
           onClick={() => onDeleteTerm(term.id)}
         >
@@ -214,6 +217,7 @@ function TermColumn({
 }
 
 export function ScheduleBoard() {
+  const { t } = useI18n();
   const [terms, setTerms] = useState<TermRow[]>([]);
   const [offers, setOffers] = useState<OffRow[]>([]);
   const [courses, setCourses] = useState<CourseRow[]>([]);
@@ -280,11 +284,7 @@ export function ScheduleBoard() {
   }, []);
 
   const deleteTerm = useCallback(async (termId: string) => {
-    if (
-      !confirm(
-        "Delete this term? All course placements and sections in this term will be removed."
-      )
-    ) {
+    if (!confirm(t("admin.schedTDeleteConfirm"))) {
       return;
     }
     const r = await fetch(
@@ -294,7 +294,7 @@ export function ScheduleBoard() {
     if (r.ok) {
       window.dispatchEvent(new Event("schedule-refresh"));
     }
-  }, []);
+  }, [t]);
 
   const onDragEnd = async (e: DragEndEvent) => {
     const { active, over } = e;
@@ -314,14 +314,14 @@ export function ScheduleBoard() {
       });
       if (r.status === 409) {
         const j = (await r.json().catch(() => ({}))) as { message?: string };
-        alert(j.message || "This course is already in that term.");
+        alert(j.message || t("admin.schedAlrtDup"));
         return;
       }
       if (r.ok) {
         window.dispatchEvent(new Event("schedule-refresh"));
       } else {
         const j = (await r.json().catch(() => ({}))) as { message?: string };
-        alert(j.message || "Could not add course.");
+        alert(j.message || t("admin.schedAlrtFail"));
       }
       return;
     }
@@ -364,7 +364,7 @@ export function ScheduleBoard() {
   };
 
   if (loading) {
-    return <p className="text-sm text-slate-400">Loading…</p>;
+    return <p className="text-sm text-slate-400">{t("teach.loading")}</p>;
   }
 
   return (
@@ -394,8 +394,7 @@ export function ScheduleBoard() {
       </DndContext>
       {terms.length === 0 && (
         <p className="text-sm text-amber-200/80">
-          No terms yet. Add an academic year and a season, then use &quot;Add
-          term&quot; above. Each (year, season) pair can only exist once.
+          {t("admin.schedNoTerms")}
         </p>
       )}
     </div>

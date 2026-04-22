@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useI18n } from "@/components/locale/locale-provider";
 import { hasFacultyAccess } from "@/lib/role-utils";
 import { formatTermForDisplay } from "@/lib/term-display";
 import { listUserLabel } from "@/lib/user-display";
@@ -37,6 +38,7 @@ type SiRow = {
 };
 
 export function SectionInstructorPanel() {
+  const { t } = useI18n();
   const [offerings, setOfferings] = useState<
     { id: string; course: { name: string }; term: TermRef }[]
   >([]);
@@ -107,14 +109,16 @@ export function SectionInstructorPanel() {
         }}
       >
         <div>
-          <span className="text-xs text-slate-400">Offering (course in term)</span>
+          <span className="text-xs text-slate-400">
+            {t("admin.schedOffering")}
+          </span>
           <select
             className="input-glass mt-0.5 block w-80 px-2 py-1.5"
             value={newOffId}
             onChange={(e) => setNewOffId(e.target.value)}
             required
           >
-            <option value="">Select</option>
+            <option value="">{t("admin.schedSelect")}</option>
             {offerings.map((o) => (
               <option key={o.id} value={o.id}>
                 {formatTermForDisplay(o.term)} — {o.course.name}
@@ -123,7 +127,9 @@ export function SectionInstructorPanel() {
           </select>
         </div>
         <div>
-          <span className="text-xs text-slate-400">Section label</span>
+          <span className="text-xs text-slate-400">
+            {t("admin.schedSecLabel")}
+          </span>
           <input
             className="input-glass mt-0.5 w-24 px-2 py-1.5"
             value={newSecLabel}
@@ -135,7 +141,7 @@ export function SectionInstructorPanel() {
           type="submit"
           className="btn-glass px-3 py-1.5 text-sm"
         >
-          Add section
+          {t("admin.schedAddSection")}
         </button>
       </form>
 
@@ -156,14 +162,14 @@ export function SectionInstructorPanel() {
         }}
       >
         <div>
-          <span className="text-xs text-slate-400">User</span>
+          <span className="text-xs text-slate-400">{t("admin.schedUser")}</span>
           <select
             className="input-glass mt-0.5 block w-64 px-2 py-1.5"
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
             required
           >
-            <option value="">Select</option>
+            <option value="">{t("admin.schedSelect")}</option>
             {users.map((u) => (
               <option key={u.id} value={u.id}>
                 {listUserLabel(u.name, u.email)}
@@ -172,14 +178,16 @@ export function SectionInstructorPanel() {
           </select>
         </div>
         <div>
-          <span className="text-xs text-slate-400">Section</span>
+          <span className="text-xs text-slate-400">
+            {t("admin.schedSection")}
+          </span>
           <select
             className="input-glass mt-0.5 block w-80 max-w-full px-2 py-1.5"
             value={sectionId}
             onChange={(e) => setSectionId(e.target.value)}
             required
           >
-            <option value="">Select</option>
+            <option value="">{t("admin.schedSelect")}</option>
             {sections.map((s) => {
               const o = s.courseOffering;
               const p = `${formatTermForDisplay(o.term)} ${o.course.name} · ${s.label}`;
@@ -195,7 +203,7 @@ export function SectionInstructorPanel() {
           type="submit"
           className="btn-glass-primary px-3 py-1.5 text-sm"
         >
-          Assign faculty
+          {t("admin.schedAssign")}
         </button>
       </form>
 
@@ -225,7 +233,7 @@ export function SectionInstructorPanel() {
                 await load();
               }}
             >
-              Remove
+              {t("admin.schedRemove")}
             </button>
           </li>
         ))}

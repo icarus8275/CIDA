@@ -1,4 +1,4 @@
-import type { Locale } from "./types";
+import { isEnglishOnlyI18n, type Locale } from "./types";
 
 /** Flat message map: key -> { en, ko } */
 export const MESSAGES: Record<string, Record<Locale, string>> = {
@@ -191,6 +191,86 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   "admin.scheduleNav": { en: "Schedule", ko: "학기/배정" },
   "admin.scheduleTitle": { en: "Schedule & section assignments", ko: "학기별 수업·섹션" },
+  "admin.schedIntro": {
+    en: "Drag a course into a term column to schedule it. Add sections and assign faculty below.",
+    ko: "과목을 학기 열로 끌어다 놓으면 그 학기에 배정됩니다. 아래에서 섹션을 만들고 담당 교수를 지정하세요.",
+  },
+  "admin.schedSectionsTitle": { en: "Sections & faculty", ko: "섹션·담당 교수" },
+  "admin.schedYearBlurb": {
+    en: "Set up years and season types, then combine them into terms. On the schedule below, Fall uses the first calendar year of the range, Spring the second (e.g. 2024 Fall, 2025 Spring).",
+    ko: "학년·계절 유형을 만든 뒤 이를 합쳐 학기를 만듭니다. 아래 배정에서 가을은 범위의 앞해, 봄은 뒤해에 해당합니다(예: 2024 가을, 2025 봄).",
+  },
+  "admin.sched1Title": { en: "1 · Academic year", ko: "1 · 학년" },
+  "admin.schedLabelDisplay": { en: "Display label", ko: "표시 이름" },
+  "admin.schedStartYear": { en: "Start year", ko: "시작 연도" },
+  "admin.schedAddYear": { en: "Add year", ko: "학년 추가" },
+  "admin.sched2Title": { en: "2 · Season type (reusable)", ko: "2 · 계절 유형(재사용)" },
+  "admin.schedKey": { en: "Key (slug)", ko: "키(슬러그)" },
+  "admin.schedLabel": { en: "Label", ko: "이름" },
+  "admin.schedAddSeason": { en: "Add season", ko: "계절 유형 추가" },
+  "admin.schedSeasonHelp": {
+    en: "Short id (e.g. fall, spring) plus a display name. This is not a dated term by itself — you pair it with a year in step 3.",
+    ko: "짧은 id(예: fall, spring)와 화면에 보일 이름을 넣습니다. 이것만으로는 날짜가 정해지지 않으며, 3단계에서 학년과 합쳐 학기가 됩니다.",
+  },
+  "admin.sched3Title": { en: "3 · Create term (year + season)", ko: "3 · 학기 만들기(학년 + 계절)" },
+  "admin.schedAcademicYear": { en: "Academic year", ko: "학년" },
+  "admin.schedSeason": { en: "Season", ko: "계절" },
+  "admin.schedAddTerm": { en: "Add term", ko: "학기 추가" },
+  "admin.schedPickYear": { en: "Add a year in step 1", ko: "1단계에서 학년을 먼저 추가하세요" },
+  "admin.schedPickSeason": { en: "Add a season in step 2", ko: "2단계에서 계절을 먼저 추가하세요" },
+  "admin.schedErrTermDup": {
+    en: "This year + season is already a term. Duplicates are not allowed.",
+    ko: "이미 같은 학년·계절 조합의 학기가 있습니다. 중복을 만들 수 없습니다.",
+  },
+  "admin.schedErrTerm": { en: "Could not add term.", ko: "학기를 추가하지 못했습니다." },
+  "admin.schedAddCourseRow": { en: "Schedule a course in a term:", ko: "과목을 학기에 배정:" },
+  "admin.schedCourse": { en: "Course", ko: "과목" },
+  "admin.schedTerm": { en: "Term", ko: "학기" },
+  "admin.schedAdd": { en: "Add", ko: "추가" },
+  "admin.schedErrCourseInTerm": {
+    en: "This course is already in that term.",
+    ko: "이미 그 학기에 배정된 과목입니다.",
+  },
+  "admin.schedErrAddFail": {
+    en: "Could not add the course to that term.",
+    ko: "과목을 그 학기에 넣을 수 없습니다.",
+  },
+  "admin.schedUnscheduled": { en: "Unscheduled courses", ko: "미배정 과목" },
+  "admin.schedUnscheduledHelp": {
+    en: "Drag into a term column below, or drop a scheduled course here to unschedule. Up to three courses per row.",
+    ko: "아래 학기 열로 끌어다 놓거나, 배정된 과목을 여기에 놓으면 배정이 해제됩니다. 한 줄에 최대 세 과목까지 표시됩니다.",
+  },
+  "admin.schedAllInTerms": {
+    en: "All catalog courses are placed in a term.",
+    ko: "목록의 모든 과목이 어느 학기에든 배정되었습니다.",
+  },
+  "admin.schedNoTerms": {
+    en: 'No terms yet. Add an academic year and a season, then use "Add term" above. Each (year, season) pair can only exist once.',
+    ko: "아직 학기가 없습니다. 위에서 학년과 계절을 만든 뒤 「학기 추가」를 사용하세요. (학년, 계절) 조합은 한 번만 만들 수 있습니다.",
+  },
+  "admin.schedARemove": { en: "Remove from schedule", ko: "배정에서 제거" },
+  "admin.schedTDelete": { en: "Delete term", ko: "학기 삭제" },
+  "admin.schedTDeleteTitle": {
+    en: "Delete this term and its scheduled courses in this app",
+    ko: "이 학기와 이 앱에 배정된 수업(오퍼링)을 삭제합니다",
+  },
+  "admin.schedTDeleteConfirm": {
+    en: "Delete this term? All course placements and sections in this term will be removed.",
+    ko: "이 학기를 삭제할까요? 이 학기에 배정된 수업·섹션이 모두 제거됩니다.",
+  },
+  "admin.schedAlrtDup": {
+    en: "This course is already in that term.",
+    ko: "이미 그 학기에 배정된 과목입니다.",
+  },
+  "admin.schedAlrtFail": { en: "Could not add course.", ko: "과목을 추가하지 못했습니다." },
+  "admin.schedOffering": { en: "Offering (course in term)", ko: "오퍼링(학기에 배정된 과목)" },
+  "admin.schedSecLabel": { en: "Section label", ko: "섹션 구분" },
+  "admin.schedAddSection": { en: "Add section", ko: "섹션 추가" },
+  "admin.schedUser": { en: "User", ko: "사용자" },
+  "admin.schedSection": { en: "Section", ko: "섹션" },
+  "admin.schedSelect": { en: "Select", ko: "선택" },
+  "admin.schedAssign": { en: "Assign faculty", ko: "교수 지정" },
+  "admin.schedRemove": { en: "Remove", ko: "제거" },
   "admin.profPageTitle": { en: "Faculty & courses", ko: "교수·과목" },
   "admin.coursesLoadFail": { en: "Failed to load courses.", ko: "과목을 불러오지 못했습니다." },
   "admin.coursesCreateFail": { en: "Failed to create course.", ko: "과목을 만들지 못했습니다." },
@@ -227,6 +307,54 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     ko: "Microsoft로 첫 로그인한 뒤 목록에 나타납니다. 관리자는 BOOTSTRAP_ADMIN_EMAILS로 올릴 수 있습니다.",
   },
   "admin.profRemove": { en: "Remove", ko: "제거" },
+  "admin.usersNav": { en: "Users", ko: "사용자" },
+  "admin.usersPageTitle": { en: "Users", ko: "사용자" },
+  "admin.usersPageBody": {
+    en: "Create accounts with email and password. CIDA = read-only explore.",
+    ko: "이메일·암호로 계정을 만듭니다. CIDA = 탐색 전용(읽기)입니다.",
+  },
+  "admin.usersNewUser": { en: "New user", ko: "새 사용자" },
+  "admin.usersNewHint": {
+    en: "Admins use /admin and have the same teaching access as professors (sections, /teach).",
+    ko: "관리자(ADMIN)는 /admin을 쓰며 교수(프로)와 동일한 수업·/teach 접근 권한을 갖습니다.",
+  },
+  "admin.usersEmailPh": { en: "Email", ko: "이메일" },
+  "admin.usersPasswordPh": { en: "Password (8+)", ko: "암호(8자 이상)" },
+  "admin.usersNamePh": { en: "Name (optional)", ko: "이름(선택)" },
+  "admin.usersCreate": { en: "Create user", ko: "사용자 만들기" },
+  "admin.usersCreateFail": { en: "Failed", ko: "실패했습니다" },
+  "admin.usersNameLabel": { en: "Name", ko: "이름" },
+  "admin.usersDisplayNamePh": {
+    en: "Display name (optional)",
+    ko: "표시 이름(선택)",
+  },
+  "admin.usersEmailLabel": { en: "Email", ko: "이메일" },
+  "admin.usersDelete": { en: "Delete", ko: "삭제" },
+  "admin.usersDeleteConfirm": { en: "Delete this user?", ko: "이 사용자를 삭제할까요?" },
+  "admin.usersRoleFail": { en: "Could not update role.", ko: "역할을 바꾸지 못했습니다." },
+  "admin.usersRoleOptProf": { en: "PROFESSOR (teaching)", ko: "PROFESSOR (강의)" },
+  "admin.usersRoleOptAdmin": { en: "ADMIN (management + teaching)", ko: "ADMIN (관리+강의)" },
+  "admin.usersRoleOptCida": { en: "CIDA (read-only)", ko: "CIDA (읽기 전용)" },
+  "admin.usersBadgeAdmin": { en: "ADMIN", ko: "ADMIN" },
+  "admin.usersBadgeAdminPlus": { en: "+ faculty", ko: " + 강의" },
+  "admin.usersBadgeProf": { en: "PROFESSOR", ko: "PROFESSOR" },
+  "admin.usersBadgeCida": { en: "CIDA", ko: "CIDA" },
+  "admin.coursesBulkLabel": {
+    en: "Bulk add (one per line or comma)",
+    ko: "일괄 추가(줄마다 하나 또는 콤마로 구분)",
+  },
+  "admin.coursesBulkAddAll": { en: "Add all", ko: "모두 추가" },
+  "admin.profPageBody": {
+    en: "Faculty-to-section assignment is on the Schedule page (drag courses by term, add sections, assign instructors).",
+    ko: "섹션별 교수 배정은「학기/배정」페이지에서 합니다(학기별로 과목을 끌어다 놓기, 섹션 추가, 교수 지정).",
+  },
+  "admin.profPageLink": { en: "Open Schedule", ko: "학기/배정 열기" },
+  "teach.itemTitleOpt": { en: "Title (optional)", ko: "제목(선택)" },
+  "teach.customTitle": { en: "Custom title", ko: "사용자 지정 제목" },
+  "teach.odShareLink": { en: "OneDrive share link", ko: "OneDrive 공유 링크" },
+  "teach.linkLabelOpt": { en: "Link label (optional)", ko: "링크 이름(선택)" },
+  "teach.openFile": { en: "Open file", ko: "파일 열기" },
+  "explore.fileLinkDefault": { en: "OneDrive / file link", ko: "OneDrive·파일 링크" },
   "locale.en": { en: "EN", ko: "EN" },
   "locale.ko": { en: "KO", ko: "한" },
   "locale.label": { en: "Language", ko: "언어" },
@@ -237,5 +365,6 @@ export function t(locale: Locale, key: string): string {
   if (!row) {
     return key;
   }
-  return row[locale] ?? row.en;
+  const loc = isEnglishOnlyI18n() ? "en" : locale;
+  return row[loc] ?? row.en;
 }
