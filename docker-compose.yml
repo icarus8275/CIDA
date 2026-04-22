@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cida
+      POSTGRES_PASSWORD: cida
+      POSTGRES_DB: cida
+    ports:
+      - "5433:5432"
+    volumes:
+      - cida_pg:/var/lib/postgresql/data
+
+volumes:
+  cida_pg:

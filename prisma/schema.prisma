@@ -1,0 +1,182 @@
+// Auth.js: https://authjs.dev/getting-started/adapters/prisma
+// Prisma 7: client output to src/generated/prisma
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  ADMIN
+  PROFESSOR
+}
+
+// -------- Auth.js models (extended) ----------------------------------------
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  role          UserRole  @default(PROFESSOR)
+
+  accounts      Account[]
+  sessions      Session[]
+  authenticators Authenticator[]
+
+  courseProfessors  CourseProfessor[]
+  oauthTokenStores  OauthTokenStore[]
+
+  @@map("users")
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String  @map("user_id")
+  type               String
+  provider           String
+  providerAccountId  String  @map("provider_account_id")
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId], map: "account_provider_key")
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Authenticator {
+  credentialID         String  @id
+  userId               String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// -------- Domain models ---------------------------------------------------
+
+model Course {
+  id        String   @id @default(cuid())
+  name      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items       CourseItem[]
+  professors  CourseProfessor[]
+}
+
+model ItemTypeDefinition {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  label     String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  courseItems CourseItem[]
+}
+
+/// Admin assigns which professors may edit which course.
+model CourseProfessor {
+  userId   String
+  courseId String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@id([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+model CourseItem {
+  id         String   @id @default(cuid())
+  courseId   String
+  itemTypeId String
+  number     Int
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  course   Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  itemType ItemTypeDefinition @relation(fields: [itemTypeId], references: [id], onDelete: Restrict)
+  codes    CourseItemCode[]
+  driveLinks DriveItemLink[]
+
+  @@unique([courseId, itemTypeId, number])
+  @@index([courseId])
+}
+
+model CourseItemCode {
+  id           String   @id @default(cuid())
+  courseItemId String
+  code         String
+  courseItem   CourseItem @relation(fields: [courseItemId], references: [id], onDelete: Cascade)
+
+  @@unique([courseItemId, code])
+  @@index([code])
+}
+
+/// Links a course item to a file/folder in OneDrive (Graph driveItem).
+model DriveItemLink {
+  id           String   @id @default(cuid())
+  courseItemId String
+  driveId      String
+  driveItemId  String
+  webUrl       String
+  name         String
+  path         String?  @db.Text
+  createdAt    DateTime @default(now())
+  courseItem   CourseItem @relation(fields: [courseItemId], references: [id], onDelete: Cascade)
+}
+
+/// Optional: extra Microsoft/OneDrive connection labels (e.g. admin alternate accounts). Encrypted at app layer.
+model OauthTokenStore {
+  id    String @id @default(cuid())
+  userId String
+  label String
+  /// AES-256-GCM: iv+tag+payload (base64)
+  encRefresh String  @db.Text
+  encAccess  String? @db.Text
+  expiresAt  DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, label])
+  @@index([userId])
+}
