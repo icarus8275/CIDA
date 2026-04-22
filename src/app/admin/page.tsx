@@ -34,6 +34,11 @@ export default async function AdminPage() {
           </Link>
         </li>
         <li>
+          <Link className="link-app" href="/admin/code-numbers">
+            {t(locale, "admin.linkCodeNumbers")}
+          </Link>
+        </li>
+        <li>
           <Link className="link-app" href="/admin/professors">
             {t(locale, "admin.linkAssign")} (legacy text — use Schedule)
           </Link>

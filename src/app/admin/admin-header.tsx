@@ -3,15 +3,31 @@
 import Link from "next/link";
 import { useI18n } from "@/components/locale/locale-provider";
 import { signOutToHome } from "@/lib/auth-actions";
+import { accountLabel } from "@/lib/user-display";
 
-export function AdminHeader() {
+export function AdminHeader({
+  name,
+  email,
+}: {
+  name: string | null;
+  email: string | null;
+}) {
   const { t } = useI18n();
+  const who = accountLabel(name, email);
   return (
     <header className="glass-nav sticky top-0 z-20">
       <div className="mx-auto flex max-w-5xl items-center gap-4 px-4 py-3">
         <span className="font-semibold text-white">
           {t("admin.navTitle")}
         </span>
+        {who && (
+          <span
+            className="max-w-[min(18rem,36vw)] truncate text-sm text-slate-400"
+            title={who}
+          >
+            {who}
+          </span>
+        )}
         <nav className="flex flex-wrap gap-2 text-sm">
           <Link href="/admin" className="link-app">
             {t("admin.home")}
@@ -24,6 +40,9 @@ export function AdminHeader() {
           </Link>
           <Link href="/admin/item-types" className="link-app">
             {t("admin.itemTypes")}
+          </Link>
+          <Link href="/admin/code-numbers" className="link-app">
+            {t("admin.codeNumbers")}
           </Link>
           <Link href="/admin/schedule" className="link-app">
             {t("admin.scheduleNav")}
@@ -38,7 +57,7 @@ export function AdminHeader() {
             {t("home.faculty")}
           </Link>
         </nav>
-        <form className="ml-auto" action={signOutToHome}>
+        <form className="ml-auto flex shrink-0" action={signOutToHome}>
           <button
             type="submit"
             className="text-sm text-slate-300 hover:text-white hover:underline"

@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
+import { newUserRoleOptionLabel } from "@/lib/role-utils";
+
 type UserRow = {
   id: string;
   email: string | null;
@@ -8,29 +10,25 @@ type UserRow = {
   role: "ADMIN" | "PROFESSOR" | "CIDA";
 };
 
-export function AdminUsersForm() {
-  const [list, setList] = useState<UserRow[]>([]);
+const CreateUserForm = memo(function CreateUserForm({
+  onUserCreated,
+}: {
+  onUserCreated: () => void;
+}) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState<"PROFESSOR" | "ADMIN" | "CIDA">("PROFESSOR");
   const [err, setErr] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    const r = await fetch("/api/admin/users", { cache: "no-store" });
-    if (r.ok) setList(await r.json());
-  }, []);
-
-  useEffect(() => {
-    void load();
-  }, [load]);
+  const [formKey, setFormKey] = useState(0);
 
   return (
-    <div className="space-y-6">
-      {err && <p className="text-sm text-red-300">{err}</p>}
-
+    <div>
+      {err && <p className="mb-2 text-sm text-red-300">{err}</p>}
       <form
+        key={formKey}
         className="glass max-w-md space-y-2 p-4"
+        autoComplete="off"
         onSubmit={async (e) => {
           e.preventDefault();
           setErr(null);
@@ -53,13 +51,19 @@ export function AdminUsersForm() {
           setPassword("");
           setName("");
           setRole("PROFESSOR");
-          await load();
+          setFormKey((k) => k + 1);
+          onUserCreated();
         }}
       >
         <h2 className="text-sm font-semibold text-slate-100">New user</h2>
+        <p className="text-xs text-slate-500">
+          Admins use /admin and always have the same teaching access as
+          professors (sections, /teach).
+        </p>
         <input
           className="input-glass w-full px-2 py-1.5"
           type="email"
+          name="new-user-email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -68,6 +72,8 @@ export function AdminUsersForm() {
         <input
           className="input-glass w-full px-2 py-1.5"
           type="password"
+          name="new-user-password"
+          autoComplete="new-password"
           placeholder="Password (8+)"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -76,53 +82,152 @@ export function AdminUsersForm() {
         />
         <input
           className="input-glass w-full px-2 py-1.5"
+          name="new-user-name"
           placeholder="Name (optional)"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
         <select
           className="input-glass w-full px-2 py-1.5"
+          name="new-user-role"
           value={role}
           onChange={(e) =>
             setRole(e.target.value as "PROFESSOR" | "ADMIN" | "CIDA")
           }
         >
-          <option value="PROFESSOR">Professor</option>
-          <option value="ADMIN">Admin</option>
-          <option value="CIDA">CIDA (read-only)</option>
+          <option value="PROFESSOR">
+            {newUserRoleOptionLabel("PROFESSOR")}
+          </option>
+          <option value="ADMIN">
+            {newUserRoleOptionLabel("ADMIN")}
+          </option>
+          <option value="CIDA">
+            {newUserRoleOptionLabel("CIDA")}
+          </option>
         </select>
         <button type="submit" className="btn-glass-primary w-full py-2 text-sm">
           Create user
         </button>
       </form>
+    </div>
+  );
+});
 
+function EditableUserName({
+  user,
+  onSaved,
+}: {
+  user: UserRow;
+  onSaved: () => void;
+}) {
+  const [value, setValue] = useState(user.name ?? "");
+  useEffect(() => {
+    setValue(user.name ?? "");
+  }, [user.id, user.name]);
+
+  return (
+    <label className="flex w-full min-w-0 max-w-sm flex-col gap-0.5 sm:max-w-md">
+      <span className="text-[11px] text-slate-500">Name</span>
+      <input
+        className="input-glass w-full px-2 py-1.5 text-sm"
+        value={value}
+        placeholder="Display name (optional)"
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={async () => {
+          const next = value.trim() || null;
+          const current = (user.name?.trim() || null) ?? null;
+          if (next === current) {
+            return;
+          }
+          const r = await fetch("/api/admin/users", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: user.id, name: next }),
+          });
+          if (r.ok) {
+            onSaved();
+          }
+        }}
+      />
+    </label>
+  );
+}
+
+export function AdminUsersForm() {
+  const [list, setList] = useState<UserRow[]>([]);
+
+  const load = useCallback(async () => {
+    const r = await fetch("/api/admin/users", { cache: "no-store" });
+    if (r.ok) {
+      setList(await r.json());
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const onUserCreated = useCallback(() => {
+    void load();
+  }, [load]);
+
+  return (
+    <div className="space-y-6">
+      <CreateUserForm onUserCreated={onUserCreated} />
       <ul className="space-y-2">
         {list.map((u) => (
           <li
             key={u.id}
-            className="glass flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between"
+            className="glass flex flex-col gap-3 p-3 lg:flex-row lg:items-end lg:justify-between"
           >
-            <div>
-              <span className="font-medium text-slate-100">{u.email}</span>{" "}
-              <span className="text-xs text-slate-400">{u.role}</span>
+            <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-end sm:gap-4">
+              <div className="min-w-0 sm:max-w-xs">
+                <div className="text-[11px] text-slate-500">Email</div>
+                <div className="font-medium text-slate-100 break-all">
+                  {u.email}
+                </div>
+                {u.role === "ADMIN" ? (
+                  <span className="mt-0.5 inline-block text-xs text-slate-400">
+                    ADMIN
+                    <span className="text-cyan-200/80"> + faculty</span>
+                  </span>
+                ) : u.role === "PROFESSOR" ? (
+                  <span className="mt-0.5 inline-block text-xs text-slate-400">
+                    PROFESSOR
+                  </span>
+                ) : (
+                  <span className="mt-0.5 inline-block text-xs text-slate-400">
+                    CIDA
+                  </span>
+                )}
+              </div>
+              <EditableUserName user={u} onSaved={load} />
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
               <select
                 className="input-glass px-2 py-1 text-sm"
                 value={u.role}
                 onChange={async (e) => {
                   const next = e.target.value as UserRow["role"];
-                  await fetch("/api/admin/users", {
+                  const r = await fetch("/api/admin/users", {
                     method: "PATCH",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ id: u.id, role: next }),
                   });
+                  if (!r.ok) {
+                    const j = (await r.json().catch(() => ({}))) as {
+                      message?: string;
+                    };
+                    alert(j.message || "Could not update role.");
+                    await load();
+                    return;
+                  }
                   await load();
                 }}
               >
-                <option value="PROFESSOR">PROFESSOR</option>
-                <option value="ADMIN">ADMIN</option>
-                <option value="CIDA">CIDA</option>
+                <option value="PROFESSOR">PROFESSOR (teaching)</option>
+                <option value="ADMIN">ADMIN (management + teaching)</option>
+                <option value="CIDA">CIDA (read-only)</option>
               </select>
               <button
                 type="button"

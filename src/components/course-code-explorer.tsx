@@ -126,8 +126,10 @@ function matchesQuery(
 
 export function CourseCodeExplorer({
   initialData,
+  accountLine,
 }: {
   initialData: ExploreCourse[];
+  accountLine?: string | null;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -330,11 +332,19 @@ export function CourseCodeExplorer({
   return (
     <div className="min-h-dvh">
       <header className="glass-nav sticky top-0 z-20">
-        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
           <h1 className="text-xl font-bold text-white">
             {t("explore.title")}
           </h1>
-          <div className="ml-auto flex items-center gap-2">
+          {accountLine && (
+            <span
+              className="max-w-[min(18rem,50vw)] truncate text-xs text-slate-400 sm:text-sm"
+              title={accountLine}
+            >
+              {accountLine}
+            </span>
+          )}
+          <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
             <div className="relative">
               <Search
                 size={16}

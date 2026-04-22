@@ -15,8 +15,12 @@ export function TermSetupForm() {
 
   const load = useCallback(async () => {
     const [y, se] = await Promise.all([
-      fetch("/api/admin/academic-years", { cache: "no-store" }).then((r) => r.json()),
-      fetch("/api/admin/term-seasons", { cache: "no-store" }).then((r) => r.json()),
+      fetch("/api/admin/academic-years", { cache: "no-store" }).then((r) =>
+        r.json()
+      ),
+      fetch("/api/admin/term-seasons", { cache: "no-store" }).then((r) =>
+        r.json()
+      ),
     ]);
     setYears(y);
     setSeasons(se);
@@ -37,152 +41,188 @@ export function TermSetupForm() {
   }, [load]);
 
   return (
-    <div className="glass glass-dashed mb-6 flex flex-wrap gap-4 p-3 text-sm text-slate-200">
-      <form
-        className="flex flex-wrap items-end gap-2"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          if (!yLabel.trim()) return;
-          await fetch("/api/admin/academic-years", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ label: yLabel.trim(), startYear: yStart }),
-          });
-          setYLabel("");
-          await load();
-        }}
-      >
-        <div>
-          <div className="text-xs text-slate-400">Academic year label</div>
-          <input
-            className="input-glass px-2 py-1"
-            value={yLabel}
-            onChange={(e) => setYLabel(e.target.value)}
-            placeholder="2025–2026"
-          />
-        </div>
-        <div>
-          <div className="text-xs text-slate-400">Start year</div>
-          <input
-            type="number"
-            className="input-glass w-24 px-2 py-1"
-            value={yStart}
-            onChange={(e) => setYStart(+e.target.value || 0)}
-          />
-        </div>
-        <button type="submit" className="btn-glass px-2 py-1 text-sm">
-          Add year
-        </button>
-      </form>
+    <div className="glass glass-dashed mb-6 p-4 text-sm text-slate-200">
+      <p className="mb-4 text-xs text-slate-400">
+        Set up years and season <span className="text-slate-300">types</span>, then
+        combine them into terms. On the schedule below, Fall uses the first
+        calendar year of the range, Spring the second (e.g. 2024 Fall, 2025
+        Spring).
+      </p>
 
-      <form
-        className="flex flex-wrap items-end gap-2"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          if (!sKey.trim() || !sLabel.trim()) return;
-          await fetch("/api/admin/term-seasons", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              key: sKey.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
-              label: sLabel.trim(),
-            }),
-          });
-          setSKey("");
-          setSLabel("");
-          await load();
-        }}
-      >
-        <div>
-          <div className="text-xs text-slate-400">Season key (slug)</div>
-          <input
-            className="input-glass w-32 px-2 py-1"
-            value={sKey}
-            onChange={(e) => setSKey(e.target.value)}
-            placeholder="winter"
-          />
-          <p className="mt-1 max-w-xs text-[11px] text-slate-500">
-            Short id for a season <span className="italic">type</span> (e.g. fall, spring), not a full
-            term. You pair it with a year below using &quot;Add term&quot;.
+      <div className="space-y-4">
+        <section className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            1 · Academic year
+          </h3>
+          <form
+            className="flex flex-wrap items-end gap-4"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!yLabel.trim()) return;
+              await fetch("/api/admin/academic-years", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ label: yLabel.trim(), startYear: yStart }),
+              });
+              setYLabel("");
+              await load();
+            }}
+          >
+            <label className="flex min-w-[10rem] flex-col gap-1">
+              <span className="text-xs text-slate-400">Display label</span>
+              <input
+                className="input-glass px-2 py-1.5"
+                value={yLabel}
+                onChange={(e) => setYLabel(e.target.value)}
+                placeholder="2025–2026"
+              />
+            </label>
+            <label className="flex w-28 flex-col gap-1">
+              <span className="text-xs text-slate-400">Start year</span>
+              <input
+                type="number"
+                className="input-glass px-2 py-1.5"
+                value={yStart}
+                onChange={(e) => setYStart(+e.target.value || 0)}
+              />
+            </label>
+            <button type="submit" className="btn-glass px-4 py-2 text-sm">
+              Add year
+            </button>
+          </form>
+        </section>
+
+        <section className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            2 · Season type (reusable)
+          </h3>
+          <form
+            className="flex flex-wrap items-end gap-4"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!sKey.trim() || !sLabel.trim()) return;
+              await fetch("/api/admin/term-seasons", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  key: sKey.toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+                  label: sLabel.trim(),
+                }),
+              });
+              setSKey("");
+              setSLabel("");
+              await load();
+            }}
+          >
+            <label className="flex w-32 flex-col gap-1">
+              <span className="text-xs text-slate-400">Key (slug)</span>
+              <input
+                className="input-glass px-2 py-1.5"
+                value={sKey}
+                onChange={(e) => setSKey(e.target.value)}
+                placeholder="fall"
+              />
+            </label>
+            <label className="flex min-w-[8rem] flex-col gap-1">
+              <span className="text-xs text-slate-400">Label</span>
+              <input
+                className="input-glass px-2 py-1.5"
+                value={sLabel}
+                onChange={(e) => setSLabel(e.target.value)}
+                placeholder="Fall Semester"
+              />
+            </label>
+            <button type="submit" className="btn-glass px-4 py-2 text-sm">
+              Add season
+            </button>
+          </form>
+          <p className="mt-2 text-[11px] leading-relaxed text-slate-500">
+            Short id (e.g. <span className="text-slate-400">fall</span>,{" "}
+            <span className="text-slate-400">spring</span>) plus a display name. This
+            is not a dated term by itself — you pair it with a year in step 3.
           </p>
-        </div>
-        <div>
-          <div className="text-xs text-slate-400">Label</div>
-          <input
-            className="input-glass px-2 py-1"
-            value={sLabel}
-            onChange={(e) => setSLabel(e.target.value)}
-            placeholder="Winter"
-          />
-        </div>
-        <button type="submit" className="btn-glass px-2 py-1 text-sm">
-          Add season
-        </button>
-      </form>
+        </section>
 
-      <form
-        className="flex flex-col gap-1"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          setAddTermError(null);
-          if (!termY || !termS) return;
-          const r = await fetch("/api/admin/terms", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ academicYearId: termY, termSeasonId: termS }),
-          });
-          if (!r.ok) {
-            const j = (await r.json().catch(() => ({}))) as { message?: string };
-            if (r.status === 409) {
-              setAddTermError(
-                j.message ||
-                  "This year + season is already a term. Duplicates are not allowed."
-              );
-            } else {
-              setAddTermError(j.message || "Could not add term.");
-            }
-            return;
-          }
-          window.dispatchEvent(new Event("schedule-refresh"));
-        }}
-      >
-        <div className="flex flex-wrap items-end gap-2">
-        <select
-          className="input-glass px-2 py-1"
-          value={termY}
-          onChange={(e) => setTermY(e.target.value)}
-        >
-          {years.length === 0 && (
-            <option value="">Add a year first</option>
-          )}
-          {years.map((y) => (
-            <option key={y.id} value={y.id}>
-              {y.label}
-            </option>
-          ))}
-        </select>
-        <select
-          className="input-glass px-2 py-1"
-          value={termS}
-          onChange={(e) => setTermS(e.target.value)}
-        >
-          {seasons.length === 0 && (
-            <option value="">Add a season first</option>
-          )}
-          {seasons.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.label}
-            </option>
-          ))}
-        </select>
-        <button type="submit" className="btn-glass px-2 py-1 text-sm">
-          Add term
-        </button>
-        </div>
-        {addTermError && (
-          <p className="text-xs text-rose-200">{addTermError}</p>
-        )}
-      </form>
+        <section className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            3 · Create term (year + season)
+          </h3>
+          <form
+            className="flex flex-col gap-2"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setAddTermError(null);
+              if (!termY || !termS) return;
+              const r = await fetch("/api/admin/terms", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  academicYearId: termY,
+                  termSeasonId: termS,
+                }),
+              });
+              if (!r.ok) {
+                const j = (await r.json().catch(() => ({}))) as {
+                  message?: string;
+                };
+                if (r.status === 409) {
+                  setAddTermError(
+                    j.message ||
+                      "This year + season is already a term. Duplicates are not allowed."
+                  );
+                } else {
+                  setAddTermError(j.message || "Could not add term.");
+                }
+                return;
+              }
+              window.dispatchEvent(new Event("schedule-refresh"));
+            }}
+          >
+            <div className="flex flex-wrap items-end gap-3">
+              <label className="flex min-w-[11rem] flex-col gap-1">
+                <span className="text-xs text-slate-400">Academic year</span>
+                <select
+                  className="input-glass px-2 py-1.5"
+                  value={termY}
+                  onChange={(e) => setTermY(e.target.value)}
+                >
+                  {years.length === 0 && (
+                    <option value="">Add a year in step 1</option>
+                  )}
+                  {years.map((y) => (
+                    <option key={y.id} value={y.id}>
+                      {y.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex min-w-[11rem] flex-col gap-1">
+                <span className="text-xs text-slate-400">Season</span>
+                <select
+                  className="input-glass px-2 py-1.5"
+                  value={termS}
+                  onChange={(e) => setTermS(e.target.value)}
+                >
+                  {seasons.length === 0 && (
+                    <option value="">Add a season in step 2</option>
+                  )}
+                  {seasons.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button type="submit" className="btn-glass px-4 py-2 text-sm">
+                Add term
+              </button>
+            </div>
+            {addTermError && (
+              <p className="text-xs text-rose-200">{addTermError}</p>
+            )}
+          </form>
+        </section>
+      </div>
     </div>
   );
 }

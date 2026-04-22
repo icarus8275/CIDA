@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { formatTermForDisplay } from "@/lib/term-display";
 import { cache } from "react";
 
 export type ExploreItem = {
@@ -36,17 +37,19 @@ export const getExploreData = cache(async (): Promise<ExploreCourse[]> => {
         orderBy: [{ sortOrder: "asc" }, { number: "asc" }],
         include: {
           itemType: true,
-          codes: { orderBy: { code: "asc" } },
+          codes: {
+            orderBy: { codeNumber: { value: "asc" } },
+            include: { codeNumber: true },
+          },
         },
       },
     },
   });
 
   return sections.map((sec) => {
-    const y = sec.courseOffering.term.academicYear.label;
-    const tr = sec.courseOffering.term.termSeason.label;
+    const term = sec.courseOffering.term;
     const c = sec.courseOffering.course.name;
-    const pathLabel = `${y} · ${tr} · ${c} · Sec ${sec.label}`;
+    const pathLabel = `${formatTermForDisplay(term)} · ${c} · Sec ${sec.label}`;
     return {
       id: sec.id,
       name: `${c} — ${sec.label}`,
@@ -57,7 +60,7 @@ export const getExploreData = cache(async (): Promise<ExploreCourse[]> => {
         typeLabel: it.itemType.label,
         typeKey: it.itemType.key,
         number: it.number,
-        codes: it.codes.map((x) => x.code),
+        codes: it.codes.map((x) => x.codeNumber.value),
         oneDriveUrl: it.oneDriveUrl,
         linkTitle: it.linkTitle,
         title: it.title,

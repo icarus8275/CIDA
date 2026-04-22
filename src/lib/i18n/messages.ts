@@ -102,6 +102,19 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "teach.addItem": { en: "Add item", ko: "항목 추가" },
   "teach.type": { en: "Type", ko: "유형" },
   "teach.codesPlaceholder": { en: "Codes (comma-separated)", ko: "코드(콤마로 구분)" },
+  "teach.codeNumbersHint": {
+    en: "Select from the code catalog. Multiple allowed.",
+    ko: "관리자가 등록한 코드에서 선택하세요. 여러 개 지정할 수 있습니다.",
+  },
+  "teach.codeFilter": { en: "Filter codes…", ko: "코드 필터…" },
+  "teach.noCodeCatalog": {
+    en: "No codes in the catalog yet. Ask an admin to add code numbers under Admin → Code #s.",
+    ko: "목록에 코드가 아직 없습니다. 관리자에게 관리 → 코드 번호에서 등록을 요청하세요.",
+  },
+  "teach.codeSaveFail": {
+    en: "Could not save code selection.",
+    ko: "코드 선택을 저장하지 못했습니다.",
+  },
   "teach.add": { en: "Add", ko: "추가" },
   "teach.itemsCodes": { en: "Items & codes", ko: "항목·코드" },
   "teach.closeLink": { en: "Close link panel", ko: "연결 패널 닫기" },
@@ -126,6 +139,7 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "admin.home": { en: "Home", ko: "개요" },
   "admin.courses": { en: "Courses", ko: "과목" },
   "admin.itemTypes": { en: "Item types", ko: "항목 유형" },
+  "admin.codeNumbers": { en: "Code #s", ko: "코드 번호" },
   "admin.profCourses": { en: "Faculty & courses", ko: "교수–과목" },
   "admin.signOut": { en: "Sign out", ko: "로그아웃" },
   "admin.pageTitle": { en: "Administration", ko: "관리자" },
@@ -135,6 +149,39 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   "admin.linkCourses": { en: "Courses", ko: "과목" },
   "admin.linkItemTypes": { en: "Item types (top-level categories)", ko: "항목 유형(상위 그룹)" },
+  "admin.linkCodeNumbers": {
+    en: "Code numbers (for assignments, quizzes, etc.)",
+    ko: "코드 번호(과제·퀴즈 등에 부여)",
+  },
+  "admin.cnPageTitle": { en: "Code numbers", ko: "코드 번호" },
+  "admin.cnPageBody": {
+    en: "Define the catalog of codes. Faculty can assign one or more to each item in a section. In-use codes are deactivated if deleted.",
+    ko: "코드 번호 목록을 정의합니다. 교수는 섹션의 각 항목에 여러 개를 지정할 수 있습니다. 사용 중인 코드는 삭제 시 비활성 처리됩니다.",
+  },
+  "admin.cnAdd": { en: "Add code", ko: "코드 추가" },
+  "admin.cnAddHint": {
+    en: "Value is the short label (e.g. 6A). Stored in uppercase.",
+    ko: "값은 짧은 표기(예: 6A)입니다. 대문자로 저장됩니다.",
+  },
+  "admin.cnValuePh": { en: "Value (e.g. 6A)", ko: "값 (예: 6A)" },
+  "admin.cnLabelPh": { en: "Note (optional)", ko: "메모(선택)" },
+  "admin.cnAddButton": { en: "Add", ko: "추가" },
+  "admin.cnCreateFail": {
+    en: "Failed to add. The value may already exist.",
+    ko: "추가에 실패했습니다. 이미 있는 값일 수 있습니다.",
+  },
+  "admin.cnUpdateFail": {
+    en: "Update failed. Check the value is unique.",
+    ko: "수정에 실패했습니다. 값이 중복이 아닌지 확인하세요.",
+  },
+  "admin.cnDeleteConfirm": {
+    en: "Delete this code? If it is used on items, it will be deactivated instead.",
+    ko: "이 코드를 삭제할까요? 항목에 쓰인 경우 비활성으로 전환됩니다.",
+  },
+  "admin.cnSoftDeleteNote": {
+    en: "This code is still on items, so it was deactivated instead of removed.",
+    ko: "항목에 남아 있어 삭제 대신 비활성으로 전환되었습니다.",
+  },
   "admin.linkAssign": { en: "Assign faculty to courses", ko: "교수·과목 배정" },
   "admin.coursesPageTitle": { en: "Courses", ko: "과목" },
   "admin.itemTypesPageTitle": { en: "Item types", ko: "항목 유형" },

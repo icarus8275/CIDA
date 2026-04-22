@@ -6,10 +6,10 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  await requireAdmin();
+  const s = await requireAdmin();
   return (
     <div className="min-h-dvh text-slate-200">
-      <AdminHeader />
+      <AdminHeader name={s.user.name} email={s.user.email} />
       <div className="mx-auto max-w-5xl p-4">{children}</div>
     </div>
   );

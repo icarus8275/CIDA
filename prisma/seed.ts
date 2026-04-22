@@ -138,11 +138,36 @@ async function main() {
     update: {},
   });
 
+  const allCodeStrings = new Set<string>();
+  const seedPlan: [string, "assignment" | "project" | "exam" | "quiz", number, string[]][] = [
+    [sec314.id, "assignment", 1, ["6A", "6B", "6C"]],
+    [sec314.id, "project", 1, ["2A", "2B", "3D"]],
+    [sec314.id, "exam", 1, ["4A", "5A", "6A"]],
+    [sec314.id, "exam", 2, ["4A", "5A", "6B"]],
+    [sec315.id, "assignment", 1, ["7A", "7B", "6C"]],
+    [sec315.id, "project", 1, ["1A", "7B", "5D"]],
+    [sec315.id, "exam", 1, ["13A", "12A", "6A"]],
+    [sec315.id, "exam", 2, ["7A", "8A", "6B"]],
+  ];
+  for (const [, , , arr] of seedPlan) {
+    for (const c of arr) allCodeStrings.add(c.toUpperCase());
+  }
+  const valueToId = new Map<string, string>();
+  let so = 0;
+  for (const v of [...allCodeStrings].sort()) {
+    const row = await prisma.codeNumber.upsert({
+      where: { value: v },
+      create: { value: v, sortOrder: so++ },
+      update: {},
+    });
+    valueToId.set(v, row.id);
+  }
+
   const seedItem = async (
     sectionId: string,
     typeKey: "assignment" | "project" | "exam" | "quiz",
     number: number,
-    codes: string[]
+    codeValues: string[]
   ) => {
     const typeId = tMap[typeKey]!;
     const id = stableId("ci", `${sectionId}|${typeKey}|${number}`);
@@ -164,20 +189,19 @@ async function main() {
       update: { sortOrder: number },
     });
     await prisma.courseItemCode.deleteMany({ where: { courseItemId: item.id } });
-    await prisma.courseItemCode.createMany({
-      data: codes.map((c) => ({ courseItemId: item.id, code: c.toUpperCase() })),
-    });
+    const ids = codeValues
+      .map((c) => valueToId.get(c.toUpperCase()))
+      .filter((x): x is string => !!x);
+    if (ids.length) {
+      await prisma.courseItemCode.createMany({
+        data: ids.map((codeNumberId) => ({ courseItemId: item.id, codeNumberId })),
+      });
+    }
   };
 
-  await seedItem(sec314.id, "assignment", 1, ["6A", "6B", "6C"]);
-  await seedItem(sec314.id, "project", 1, ["2A", "2B", "3D"]);
-  await seedItem(sec314.id, "exam", 1, ["4A", "5A", "6A"]);
-  await seedItem(sec314.id, "exam", 2, ["4A", "5A", "6B"]);
-
-  await seedItem(sec315.id, "assignment", 1, ["7A", "7B", "6C"]);
-  await seedItem(sec315.id, "project", 1, ["1A", "7B", "5D"]);
-  await seedItem(sec315.id, "exam", 1, ["13A", "12A", "6A"]);
-  await seedItem(sec315.id, "exam", 2, ["7A", "8A", "6B"]);
+  for (const [sectionId, typeKey, num, arr] of seedPlan) {
+    await seedItem(sectionId, typeKey, num, arr);
+  }
 
   const adminEmail =
     process.env.AUTH_DEV_EMAIL || process.env.SEED_ADMIN_EMAIL || "jjson@bsu.edu";

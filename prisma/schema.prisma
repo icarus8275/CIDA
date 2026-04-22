@@ -198,6 +198,20 @@ model ItemTypeDefinition {
   courseItems CourseItem[]
 }
 
+/// Admin-managed catalog. Faculty assign one or more to each assignment/quiz/exam/project.
+model CodeNumber {
+  id        String   @id @default(cuid())
+  /// e.g. "6A" — unique, stored uppercase
+  value     String   @unique
+  label     String?
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  itemLinks CourseItemCode[]
+}
+
 model CourseItem {
   id         String   @id @default(cuid())
   sectionId  String
@@ -221,11 +235,12 @@ model CourseItem {
 }
 
 model CourseItemCode {
-  id           String     @id @default(cuid())
-  courseItemId String
-  code         String
-  courseItem   CourseItem @relation(fields: [courseItemId], references: [id], onDelete: Cascade)
+  id            String   @id @default(cuid())
+  courseItemId  String
+  codeNumberId  String
+  courseItem    CourseItem @relation(fields: [courseItemId], references: [id], onDelete: Cascade)
+  codeNumber    CodeNumber @relation(fields: [codeNumberId], references: [id], onDelete: Restrict)
 
-  @@unique([courseItemId, code])
-  @@index([code])
+  @@unique([courseItemId, codeNumberId])
+  @@index([codeNumberId])
 }

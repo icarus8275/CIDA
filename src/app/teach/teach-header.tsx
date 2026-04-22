@@ -3,22 +3,33 @@
 import Link from "next/link";
 import { useI18n } from "@/components/locale/locale-provider";
 import { signOutToHome } from "@/lib/auth-actions";
+import { accountLabel } from "@/lib/user-display";
 
 export function TeachHeader({
+  name,
   email,
   isAdmin,
 }: {
+  name: string | null;
   email: string | null;
   isAdmin: boolean;
 }) {
   const { t } = useI18n();
+  const who = accountLabel(name, email);
   return (
     <header className="glass-nav sticky top-0 z-20">
       <div className="mx-auto flex max-w-5xl items-center gap-4 px-4 py-3">
         <span className="font-semibold text-white">
           {t("teach.navTitle")}
         </span>
-        <span className="text-sm text-slate-400">{email}</span>
+        {who && (
+          <span
+            className="max-w-[min(20rem,40vw)] truncate text-sm text-slate-400"
+            title={who}
+          >
+            {who}
+          </span>
+        )}
         <nav className="ml-4 flex flex-wrap gap-2 text-sm">
           <Link href="/teach" className="link-app">
             {t("teach.myCourses")}

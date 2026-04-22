@@ -13,6 +13,7 @@ import {
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { X } from "lucide-react";
+import { formatTermForDisplay } from "@/lib/term-display";
 
 const POOL = "__pool__";
 const D_TERM = (id: string) => `term:${id}`;
@@ -22,8 +23,8 @@ const D_CAT = (id: string) => `cat:${id}`;
 type TermRow = {
   id: string;
   sortOrder: number;
-  academicYear: { label: string };
-  termSeason: { label: string };
+  academicYear: { label: string; startYear: number };
+  termSeason: { key: string; label: string };
 };
 
 type OffRow = {
@@ -35,10 +36,6 @@ type OffRow = {
 };
 
 type CourseRow = { id: string; name: string; sortOrder: number };
-
-function termLabel(t: TermRow) {
-  return `${t.academicYear.label} · ${t.termSeason.label}`;
-}
 
 function parseDropTarget(
   overId: string,
@@ -82,7 +79,7 @@ function UnscheduledPool({
   return (
     <div
       ref={setNodeRef}
-      className={`group/pool glass flex min-h-56 min-w-[220px] max-w-md flex-1 flex-col gap-2 p-3 ${
+      className={`group/pool glass flex w-full flex-col gap-2 p-3 ${
         isOver ? "ring-1 ring-cyan-400/40" : ""
       }`}
     >
@@ -90,18 +87,22 @@ function UnscheduledPool({
         Unscheduled courses
       </h3>
       <p className="text-xs text-slate-400">
-        Drag a course from the catalog into a term column, or return a
-        scheduled course here to unschedule.
+        Drag into a term column below, or drop a scheduled course here to
+        unschedule. Up to three courses per row.
       </p>
-      <div className="flex min-h-32 flex-1 flex-col gap-2">
+      <div className="mt-1 min-h-24">
         {courseIds.length === 0 && (
-          <p className="text-xs text-slate-500">All catalog courses are placed in a term.</p>
+          <p className="text-xs text-slate-500">
+            All catalog courses are placed in a term.
+          </p>
         )}
-        {courseIds.map((cid) => {
-          const c = courseById.get(cid);
-          if (!c) return null;
-          return <CatalogDraggable key={cid} course={c} />;
-        })}
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {courseIds.map((cid) => {
+            const c = courseById.get(cid);
+            if (!c) return null;
+            return <CatalogDraggable key={cid} course={c} />;
+          })}
+        </div>
       </div>
     </div>
   );
@@ -117,7 +118,7 @@ function CatalogDraggable({ course }: { course: CourseRow }) {
         transform: CSS.Translate.toString(transform),
         opacity: isDragging ? 0.5 : 1,
       }}
-      className="glass group/cat relative cursor-grab p-2 pr-8 text-sm active:cursor-grabbing"
+      className="glass group/cat relative min-h-[2.75rem] cursor-grab p-2 pr-8 text-sm active:cursor-grabbing"
       {...listeners}
       {...attributes}
     >
@@ -187,7 +188,7 @@ function TermColumn({
     >
       <div className="flex items-start justify-between gap-1 pr-1">
         <h3 className="text-sm font-semibold leading-tight text-slate-100">
-          {termLabel(term)}
+          {formatTermForDisplay(term)}
         </h3>
         <button
           type="button"
@@ -367,23 +368,28 @@ export function ScheduleBoard() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <DndContext
         sensors={sensors}
         collisionDetection={pointerWithin}
         onDragEnd={onDragEnd}
       >
-        <div className="flex flex-wrap items-stretch gap-3">
-          <UnscheduledPool courseIds={unscheduledIds} courseById={courseById} />
-          {terms.map((term) => (
-            <TermColumn
-              key={term.id}
-              term={term}
-              offerings={byTerm(term.id)}
-              onDeleteTerm={deleteTerm}
-              onRemoveOffering={removeOffering}
-            />
-          ))}
+        <div className="flex w-full flex-col gap-4">
+          <UnscheduledPool
+            courseIds={unscheduledIds}
+            courseById={courseById}
+          />
+          <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2">
+            {terms.map((term) => (
+              <TermColumn
+                key={term.id}
+                term={term}
+                offerings={byTerm(term.id)}
+                onDeleteTerm={deleteTerm}
+                onRemoveOffering={removeOffering}
+              />
+            ))}
+          </div>
         </div>
       </DndContext>
       {terms.length === 0 && (

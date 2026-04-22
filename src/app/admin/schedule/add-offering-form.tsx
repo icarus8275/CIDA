@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { formatTermForDisplay } from "@/lib/term-display";
 
 export function AddOfferingForm() {
   const [courses, setCourses] = useState<{ id: string; name: string }[]>([]);
@@ -17,11 +18,11 @@ export function AddOfferingForm() {
     setCourses(c);
     const termsFlat = (tList as {
       id: string;
-      academicYear: { label: string };
-      termSeason: { label: string };
+      academicYear: { label: string; startYear: number };
+      termSeason: { key: string; label: string };
     }[]).map((t) => ({
       id: t.id,
-      label: `${t.academicYear.label} · ${t.termSeason.label}`,
+      label: formatTermForDisplay(t),
     }));
     setTerms(termsFlat);
   }, []);

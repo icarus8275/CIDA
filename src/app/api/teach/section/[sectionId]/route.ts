@@ -33,7 +33,13 @@ export async function GET(
       },
       courseItems: {
         orderBy: [{ sortOrder: "asc" }, { number: "asc" }],
-        include: { itemType: true, codes: { orderBy: { code: "asc" } } },
+        include: {
+          itemType: true,
+          codes: {
+            orderBy: { codeNumber: { value: "asc" } },
+            include: { codeNumber: true },
+          },
+        },
       },
     },
   });

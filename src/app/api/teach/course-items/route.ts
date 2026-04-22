@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { assertAssignableCodeNumberIds, CodeNumberAssignError } from "@/lib/code-number-assign";
 import { canEditSection } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
@@ -10,7 +11,8 @@ const postSchema = z.object({
   number: z.number().int().min(0),
   sortOrder: z.number().int().optional(),
   title: z.string().max(500).optional().nullable(),
-  codes: z.array(z.string().min(1).max(32)).optional(),
+  /** Catalog IDs (admin-defined). Multiple allowed. */
+  codeNumberIds: z.array(z.string().min(1)).optional(),
   oneDriveUrl: z.string().max(2000).optional().nullable(),
   linkTitle: z.string().max(500).optional().nullable(),
 });
@@ -39,6 +41,17 @@ export async function POST(req: Request) {
   }
   const url = normalizeShareUrl(body.oneDriveUrl);
   try {
+    try {
+      await assertAssignableCodeNumberIds(null, body.codeNumberIds ?? []);
+    } catch (e) {
+      if (e instanceof CodeNumberAssignError) {
+        return NextResponse.json(
+          { error: e.errCode, message: "One or more code numbers are invalid or inactive." },
+          { status: 400 }
+        );
+      }
+      throw e;
+    }
     const item = await prisma.courseItem.create({
       data: {
         sectionId: body.sectionId,
@@ -48,13 +61,16 @@ export async function POST(req: Request) {
         sortOrder: body.sortOrder ?? body.number,
         oneDriveUrl: url,
         linkTitle: body.linkTitle,
-        codes: body.codes
+        codes: body.codeNumberIds?.length
           ? {
-              create: body.codes.map((c) => ({ code: c.toUpperCase() })),
+              create: body.codeNumberIds.map((codeNumberId) => ({ codeNumberId })),
             }
           : undefined,
       },
-      include: { itemType: true, codes: true },
+      include: {
+        itemType: true,
+        codes: { include: { codeNumber: true } },
+      },
     });
     return NextResponse.json(item);
   } catch (e) {

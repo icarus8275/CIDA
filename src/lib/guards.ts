@@ -33,6 +33,7 @@ export function isReadOnlyRole(
   return role === "CIDA";
 }
 
+/** ADMIN = full section/teach access like faculty; PROFESSOR needs SectionInstructor row. */
 export async function canEditSection(
   userId: string,
   userRole: "ADMIN" | "PROFESSOR" | "CIDA",

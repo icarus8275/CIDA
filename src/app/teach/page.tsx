@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { formatTermForDisplay } from "@/lib/term-display";
 import { t } from "@/lib/i18n/messages";
 import { getServerLocale } from "@/lib/i18n/server";
 
@@ -9,15 +10,13 @@ function sectionTitle(s: {
   courseOffering: {
     course: { name: string };
     term: {
-      academicYear: { label: string };
-      termSeason: { label: string };
+      academicYear: { label: string; startYear: number };
+      termSeason: { key: string; label: string };
     };
   };
 }) {
-  const y = s.courseOffering.term.academicYear.label;
-  const tr = s.courseOffering.term.termSeason.label;
   const c = s.courseOffering.course.name;
-  return `${y} · ${tr} · ${c} · ${s.label}`;
+  return `${formatTermForDisplay(s.courseOffering.term)} · ${c} · ${s.label}`;
 }
 
 export default async function TeachHomePage() {

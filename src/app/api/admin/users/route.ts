@@ -12,10 +12,15 @@ const createSchema = z.object({
   role: z.enum(["ADMIN", "PROFESSOR", "CIDA"]),
 });
 
-const patchSchema = z.object({
-  id: z.string().min(1),
-  role: z.enum(["ADMIN", "PROFESSOR", "CIDA"]),
-});
+const patchSchema = z
+  .object({
+    id: z.string().min(1),
+    role: z.enum(["ADMIN", "PROFESSOR", "CIDA"]).optional(),
+    name: z.union([z.string().max(200), z.null()]).optional(),
+  })
+  .refine((d) => d.role !== undefined || d.name !== undefined, {
+    message: "role or name required",
+  });
 
 const patchPasswordSchema = z.object({
   id: z.string().min(1),
@@ -75,9 +80,17 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ ok: true });
   }
   const body = patchSchema.parse(raw);
+  const data: { role?: UserRole; name?: string | null } = {};
+  if (body.role !== undefined) {
+    data.role = body.role as UserRole;
+  }
+  if (body.name !== undefined) {
+    const n = body.name?.trim();
+    data.name = n ? n : null;
+  }
   await prisma.user.update({
     where: { id: body.id },
-    data: { role: body.role as UserRole },
+    data,
   });
   return NextResponse.json({ ok: true });
 }

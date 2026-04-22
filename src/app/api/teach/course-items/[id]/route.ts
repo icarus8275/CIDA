@@ -32,7 +32,7 @@ export async function GET(
   const { id } = await params;
   const it = await prisma.courseItem.findUnique({
     where: { id },
-    include: { section: true, itemType: true, codes: true },
+    include: { section: true, itemType: true, codes: { include: { codeNumber: true } } },
   });
   if (!it) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
@@ -76,7 +76,7 @@ export async function PATCH(
       ...(urlUpd !== undefined ? { oneDriveUrl: urlUpd } : {}),
       linkTitle: body.linkTitle,
     },
-    include: { itemType: true, codes: true },
+    include: { itemType: true, codes: { include: { codeNumber: true } } },
   });
   return NextResponse.json(updated);
 }

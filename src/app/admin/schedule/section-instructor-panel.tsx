@@ -1,6 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { hasFacultyAccess } from "@/lib/role-utils";
+import { formatTermForDisplay } from "@/lib/term-display";
+import { listUserLabel } from "@/lib/user-display";
+
+type TermRef = {
+  academicYear: { label: string; startYear?: number | null };
+  termSeason: { key: string; label: string };
+};
 
 type Sec = {
   id: string;
@@ -8,10 +16,7 @@ type Sec = {
   courseOfferingId: string;
   courseOffering: {
     course: { name: string };
-    term: {
-      academicYear: { label: string };
-      termSeason: { label: string };
-    };
+    term: TermRef;
   };
 };
 
@@ -20,23 +25,20 @@ type User = { id: string; email: string | null; name: string | null; role: strin
 type SiRow = {
   userId: string;
   sectionId: string;
-  user: { email: string | null };
+  user: { email: string | null; name: string | null };
   section: {
     id: string;
     label: string;
     courseOffering: {
       course: { name: string };
-      term: {
-        academicYear: { label: string };
-        termSeason: { label: string };
-      };
+      term: TermRef;
     };
   };
 };
 
 export function SectionInstructorPanel() {
   const [offerings, setOfferings] = useState<
-    { id: string; course: { name: string }; term: Sec["courseOffering"]["term"] }[]
+    { id: string; course: { name: string }; term: TermRef }[]
   >([]);
   const [sections, setSections] = useState<Sec[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -71,7 +73,7 @@ export function SectionInstructorPanel() {
       (r) => r.json()
     );
     setUsers(
-      (u as User[]).filter((x) => x.role === "PROFESSOR" || x.role === "ADMIN")
+      (u as User[]).filter((x) => hasFacultyAccess(x.role))
     );
     const raw = await fetch("/api/admin/section-instructors", {
       cache: "no-store",
@@ -115,7 +117,7 @@ export function SectionInstructorPanel() {
             <option value="">Select</option>
             {offerings.map((o) => (
               <option key={o.id} value={o.id}>
-                {o.term.academicYear.label} {o.term.termSeason.label} — {o.course.name}
+                {formatTermForDisplay(o.term)} — {o.course.name}
               </option>
             ))}
           </select>
@@ -164,7 +166,7 @@ export function SectionInstructorPanel() {
             <option value="">Select</option>
             {users.map((u) => (
               <option key={u.id} value={u.id}>
-                {u.email || u.id}
+                {listUserLabel(u.name, u.email)}
               </option>
             ))}
           </select>
@@ -180,7 +182,7 @@ export function SectionInstructorPanel() {
             <option value="">Select</option>
             {sections.map((s) => {
               const o = s.courseOffering;
-              const p = `${o.term.academicYear.label} ${o.term.termSeason.label} ${o.course.name} · ${s.label}`;
+              const p = `${formatTermForDisplay(o.term)} ${o.course.name} · ${s.label}`;
               return (
                 <option key={s.id} value={s.id}>
                   {p}
@@ -204,9 +206,9 @@ export function SectionInstructorPanel() {
             className="glass flex items-center justify-between gap-2 px-2 py-1.5"
           >
             <span className="text-slate-200">
-              {r.user.email} — {r.section.courseOffering.course.name} ·
-              {r.section.label} ({r.section.courseOffering.term.academicYear.label}{" "}
-              {r.section.courseOffering.term.termSeason.label})
+              {listUserLabel(r.user.name, r.user.email)} —{" "}
+              {r.section.courseOffering.course.name} ·{r.section.label} (
+              {formatTermForDisplay(r.section.courseOffering.term)})
             </span>
             <button
               type="button"

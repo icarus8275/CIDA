@@ -98,11 +98,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = (token.id as string) ?? token.sub ?? "";
-        session.user.role = (token.role as UserRole) ?? "PROFESSOR";
-        if (token.email) session.user.email = token.email as string;
-        if (token.name) session.user.name = token.name as string;
-        if (token.picture) session.user.image = token.picture as string;
+        const id = (token.id as string) || (token.sub as string) || "";
+        session.user.id = id;
+        if (id) {
+          const u = await prisma.user.findUnique({
+            where: { id },
+            select: { name: true, email: true, role: true, image: true },
+          });
+          if (u) {
+            session.user.name = u.name;
+            session.user.email = u.email ?? "";
+            session.user.role = u.role;
+            session.user.image = u.image;
+          } else {
+            session.user.role = (token.role as UserRole) ?? "PROFESSOR";
+            if (token.email) session.user.email = token.email as string;
+            if (token.name) session.user.name = token.name as string;
+            if (token.picture) session.user.image = token.picture as string;
+          }
+        } else {
+          session.user.role = (token.role as UserRole) ?? "PROFESSOR";
+          if (token.email) session.user.email = token.email as string;
+          if (token.name) session.user.name = token.name as string;
+          if (token.picture) session.user.image = token.picture as string;
+        }
       }
       return session;
     },

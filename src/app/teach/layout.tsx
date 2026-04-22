@@ -17,6 +17,7 @@ export default async function TeachLayout({
   return (
     <div className="min-h-dvh text-slate-200">
       <TeachHeader
+        name={s.user.name}
         email={s.user.email}
         isAdmin={s.user.role === "ADMIN"}
       />
