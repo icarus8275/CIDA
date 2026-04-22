@@ -212,6 +212,27 @@ export function OfferingSectionsModal({ offering, onClose }: Props) {
     }
   };
 
+  const deleteSection = async (sec: SectionApi) => {
+    if (
+      !confirm(
+        t("admin.osmConfirmDeleteSection").replace("{label}", sec.label)
+      )
+    ) {
+      return;
+    }
+    setErr(null);
+    const r = await fetch(
+      `/api/admin/sections?id=${encodeURIComponent(sec.id)}`,
+      { method: "DELETE" }
+    );
+    if (!r.ok) {
+      setErr(t("admin.osmErrDelete"));
+      return;
+    }
+    await load();
+    window.dispatchEvent(new Event("schedule-refresh"));
+  };
+
   if (!offering) {
     return null;
   }
@@ -300,8 +321,17 @@ export function OfferingSectionsModal({ offering, onClose }: Props) {
                 return (
                   <li
                     key={sec.id}
-                    className="rounded-lg border border-white/10 bg-white/[0.04] p-3"
+                    className="group/osmsec relative rounded-lg border border-white/10 bg-white/[0.04] p-3 pr-10"
                   >
+                    <button
+                      type="button"
+                      className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-lg text-rose-300/90 opacity-0 shadow-sm transition hover:bg-rose-500/25 group-hover/osmsec:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50"
+                      title={t("admin.osmDeleteSection")}
+                      aria-label={t("admin.osmDeleteSection")}
+                      onClick={() => void deleteSection(sec)}
+                    >
+                      <X className="h-4 w-4" strokeWidth={2.5} />
+                    </button>
                     <div className="mb-2 flex items-center gap-2">
                       <span className="text-[11px] uppercase text-slate-500">
                         {t("admin.osmLabel")}

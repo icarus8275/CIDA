@@ -302,6 +302,11 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   "admin.osmErrCreate": { en: "Could not add section.", ko: "섹션을 추가하지 못했습니다." },
   "admin.osmErrDelete": { en: "Could not remove section.", ko: "섹션을 삭제하지 못했습니다." },
+  "admin.osmDeleteSection": { en: "Delete section", ko: "섹션 삭제" },
+  "admin.osmConfirmDeleteSection": {
+    en: "Delete section {label}? Items and links in this section will be removed.",
+    ko: "섹션 {label}을(를) 삭제할까요? 이 섹션의 항목·연결이 함께 삭제됩니다.",
+  },
   "admin.osmErrExists": { en: "That assignment already exists.", ko: "이미 같은 배정이 있습니다." },
   "admin.osmDragHint": { en: "Drag to move to another term", ko: "끌어서 다른 학기로 이동" },
   "admin.osmDragA11y": { en: "Drag offering", ko: "배정 끌기" },
