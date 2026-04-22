@@ -9,6 +9,7 @@ export function AdminCoursesForm() {
   const { t } = useI18n();
   const [list, setList] = useState<Course[]>([]);
   const [name, setName] = useState("");
+  const [bulkText, setBulkText] = useState("");
   const [editing, setEditing] = useState<Course | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -63,6 +64,44 @@ export function AdminCoursesForm() {
           className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm text-white"
         >
           {t("admin.coursesAdd")}
+        </button>
+      </form>
+
+      <form
+        className="space-y-2 rounded-lg border border-slate-200 bg-white p-4"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          setErr(null);
+          const names = bulkText
+            .split(/[\n,]+/)
+            .map((s) => s.trim())
+            .filter(Boolean);
+          if (names.length === 0) return;
+          const r = await fetch("/api/admin/courses", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ bulkNames: names }),
+          });
+          if (!r.ok) {
+            setErr(t("admin.coursesCreateFail"));
+            return;
+          }
+          setBulkText("");
+          await load();
+        }}
+      >
+        <label className="text-xs text-slate-500">Bulk add (one per line or comma)</label>
+        <textarea
+          value={bulkText}
+          onChange={(e) => setBulkText(e.target.value)}
+          className="mt-0.5 block w-full min-h-24 rounded border border-slate-200 p-2 text-sm"
+          placeholder="CS 101&#10;CS 102"
+        />
+        <button
+          type="submit"
+          className="mt-2 rounded-lg bg-slate-700 px-3 py-1.5 text-sm text-white"
+        >
+          Add all
         </button>
       </form>
 

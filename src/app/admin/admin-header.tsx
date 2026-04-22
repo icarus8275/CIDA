@@ -17,6 +17,12 @@ export function AdminHeader() {
             {t("admin.home")}
           </Link>
           <Link
+            href="/admin/users"
+            className="text-indigo-600 hover:underline"
+          >
+            Users
+          </Link>
+          <Link
             href="/admin/courses"
             className="text-indigo-600 hover:underline"
           >
@@ -27,6 +33,12 @@ export function AdminHeader() {
             className="text-indigo-600 hover:underline"
           >
             {t("admin.itemTypes")}
+          </Link>
+          <Link
+            href="/admin/schedule"
+            className="text-indigo-600 hover:underline"
+          >
+            {t("admin.scheduleNav")}
           </Link>
           <Link
             href="/admin/professors"

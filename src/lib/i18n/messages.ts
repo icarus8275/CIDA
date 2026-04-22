@@ -48,13 +48,13 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   // signin
   "signin.title": { en: "Sign in", ko: "로그인" },
   "signin.hint": {
-    en: "Use your school or work Microsoft 365 (Entra ID) account. Production builds use the same sign-in; dev password is optional (see .env).",
-    ko: "학교 또는 직장 Microsoft 365(Entra ID) 계정으로 로그인합니다. 배포 시에도 동일한 로그인을 사용하며, 개발용 비밀번호는 .env로 선택 사항입니다.",
+    en: "Sign in with the email and password your administrator provided. New accounts are not self-service.",
+    ko: "관리자가 알려준 이메일과 비밀번호로 로그인하세요. 공개 가입은 없습니다.",
   },
   "signin.microsoft": { en: "Continue with Microsoft", ko: "Microsoft로 계속" },
   "signin.devNote": {
-    en: "Optional dev email/password. Set ALLOW_DEV_PASSWORD_LOGIN and credentials in .env. Not for production.",
-    ko: "선택: 개발용 이메일/비밀번호. .env에 ALLOW_DEV_PASSWORD_LOGIN과 AUTH_DEV_*를 설정하세요. 운영에는 사용하지 마세요.",
+    en: "Use email and password from your admin. Not self-service sign-up.",
+    ko: "관리자가 만든 이메일/비밀번호를 사용하세요. 직접 가입은 불가합니다.",
   },
   "signin.devEmail": { en: "Email", ko: "이메일" },
   "signin.devPassword": { en: "Password", ko: "암호" },
@@ -142,6 +142,8 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     en: "Define labels for top-level groups (Assignment, Project, etc.). In-use types are deactivated instead of deleted.",
     ko: "Assignment, Project 등 상위 그룹 이름을 정의합니다. 사용 중인 유형은 삭제 대신 비활성됩니다.",
   },
+  "admin.scheduleNav": { en: "Schedule", ko: "학기/배정" },
+  "admin.scheduleTitle": { en: "Schedule & section assignments", ko: "학기별 수업·섹션" },
   "admin.profPageTitle": { en: "Faculty & courses", ko: "교수·과목" },
   "admin.coursesLoadFail": { en: "Failed to load courses.", ko: "과목을 불러오지 못했습니다." },
   "admin.coursesCreateFail": { en: "Failed to create course.", ko: "과목을 만들지 못했습니다." },

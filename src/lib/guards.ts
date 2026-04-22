@@ -19,18 +19,29 @@ export async function requireAdmin() {
 }
 
 export async function requireProfessorOrAdmin() {
-  return requireSession();
+  const s = await requireSession();
+  if (s.user.role === "CIDA") {
+    redirect("/explore");
+  }
+  return s;
 }
 
-/** Professor (assigned) or admin may edit the course. */
-export async function canEditCourse(
+/** CIDA = read-only; never edit sections/items */
+export function isReadOnlyRole(
+  role: "ADMIN" | "PROFESSOR" | "CIDA"
+): boolean {
+  return role === "CIDA";
+}
+
+export async function canEditSection(
   userId: string,
-  userRole: "ADMIN" | "PROFESSOR",
-  courseId: string
+  userRole: "ADMIN" | "PROFESSOR" | "CIDA",
+  sectionId: string
 ) {
   if (userRole === "ADMIN") return true;
-  const row = await prisma.courseProfessor.findUnique({
-    where: { userId_courseId: { userId, courseId } },
+  if (userRole === "CIDA") return false;
+  const row = await prisma.sectionInstructor.findUnique({
+    where: { userId_sectionId: { userId, sectionId } },
   });
   return !!row;
 }

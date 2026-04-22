@@ -4,6 +4,7 @@ export type CodeRef = {
   code: string;
   course: string;
   courseId: string;
+  pathLabel: string;
   type: string;
   number: number;
   itemId: string;
@@ -23,6 +24,7 @@ export function buildCodeIndex(
           code: upper,
           course: course.name,
           courseId: course.id,
+          pathLabel: course.pathLabel,
           type: it.typeLabel,
           number: it.number,
           itemId: it.id,

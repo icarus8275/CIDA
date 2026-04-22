@@ -1,162 +1,110 @@
-# Vercel + Neon(무료 티어)로 웹에 올리기
+# Vercel + Neon + GitHub로 CIDA 배포하기
 
-이 앱은 **Next.js 16 + Prisma 7 + PostgreSQL**이므로, **일반 워드프레스용 FTP 올리기** 방식이 아니라 **Git 저장소 + 호스팅(PaaS) 자동 배포** 방식이 맞습니다. 아래는 **가능한 한 무료에 가깝게** 테스트하기 위한 권장 절차입니다.
+이 앱은 **Next.js 16(App Router) + Prisma 7 + PostgreSQL**입니다. **이메일·비밀번호 로그인(Credentials)** 만 사용하며, Microsoft Entra / OneDrive Graph 연동은 사용하지 않습니다. **Git → Vercel 자동 빌드**가 맞고, WordPress처럼 FTP로 `public`만 올리는 방식은 맞지 않습니다.
 
 ---
 
-## 1. “어떤 파일을 서버에 올리나?” — 답: Git으로 전체, 비밀은 Vercel 대시보드
+## 1. 준비물
 
-| 방식 | 설명 |
+| 항목 | 용도 |
 |------|------|
-| **권장** | **GitHub(또는 GitLab)에 `CIDA` 프로젝트 전체를 push** → **Vercel**이 clone 후 빌드·배포. **파일을 골라서 FTP로 던지는 구조가 아닙니다.** |
-| **또는** | **Vercel CLI**(`vercel`)로 로그인한 뒤, 프로젝트 폴더에서 `vercel` 실행(역시 “선택한 파일 몇 개”가 아니라, 업로드 정책에 따라 **프로젝트 루트** 기준). |
-| **절대 올리면 안 되는 것** | **`.env`**, **`.env.local`**, **클라이언트 시크릿, DB 비밀번호** → 저장소에 넣지 말고, **Vercel Environment Variables**에만 입력합니다. |
-| **저장소에 올릴 수 있는 것** | `prisma/`, `src/`, `public/`, `package.json`, `next.config.*`, `tsconfig.json` 등 **소스 전체** + 이미 `prisma/migrations` 안의 **마이그레이션 SQL** (비밀 없음). |
+| **GitHub** (또는 GitLab 등) | 소스 저장·Vercel 연동 |
+| **Vercel** | Next.js 빌드·호스팅 |
+| **Neon** (또는 Supabase/Railway 등) | PostgreSQL (`DATABASE_URL`) |
 
-`package.json`의 `build`는 **`prisma migrate deploy`로 DB에 스키마를 적용한 뒤 `next build`**를 실행합니다. Vercel 배포마다(마이그레이션이 있을 때) DB와 맞춰집니다.
-
----
-
-## 2. 사전 준비 (무료/저가)
-
-1. **Git** 설치, **GitHub** 계정(또는 GitLab/Bitbucket).
-2. **Vercel** 계정: [vercel.com](https://vercel.com) (GitHub 연동).
-3. **Neon** 계정(권장, PostgreSQL 무료 티어): [neon.tech](https://neon.tech)  
-   - Supabase, Railway, Render 등 **PostgreSQL + 외부 접속**만 되면 됩니다.
-4. **Entra ID(구 Azure AD) 앱 등록** (이미 로컬에서 쓰는 것과 동일).  
-   - 배포 후 **Redirect URI**에 **웹 URL**이 추가로 필요합니다(아래 5절).
+`.env`는 **저장소에 넣지 않고**, Vercel **Environment Variables**에만 넣습니다.
 
 ---
 
-## 3. Neon에서 DB URL 만들기
+## 2. Neon에서 `DATABASE_URL` 만들기
 
-1. Neon에서 **프로젝트 생성** → **PostgreSQL** 선택.
-2. **Connection string**을 복사합니다. (형식: `postgresql://...@.../...?sslmode=require` 등)  
-3. Vercel에 넣을 때 **반드시 `DATABASE_URL` 하나**로 씁니다. (Neon은 SSL이 필요한 경우가 많음 — 복사한 그대로 쓰면 됩니다.)
-
-**로컬 Docker Postgres는 배포에 쓰지 않습니다.** 운용 DB는 Neon(또는 다른 호스팅 PostgreSQL)을 사용합니다.
+1. [Neon](https://neon.tech)에서 프로젝트 생성 → **PostgreSQL**.
+2. **Connection string** 전체를 복사합니다. (`?sslmode=require` 등 포함)
+3. 이 값을 Vercel의 **`DATABASE_URL`** 그대로 넣습니다.
 
 ---
 
-## 4. GitHub에 코드 올리기 (첫 1회)
-
-로컬에서 프로젝트 루트(예: `CIDA` 폴더)에서:
+## 3. GitHub에 푸시
 
 ```bash
-git init
-git add .
-git commit -m "Initial commit: CIDA"
+git add -A
+git commit -m "설명 메시지"
+git push origin main
 ```
 
-GitHub에 **새 저장소**를 만든 뒤:
-
-```bash
-git remote add origin https://github.com/본인아이디/본인저장소.git
-git branch -M main
-git push -u origin main
-```
-
-이때 **`.env`는 커밋되지 않아야** 합니다(`.gitignore`에 `/.env` 포함). 비밀 값은 Vercel에서만 넣습니다.
+최초라면 원격 저장소를 만든 뒤 `git remote add origin ...` 로 연결합니다.
 
 ---
 
-## 5. Vercel에서 프로젝트 연결·환경 변수
+## 4. Vercel 프로젝트 연결
 
-1. [Vercel](https://vercel.com) → **Add New** → **Project** → **Import** 방금 push한 **GitHub 저장소**.
-2. **Framework Preset**은 `Next.js`로 자동 인식됩니다.  
-3. **Build & Output**은 기본 그대로 두고, `Build Command`가 **`npm run build`**(즉, 저장소 `package.json`의 `build`)를 쓰면 됩니다. (이미 `prisma migrate deploy && next build`로 설정돼 있음)
-4. **Environment Variables**에 아래를 **Production**(및 Preview 원하면)에 추가합니다. (`Settings` → `Environment Variables`)
-
-| Name | 설명 / 예시 |
-|------|-------------|
-| `DATABASE_URL` | Neon이 준 **전체** 연결 문자열 (비밀) |
-| `AUTH_SECRET` | `openssl rand -base64 32` 로 생성한 **임의 긴 문자열** |
-| `AUTH_URL` | 배포 URL, 예: `https://xxx.vercel.app` (**슬래시 없이** 도메인 끝까지) |
-| `AUTH_MICROSOFT_ENTRA_ID_ID` | Entra 앱 **Application (client) ID** |
-| `AUTH_MICROSOFT_ENTRA_ID_SECRET` | Entra **Client secret** |
-| `AUTH_MICROSOFT_ENTRA_ID_ISSUER` | `https://login.microsoftonline.com/테넌트ID/v2.0/` (로컬과 동일한 **단일 테넌트** Issuer) |
-| `BOOTSTRAP_ADMIN_EMAILS` | (선택) 쉼표로 구분, 첫 로그인 시 `ADMIN`으로 올릴 Microsoft 계정 **이메일** |
-| `OAUTH_ENCRYPTION_KEY` | (선택) [`.env.example`](.env.example) 주석 참고 — 보조 토큰 암호화에 사용 |
-| `NEXT_PUBLIC_SHOW_LOCALE_SWITCHER` | (선택) **`false`** 로 두면 **언어(EN/한) 전환 UI**를 숨깁니다. 로컬·스테이징에서는 생략 또는 `true`, **프로덕션**에서 끄려면 `false`로 설정합니다. |
-
-**배포 전에** Entra **앱 등록** → **Authentication** → **Redirect URI**에 다음을 추가합니다(본인 Vercel 주소로 바꿈).
-
-```text
-https://본인-프로젝트名.vercel.app/api/auth/callback/microsoft-entra-id
-```
-
-(Microsoft 쪽에서 **Web** 리디렉트로 등록)
-
-**API 권한(위임):** `User.Read`, `Files.Read`, `Files.ReadWrite`, `offline_access` 등 (이미 로컬에서 사용 중이면 동일하게 유지)
-
-5. **Deploy** 실행.
+1. [Vercel](https://vercel.com) → **Add New** → **Project** → GitHub 저장소 **Import**.
+2. **Framework**: Next.js (자동).
+3. **Build Command**: 저장소의 `package.json`에 맞게 **`npm run build`** (이미 `prisma migrate deploy && next build` 로 되어 있음).
+4. 아래 **환경 변수**를 **Production**(필요하면 Preview에도) 추가한 뒤 **Deploy**.
 
 ---
 
-## 6. 첫 배포 직후: 시드(예시 데이터) (선택)
+## 5. Vercel 환경 변수 (필수·선택)
 
-`db:seed`는 **DB에 쓰는 스크립트**라, 보통 **로컬 PC에서** `DATABASE_URL`을 **Neon URL로 바꿔** 한 번 실행합니다(주의: **운영 DB**에 넣는 것이므로 팀 합의 후).
+배포 후 브라우저에 열리는 주소가 예를 들어 `https://cida.vercel.app` 이라면, **`AUTH_URL`** 은 그 주소와 **완전히 같아야** 합니다(끝에 `/` 없음).
+
+| Name | 필수 | 설명 / 예시 |
+|------|------|-------------|
+| `DATABASE_URL` | **필수** | Neon이 준 PostgreSQL 연결 문자열 전체 |
+| `AUTH_SECRET` | **필수** | `openssl rand -base64 32` 등으로 만든 긴 임의 문자열(세션 암호화) |
+| `AUTH_URL` | **필수** | 프로덕션 사이트 URL, 예: `https://본인프로젝트.vercel.app` (슬래시 없음) |
+| `BOOTSTRAP_ADMIN_EMAILS` | 선택 | 쉼표로 구분한 이메일. **이미 DB에 있는 사용자**가 로그인하면 `ADMIN` 역할로 올림(초기 관리자용) |
+| `NEXT_PUBLIC_SHOW_LOCALE_SWITCHER` | 선택 | **`false`** 이면 화면 우측 상단 **EN/한** 전환을 숨김. 안 넣으면 기본으로 스위처 표시 |
+| `AUTH_DEBUG` | 선택 | `true` 로 두면 Auth.js 디버그(문제 조사용, 운영에서는 보통 끔) |
+
+**더 이상 필요 없음(이전 Entra/OAuth 버전용):**  
+`AUTH_MICROSOFT_ENTRA_ID_*`, `OAUTH_ENCRYPTION_KEY`, Microsoft **Redirect URI** 등.
+
+---
+
+## 6. 첫 배포 직후: DB 마이그레이션과 시드
+
+- Vercel 빌드 시 **`npm run build`** 안에서 `prisma migrate deploy`가 실행되므로, **스키마는 배포와 함께 DB에 반영**됩니다.
+- **예시 데이터 + 시드 관리자 계정**을 넣으려면, **로컬 PC**에서 Neon의 `DATABASE_URL`을 사용해 한 번 실행합니다(운영 DB에 쓰이므로 주의).
 
 ```bash
-# .env에서 DATABASE_URL만 Neon(운영)으로 맞춘 뒤
+# 로컬 .env 에 DATABASE_URL 만 Neon 프로덕션 URL로 맞춘 뒤
+npx prisma migrate deploy
 npx tsx prisma/seed.ts
 ```
 
-또는 로컬에만 Neon `DATABASE_URL`을 일시 export하고:
+시드는 `prisma/seed.ts`와 `.env`의 `AUTH_DEV_EMAIL` / `AUTH_DEV_PASSWORD`(또는 `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`)를 참고합니다. 시드에 없는 비밀번호로는 로그인할 수 없으므로, **Admin → Users**에서 추가 계정을 만들거나 시드 이메일로 로그인합니다.
 
-`Linux/macOS` 예: `export DATABASE_URL="postgresql://..."`  
-`Windows PowerShell` 예: `$env:DATABASE_URL="postgresql://..."`
-
-(시드는 **반복 실행 시** 중복/충돌이 생길 수 있으니, **첫 1회** 또는 스키마만 맞출 때 권장)
+**시드 없이** 가려면 Vercel 배포 후 **SQL/Prisma Studio**로 직접 `users` 행을 넣거나, 나중에 구현한 **관리자 API**만으로는 첫 관리자를 만들 수 없으므로, **최소 한 번은 시드 또는 `BOOTSTRAP_ADMIN_EMAILS` + 수동으로 DB에 비밀번호 해시 넣기** 중 하나가 필요합니다. 가장 단순한 방법은 위 **시드**입니다.
 
 ---
 
-## 7. “FTP로 public 폴더만 올리면?” — 안 됨
+## 7. 로그인·역할 흐름
 
-- Next.js **App Router** + **Route Handler(API)** + **Prisma**는 **Node 런타임에서 빌드된 산출물**이 전체로 필요하고, `public`만으로는 **서버·API·DB 연동**이 동작하지 않습니다.
-- 그래서 **Vercel(또는 Node 지원 PaaS)** + **Supabase/Neon 같은 PostgreSQL** 조합이 일반적입니다.
-
----
-
-## 8. 비용·한도(요약)
-
-- **Vercel Hobby**: 개인/소규모 테스트에 자주 쓰임(빌드·대역·함수 한도는 문서를 확인).  
-- **Neon** 무료 티어: DB 용량/컴퓨트 한도 있음.  
-- 학교/팀 **프로덕션**이면 사내 정책에 맞는 **Azure**, **App Service** 등이 나을 수 있음(유료).
+- **공개 가입 없음.** 로그인은 **관리자가 만든 이메일·비밀번호**만 사용합니다.
+- **`/admin/users`**에서 계정 생성·역할(`ADMIN` / `PROFESSOR` / `CIDA`) 지정.
+- **CIDA**: 읽기 전용으로 `/explore` (코스·코드 탐색).
+- **교수**: 배정된 섹션에서 `/teach` → 항목·코드·OneDrive **공유 링크 URL** 편집.
 
 ---
 
-## 9. Microsoft(학교) 계정으로 로그인이 안 될 때
+## 8. 자주 나는 문제
 
-1. **`.env`에 실제 값**이 있는지: `AUTH_MICROSOFT_ENTRA_ID_ID`, `SECRET`, `ISSUER` — 플레이스홀더(예: 0000…)로 두면 실패합니다.  
-2. **`AUTH_URL`**: 로컬은 `http://localhost:3000` (끝에 `/` 없음), 배포는 `https://배포도메인` 과 **브라우저 주소**가 같아야 합니다.  
-3. **Entra 앱 등록** → **Authentication** → **Redirect URI** (플랫폼 **Web**):  
-   `{AUTH_URL}/api/auth/callback/microsoft-entra-id`  
-4. **단일 테넌트(학교)**: `AUTH_MICROSOFT_ENTRA_ID_ISSUER` = `https://login.microsoftonline.com/디렉터리(테넌트)ID/v2.0/`  
-5. **API 권한(위임)**: `User.Read` 등이 등록돼 있고, 필요 시 **관리자 동의**를 받았는지 확인.  
-6. **`AUTH_SECRET`**: 비어 있으면 세션이 안 될 수 있음. `openssl rand -base64 32` 로 생성.  
-7. 실패 시 `/auth/error?error=...` 에 표시된 코드를 보고, 터미널에 **`AUTH_DEBUG="true"`** 를 넣고 다시 시도(개발용).
-
-**개발용 이메일/비밀번호**(`AUTH_DEV_*`)는 **필수가 아닙니다.** 프로덕션·Vercel에는 넣지 않는 것이 좋고, 꼭 로컬에서만 쓰려면 `ALLOW_DEV_PASSWORD_LOGIN=true` 를 **함께** 설정하세요(본 저장소 `auth.ts` 참고).
+| 증상 | 확인 |
+|------|------|
+| 빌드에서 `prisma migrate deploy` 실패 | `DATABASE_URL`이 맞는지, Neon이 외부 접속·SSL 허용인지 |
+| 로그인 후 이상 동작 / 세션 없음 | `AUTH_SECRET` 설정 여부, `AUTH_URL`이 **실제 오픈한 URL**과 동일한지 |
+| 시드한 관리자로 로그인 불가 | 시드에 사용한 이메일·비밀번호와 일치하는지, 시드를 **프로덕션 DB**에 대고 돌렸는지 |
 
 ---
 
-## 10. 자주 쓰는 점검
+## 9. 요약 체크리스트
 
-| 증상 | 할 일 |
-|------|--------|
-| 빌드에서 `prisma migrate deploy` 실패 | Vercel에 `DATABASE_URL`이 **정확한지**, Neon이 **접속 허용(방화벽/SSL)** 인지 확인 |
-| 로그인 리디렉트 루프/오류 | `AUTH_URL`이 **Vercel 도메인과 정확히 일치**하는지, Entra **Redirect URI**가 **위 콜백 URL**과 동일한지 |
-| OneDrive/Graph 403 | 사용자가 **Microsoft(Entra)로 로그인**했는지, 앱 **API 권한**과 **관리자 동의**가 되었는지 |
+1. Neon에서 `DATABASE_URL` 복사 → Vercel에 등록  
+2. `AUTH_SECRET`, `AUTH_URL`(Vercel 도메인, 끝 `/` 없음) 등록  
+3. GitHub에 push → Vercel 연결 → Deploy  
+4. (선택) 로컬에서 Neon URL로 `prisma/seed.ts` 실행해 관리자·샘플 데이터  
+5. 브라우저에서 배포 URL 열기 → `/auth/signin` 으로 로그인 테스트  
 
----
-
-## 11. 요약
-
-1. **코드: Git → GitHub** (비밀 제외)  
-2. **DB: Neon** 등에서 `DATABASE_URL`  
-3. **배포: Vercel**이 저장소를 받아 `npm install` → `postinstall`(`prisma generate`) → `npm run build`(`migrate deploy` + `next build`)  
-4. **비밀: Vercel Environment Variables**  
-5. **Entra: Redirect URI**에 Vercel 주소 + `/api/auth/callback/microsoft-entra-id` 추가  
-
-이 흐름이면 **무료에 가깝게** 웹 URL에서 앱·로그인·(Microsoft 계정으로) OneDrive 연동을 테스트할 수 있습니다.
+이후 **스케줄·과목·사용자**는 앱 안 **Admin** 메뉴에서 설정하면 됩니다.

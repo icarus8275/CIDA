@@ -5,23 +5,40 @@ import { NextResponse } from "next/server";
 
 const postSchema = z.object({
   userId: z.string().min(1),
-  courseId: z.string().min(1),
+  sectionId: z.string().min(1),
 });
 
 const delSchema = z.object({
   userId: z.string().min(1),
-  courseId: z.string().min(1),
+  sectionId: z.string().min(1),
 });
 
-export async function GET() {
+export async function GET(req: Request) {
   const s = await auth();
   if (!s?.user || s.user.role !== "ADMIN") {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
-  const rows = await prisma.courseProfessor.findMany({
+  const sectionId = new URL(req.url).searchParams.get("sectionId");
+  if (sectionId) {
+    const rows = await prisma.sectionInstructor.findMany({
+      where: { sectionId },
+      include: { user: { select: { id: true, email: true, name: true } } },
+    });
+    return NextResponse.json(rows);
+  }
+  const rows = await prisma.sectionInstructor.findMany({
     include: {
       user: { select: { id: true, email: true, name: true } },
-      course: { select: { id: true, name: true } },
+      section: {
+        include: {
+          courseOffering: {
+            include: {
+              course: true,
+              term: { include: { academicYear: true, termSeason: true } },
+            },
+          },
+        },
+      },
     },
   });
   return NextResponse.json(rows);
@@ -33,10 +50,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const body = postSchema.parse(await req.json());
-  const row = await prisma.courseProfessor.create({
-    data: { userId: body.userId, courseId: body.courseId },
-  });
-  return NextResponse.json(row);
+  try {
+    const row = await prisma.sectionInstructor.create({
+      data: { userId: body.userId, sectionId: body.sectionId },
+    });
+    return NextResponse.json(row);
+  } catch {
+    return NextResponse.json({ error: "exists" }, { status: 409 });
+  }
 }
 
 export async function DELETE(req: Request) {
@@ -45,9 +66,9 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const body = delSchema.parse(await req.json());
-  await prisma.courseProfessor.delete({
+  await prisma.sectionInstructor.delete({
     where: {
-      userId_courseId: { userId: body.userId, courseId: body.courseId },
+      userId_sectionId: { userId: body.userId, sectionId: body.sectionId },
     },
   });
   return NextResponse.json({ ok: true });

@@ -13,6 +13,7 @@ datasource db {
 enum UserRole {
   ADMIN
   PROFESSOR
+  CIDA
 }
 
 // -------- Auth.js models (extended) ----------------------------------------
@@ -22,14 +23,15 @@ model User {
   email         String?   @unique
   emailVerified DateTime? @map("email_verified")
   image         String?
+  /// Argon2/bcrypt hash; set only for password login
+  passwordHash  String?   @map("password_hash")
   role          UserRole  @default(PROFESSOR)
 
-  accounts      Account[]
-  sessions      Session[]
+  accounts       Account[]
+  sessions       Session[]
   authenticators Authenticator[]
 
-  courseProfessors  CourseProfessor[]
-  oauthTokenStores  OauthTokenStore[]
+  sectionInstructors SectionInstructor[]
 
   @@map("users")
 }
@@ -86,7 +88,48 @@ model Authenticator {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// -------- Domain models ---------------------------------------------------
+// -------- Academic structure ------------------------------------------------
+
+model AcademicYear {
+  id        String   @id @default(cuid())
+  /// e.g. "2024–2025"
+  label     String
+  startYear Int
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  terms     Term[]
+
+  @@index([startYear])
+}
+
+/// Fall / Spring / Summer or admin-defined (custom label, unique key)
+model TermSeason {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  label     String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  terms     Term[]
+
+  @@index([sortOrder])
+}
+
+model Term {
+  id             String       @id @default(cuid())
+  academicYearId String
+  termSeasonId   String
+  sortOrder      Int          @default(0)
+  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  termSeason     TermSeason   @relation(fields: [termSeasonId], references: [id], onDelete: Restrict)
+  offerings      CourseOffering[]
+
+  @@unique([academicYearId, termSeasonId])
+  @@index([academicYearId])
+}
+
+// -------- Course catalog & offerings (per term) + sections ----------------
 
 model Course {
   id        String   @id @default(cuid())
@@ -95,9 +138,53 @@ model Course {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  items       CourseItem[]
-  professors  CourseProfessor[]
+  offerings CourseOffering[]
 }
+
+model CourseOffering {
+  id        String   @id @default(cuid())
+  courseId  String
+  termId    String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  term     Term   @relation(fields: [termId], references: [id], onDelete: Cascade)
+  sections Section[]
+
+  @@unique([courseId, termId])
+  @@index([termId])
+}
+
+model Section {
+  id               String   @id @default(cuid())
+  courseOfferingId String
+  /// e.g. "001", "A"
+  label            String
+  sortOrder        Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  courseOffering CourseOffering      @relation(fields: [courseOfferingId], references: [id], onDelete: Cascade)
+  courseItems    CourseItem[]
+  instructors    SectionInstructor[]
+
+  @@index([courseOfferingId])
+}
+
+model SectionInstructor {
+  userId    String
+  sectionId String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@id([userId, sectionId])
+  @@index([userId])
+  @@index([sectionId])
+}
+
+// -------- Item types & per-section items (assignments, etc.) ----------------
 
 model ItemTypeDefinition {
   id        String   @id @default(cuid())
@@ -111,72 +198,34 @@ model ItemTypeDefinition {
   courseItems CourseItem[]
 }
 
-/// Admin assigns which professors may edit which course.
-model CourseProfessor {
-  userId   String
-  courseId String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  @@id([userId, courseId])
-  @@index([userId])
-  @@index([courseId])
-}
-
 model CourseItem {
   id         String   @id @default(cuid())
-  courseId   String
+  sectionId  String
   itemTypeId String
   number     Int
+  /// Optional custom title; if null, UI can show type + number
+  title      String?
   sortOrder  Int      @default(0)
+  /// Pasted OneDrive (or any) share URL
+  oneDriveUrl String?  @map("one_drive_url")
+  linkTitle  String?  @map("link_title")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  course   Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  itemType ItemTypeDefinition @relation(fields: [itemTypeId], references: [id], onDelete: Restrict)
+  section  Section            @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  itemType ItemTypeDefinition  @relation(fields: [itemTypeId], references: [id], onDelete: Restrict)
   codes    CourseItemCode[]
-  driveLinks DriveItemLink[]
 
-  @@unique([courseId, itemTypeId, number])
-  @@index([courseId])
+  @@unique([sectionId, itemTypeId, number])
+  @@index([sectionId])
 }
 
 model CourseItemCode {
-  id           String   @id @default(cuid())
+  id           String     @id @default(cuid())
   courseItemId String
   code         String
   courseItem   CourseItem @relation(fields: [courseItemId], references: [id], onDelete: Cascade)
 
   @@unique([courseItemId, code])
   @@index([code])
-}
-
-/// Links a course item to a file/folder in OneDrive (Graph driveItem).
-model DriveItemLink {
-  id           String   @id @default(cuid())
-  courseItemId String
-  driveId      String
-  driveItemId  String
-  webUrl       String
-  name         String
-  path         String?  @db.Text
-  createdAt    DateTime @default(now())
-  courseItem   CourseItem @relation(fields: [courseItemId], references: [id], onDelete: Cascade)
-}
-
-/// Optional: extra Microsoft/OneDrive connection labels (e.g. admin alternate accounts). Encrypted at app layer.
-model OauthTokenStore {
-  id    String @id @default(cuid())
-  userId String
-  label String
-  /// AES-256-GCM: iv+tag+payload (base64)
-  encRefresh String  @db.Text
-  encAccess  String? @db.Text
-  expiresAt  DateTime?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, label])
-  @@index([userId])
 }

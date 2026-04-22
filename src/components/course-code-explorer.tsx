@@ -99,6 +99,7 @@ const Row = ({
 );
 
 function labelOf(item: ExploreCourse["items"][0]) {
+  if (item.title?.trim()) return item.title.trim();
   return `${item.typeLabel} ${item.number}`;
 }
 
@@ -151,7 +152,8 @@ export function CourseCodeExplorer({
     if (!query) return initialData;
     return initialData
       .map((c) => {
-        const courseMatch = matchesQuery(c.name, query);
+        const courseMatch =
+          matchesQuery(c.name, query) || matchesQuery(c.pathLabel, query);
         const items = c.items
           .map((it) => ({
             ...it,
@@ -248,10 +250,21 @@ export function CourseCodeExplorer({
       return (
         <div className="space-y-3">
           <p className="text-sm text-slate-500">{t("explore.selectedItem")}</p>
+          <p className="text-xs text-slate-500">{course.pathLabel}</p>
           <p className="text-lg font-semibold text-slate-900">{course.name}</p>
           <p className="text-base font-medium text-slate-800">
             {labelOf(item)}
           </p>
+          {item.oneDriveUrl && (
+            <a
+              href={item.oneDriveUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-block text-sm text-indigo-600 hover:underline"
+            >
+              {item.linkTitle || "OneDrive / file link"}
+            </a>
+          )}
           <div className="flex flex-wrap gap-2 pt-2">
             {item.codes.map((cd) => (
               <Chip key={cd} onClick={() => showCodeDetails(cd)}>
@@ -299,6 +312,7 @@ export function CourseCodeExplorer({
                     }}
                   >
                     <div className="font-medium text-slate-900">{r.course}</div>
+                    <div className="text-xs text-slate-500">{r.pathLabel}</div>
                     <div className="text-sm text-slate-600">
                       {r.type} {r.number}
                     </div>
@@ -376,7 +390,7 @@ export function CourseCodeExplorer({
                 return (
                   <Section
                     key={course.id}
-                    title={course.name}
+                    title={course.pathLabel}
                     icon={<BookOpen size={18} />}
                     right={
                       <button

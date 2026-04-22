@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { canEditCourse } from "@/lib/guards";
+import { canEditSection } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { NextResponse } from "next/server";
@@ -19,7 +19,7 @@ export async function PUT(
   if (!it) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
-  const ok = await canEditCourse(s.user.id, s.user.role, it.courseId);
+  const ok = await canEditSection(s.user.id, s.user.role, it.sectionId);
   if (!ok) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }

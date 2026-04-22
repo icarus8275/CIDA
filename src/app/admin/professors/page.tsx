@@ -1,15 +1,15 @@
-import { t } from "@/lib/i18n/messages";
-import { getServerLocale } from "@/lib/i18n/server";
-import { AdminProfessorsForm } from "./admin-professors-form";
+import Link from "next/link";
 
-export default async function ProfessorsPage() {
-  const locale = await getServerLocale();
+export default function ProfessorsPage() {
   return (
-    <div>
-      <h1 className="mb-2 text-lg font-bold text-slate-900">
-        {t(locale, "admin.profPageTitle")}
-      </h1>
-      <AdminProfessorsForm />
+    <div className="space-y-3 text-sm text-slate-700">
+      <p>
+        Faculty-to-section assignment has moved to the Schedule page (drag courses
+        by term, add sections, assign instructors).
+      </p>
+      <Link href="/admin/schedule" className="font-medium text-indigo-600 hover:underline">
+        Open Schedule
+      </Link>
     </div>
   );
 }

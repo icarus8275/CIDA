@@ -11,6 +11,9 @@ export default async function TeachLayout({
   if (!s?.user) {
     redirect("/auth/signin?callbackUrl=/teach");
   }
+  if (s.user.role === "CIDA") {
+    redirect("/explore");
+  }
   return (
     <div className="min-h-dvh bg-slate-100">
       <TeachHeader

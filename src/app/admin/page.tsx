@@ -14,6 +14,16 @@ export default async function AdminPage() {
       </p>
       <ul className="list-inside list-disc text-sm text-indigo-700">
         <li>
+          <Link className="hover:underline" href="/admin/users">
+            Users (password accounts)
+          </Link>
+        </li>
+        <li>
+          <Link className="hover:underline" href="/admin/schedule">
+            {t(locale, "admin.scheduleNav")} (terms, drag courses, sections)
+          </Link>
+        </li>
+        <li>
           <Link className="hover:underline" href="/admin/courses">
             {t(locale, "admin.linkCourses")}
           </Link>
@@ -25,7 +35,7 @@ export default async function AdminPage() {
         </li>
         <li>
           <Link className="hover:underline" href="/admin/professors">
-            {t(locale, "admin.linkAssign")}
+            {t(locale, "admin.linkAssign")} (legacy text — use Schedule)
           </Link>
         </li>
       </ul>

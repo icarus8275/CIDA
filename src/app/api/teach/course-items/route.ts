@@ -1,16 +1,31 @@
 import { auth } from "@/auth";
-import { canEditCourse } from "@/lib/guards";
+import { canEditSection } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { NextResponse } from "next/server";
 
 const postSchema = z.object({
-  courseId: z.string().min(1),
+  sectionId: z.string().min(1),
   itemTypeId: z.string().min(1),
   number: z.number().int().min(0),
   sortOrder: z.number().int().optional(),
+  title: z.string().max(500).optional().nullable(),
   codes: z.array(z.string().min(1).max(32)).optional(),
+  oneDriveUrl: z.string().max(2000).optional().nullable(),
+  linkTitle: z.string().max(500).optional().nullable(),
 });
+
+function normalizeShareUrl(
+  u: string | null | undefined
+): string | null {
+  if (u == null) return null;
+  const t = u.trim();
+  if (!t) return null;
+  if (!/^https?:\/\//i.test(t)) {
+    return null;
+  }
+  return t;
+}
 
 export async function POST(req: Request) {
   const s = await auth();
@@ -18,21 +33,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
   const body = postSchema.parse(await req.json());
-  const ok = await canEditCourse(
-    s.user.id,
-    s.user.role,
-    body.courseId
-  );
+  const ok = await canEditSection(s.user.id, s.user.role, body.sectionId);
   if (!ok) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
+  const url = normalizeShareUrl(body.oneDriveUrl);
   try {
     const item = await prisma.courseItem.create({
       data: {
-        courseId: body.courseId,
+        sectionId: body.sectionId,
         itemTypeId: body.itemTypeId,
         number: body.number,
+        title: body.title,
         sortOrder: body.sortOrder ?? body.number,
+        oneDriveUrl: url,
+        linkTitle: body.linkTitle,
         codes: body.codes
           ? {
               create: body.codes.map((c) => ({ code: c.toUpperCase() })),

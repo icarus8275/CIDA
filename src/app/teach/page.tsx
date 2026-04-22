@@ -1,8 +1,24 @@
 import Link from "next/link";
 import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
 import { t } from "@/lib/i18n/messages";
 import { getServerLocale } from "@/lib/i18n/server";
-import { prisma } from "@/lib/prisma";
+
+function sectionTitle(s: {
+  label: string;
+  courseOffering: {
+    course: { name: string };
+    term: {
+      academicYear: { label: string };
+      termSeason: { label: string };
+    };
+  };
+}) {
+  const y = s.courseOffering.term.academicYear.label;
+  const tr = s.courseOffering.term.termSeason.label;
+  const c = s.courseOffering.course.name;
+  return `${y} · ${tr} · ${c} · ${s.label}`;
+}
 
 export default async function TeachHomePage() {
   const s = await auth();
@@ -10,16 +26,43 @@ export default async function TeachHomePage() {
   if (!s?.user) {
     return null;
   }
-  const courses =
-    s.user.role === "ADMIN"
-      ? await prisma.course.findMany({ orderBy: { sortOrder: "asc" } })
-      : await prisma.course
-          .findMany({
-            where: { professors: { some: { userId: s.user.id } } },
-            orderBy: { sortOrder: "asc" },
-          });
+  if (s.user.role === "CIDA") {
+    return null;
+  }
 
-  if (courses.length === 0) {
+  const sections =
+    s.user.role === "ADMIN"
+      ? await prisma.section.findMany({
+          orderBy: { sortOrder: "asc" },
+          include: {
+            courseOffering: {
+              include: {
+                course: true,
+                term: {
+                  include: { academicYear: true, termSeason: true },
+                },
+              },
+            },
+          },
+        })
+      : await prisma.section.findMany({
+          where: {
+            instructors: { some: { userId: s.user.id } },
+          },
+          orderBy: { sortOrder: "asc" },
+          include: {
+            courseOffering: {
+              include: {
+                course: true,
+                term: {
+                  include: { academicYear: true, termSeason: true },
+                },
+              },
+            },
+          },
+        });
+
+  if (sections.length === 0) {
     return (
       <p className="text-sm text-slate-600">
         {t(locale, "teach.noCourses")}
@@ -28,13 +71,13 @@ export default async function TeachHomePage() {
   }
   return (
     <ul className="space-y-2">
-      {courses.map((c) => (
-        <li key={c.id}>
+      {sections.map((sec) => (
+        <li key={sec.id}>
           <Link
-            href={`/teach/${c.id}`}
+            href={`/teach/section/${sec.id}`}
             className="font-medium text-indigo-700 hover:underline"
           >
-            {c.name}
+            {sectionTitle(sec)}
           </Link>
         </li>
       ))}

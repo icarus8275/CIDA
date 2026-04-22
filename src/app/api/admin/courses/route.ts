@@ -8,6 +8,10 @@ const createSchema = z.object({
   sortOrder: z.number().int().optional(),
 });
 
+const bulkSchema = z.object({
+  bulkNames: z.array(z.string().min(1).max(500)).min(1).max(500),
+});
+
 const patchSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1).max(500).optional(),
@@ -30,7 +34,21 @@ export async function POST(req: Request) {
   if (!s?.user || s.user.role !== "ADMIN") {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
-  const body = createSchema.parse(await req.json());
+  const json = await req.json();
+  if (json.bulkNames != null) {
+    const body = bulkSchema.parse(json);
+    const max = await prisma.course.aggregate({ _max: { sortOrder: true } });
+    let order = (max._max.sortOrder ?? 0) + 1;
+    const created = [];
+    for (const name of body.bulkNames.map((n) => n.trim()).filter(Boolean)) {
+      const c = await prisma.course.create({
+        data: { name, sortOrder: order++ },
+      });
+      created.push(c);
+    }
+    return NextResponse.json({ created });
+  }
+  const body = createSchema.parse(json);
   const max = await prisma.course.aggregate({ _max: { sortOrder: true } });
   const c = await prisma.course.create({
     data: {
@@ -57,6 +75,8 @@ export async function PATCH(req: Request) {
   return NextResponse.json(c);
 }
 
+const deleteBulkSchema = z.object({ ids: z.array(z.string()).min(1) });
+
 export async function DELETE(req: Request) {
   const s = await auth();
   if (!s?.user || s.user.role !== "ADMIN") {
@@ -64,9 +84,15 @@ export async function DELETE(req: Request) {
   }
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
-  if (!id) {
-    return NextResponse.json({ error: "id required" }, { status: 400 });
+  if (id) {
+    await prisma.course.delete({ where: { id } });
+    return NextResponse.json({ ok: true });
   }
-  await prisma.course.delete({ where: { id } });
-  return NextResponse.json({ ok: true });
+  const json = await req.json().catch(() => null);
+  if (json?.ids) {
+    const body = deleteBulkSchema.parse(json);
+    await prisma.course.deleteMany({ where: { id: { in: body.ids } } });
+    return NextResponse.json({ ok: true });
+  }
+  return NextResponse.json({ error: "id or ids" }, { status: 400 });
 }

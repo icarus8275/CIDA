@@ -1,64 +1,9 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import MicrosoftEntraId from "next-auth/providers/microsoft-entra-id";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
+import { verifyPassword } from "@/lib/password";
 import type { UserRole } from "@/generated/prisma/enums";
-
-const entra = MicrosoftEntraId({
-  clientId: process.env.AUTH_MICROSOFT_ENTRA_ID_ID!,
-  clientSecret: process.env.AUTH_MICROSOFT_ENTRA_ID_SECRET!,
-  issuer: process.env.AUTH_MICROSOFT_ENTRA_ID_ISSUER,
-  authorization: {
-    params: {
-      prompt: "select_account",
-      scope:
-        "openid profile email offline_access https://graph.microsoft.com/Files.Read https://graph.microsoft.com/Files.ReadWrite",
-    },
-  },
-});
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const allProviders: any[] = [entra];
-
-if (
-  process.env.ALLOW_DEV_PASSWORD_LOGIN === "true" &&
-  process.env.NODE_ENV === "development" &&
-  process.env.AUTH_DEV_EMAIL &&
-  process.env.AUTH_DEV_PASSWORD
-) {
-  allProviders.push(
-    Credentials({
-      id: "dev-credentials",
-      name: "Development",
-      credentials: {
-        email: { label: "Email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (
-          credentials?.email === process.env.AUTH_DEV_EMAIL &&
-          credentials?.password === process.env.AUTH_DEV_PASSWORD
-        ) {
-          let u = await prisma.user.findUnique({
-            where: { email: process.env.AUTH_DEV_EMAIL! },
-          });
-          if (!u) {
-            u = await prisma.user.create({
-              data: {
-                email: process.env.AUTH_DEV_EMAIL!,
-                name: "Dev user",
-                role: "ADMIN",
-              },
-            });
-          }
-          return { id: u.id, email: u.email, name: u.name, image: u.image };
-        }
-        return null;
-      },
-    })
-  );
-}
 
 function parseBootstrapAdmin(): Set<string> {
   const raw = process.env.BOOTSTRAP_ADMIN_EMAILS;
@@ -75,7 +20,38 @@ const bootstrap = parseBootstrapAdmin();
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
-  providers: allProviders,
+  providers: [
+    Credentials({
+      id: "credentials",
+      name: "Credentials",
+      credentials: {
+        email: { label: "Email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        const email = String(credentials?.email || "")
+          .trim()
+          .toLowerCase();
+        const password = String(credentials?.password || "");
+        if (!email || !password) return null;
+
+        const user = await prisma.user.findUnique({
+          where: { email },
+        });
+        if (!user?.passwordHash) return null;
+
+        const ok = await verifyPassword(password, user.passwordHash);
+        if (!ok) return null;
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        };
+      },
+    }),
+  ],
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   trustHost: true,
   secret: process.env.AUTH_SECRET,
@@ -109,7 +85,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.id = u?.id ?? user.id;
         token.role = (u?.role as UserRole) ?? "PROFESSOR";
       }
-      if (trigger === "update" && triggerSession && typeof triggerSession === "object") {
+      if (
+        trigger === "update" &&
+        triggerSession &&
+        typeof triggerSession === "object"
+      ) {
         if ("role" in triggerSession && triggerSession.role) {
           token.role = triggerSession.role as UserRole;
         }
