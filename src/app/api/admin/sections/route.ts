@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { NextResponse } from "next/server";
 
@@ -100,5 +101,7 @@ export async function DELETE(req: Request) {
   const id = searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id" }, { status: 400 });
   await prisma.section.delete({ where: { id } });
+  revalidatePath("/teach");
+  revalidatePath("/teach", "layout");
   return NextResponse.json({ ok: true });
 }

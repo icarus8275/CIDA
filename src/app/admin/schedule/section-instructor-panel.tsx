@@ -135,7 +135,7 @@ export function SectionInstructorPanel() {
               type="button"
               className="text-sm text-red-300 hover:underline"
               onClick={async () => {
-                await fetch("/api/admin/section-instructors", {
+                const res = await fetch("/api/admin/section-instructors", {
                   method: "DELETE",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
@@ -143,7 +143,10 @@ export function SectionInstructorPanel() {
                     sectionId: r.sectionId,
                   }),
                 });
-                await load();
+                if (res.ok) {
+                  await load();
+                  window.dispatchEvent(new Event("schedule-refresh"));
+                }
               }}
             >
               {t("admin.schedRemove")}

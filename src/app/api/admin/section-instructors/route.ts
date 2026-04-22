@@ -1,7 +1,13 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { NextResponse } from "next/server";
+
+function revalidateTeach() {
+  revalidatePath("/teach");
+  revalidatePath("/teach", "layout");
+}
 
 const postSchema = z.object({
   userId: z.string().min(1),
@@ -54,6 +60,7 @@ export async function POST(req: Request) {
     const row = await prisma.sectionInstructor.create({
       data: { userId: body.userId, sectionId: body.sectionId },
     });
+    revalidateTeach();
     return NextResponse.json(row);
   } catch {
     return NextResponse.json({ error: "exists" }, { status: 409 });
@@ -71,5 +78,6 @@ export async function DELETE(req: Request) {
       userId_sectionId: { userId: body.userId, sectionId: body.sectionId },
     },
   });
+  revalidateTeach();
   return NextResponse.json({ ok: true });
 }

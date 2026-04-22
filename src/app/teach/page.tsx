@@ -5,6 +5,8 @@ import { formatTermForDisplay } from "@/lib/term-display";
 import { t } from "@/lib/i18n/messages";
 import { getServerLocale } from "@/lib/i18n/server";
 
+export const dynamic = "force-dynamic";
+
 function sectionTitle(s: {
   label: string;
   courseOffering: {
@@ -29,37 +31,23 @@ export default async function TeachHomePage() {
     return null;
   }
 
-  const sections =
-    s.user.role === "ADMIN"
-      ? await prisma.section.findMany({
-          orderBy: { sortOrder: "asc" },
-          include: {
-            courseOffering: {
-              include: {
-                course: true,
-                term: {
-                  include: { academicYear: true, termSeason: true },
-                },
-              },
-            },
+  /** ADMIN도 "My courses"는 SectionInstructor 기준(배정된 섹션만). 전체는 Admin 스케줄에서. */
+  const sections = await prisma.section.findMany({
+    where: {
+      instructors: { some: { userId: s.user.id } },
+    },
+    orderBy: { sortOrder: "asc" },
+    include: {
+      courseOffering: {
+        include: {
+          course: true,
+          term: {
+            include: { academicYear: true, termSeason: true },
           },
-        })
-      : await prisma.section.findMany({
-          where: {
-            instructors: { some: { userId: s.user.id } },
-          },
-          orderBy: { sortOrder: "asc" },
-          include: {
-            courseOffering: {
-              include: {
-                course: true,
-                term: {
-                  include: { academicYear: true, termSeason: true },
-                },
-              },
-            },
-          },
-        });
+        },
+      },
+    },
+  });
 
   if (sections.length === 0) {
     return (
