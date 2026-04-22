@@ -12,9 +12,13 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { X } from "lucide-react";
+import { GripVertical, X } from "lucide-react";
 import { formatTermForDisplay } from "@/lib/term-display";
 import { useI18n } from "@/components/locale/locale-provider";
+import {
+  OfferingSectionsModal,
+  type ConfigOffering,
+} from "./offering-sections-modal";
 
 const POOL = "__pool__";
 const D_TERM = (id: string) => `term:${id}`;
@@ -132,9 +136,11 @@ function CatalogDraggable({ course }: { course: CourseRow }) {
 function OfferingCard({
   off,
   onRemove,
+  onConfigure,
 }: {
   off: OffRow;
   onRemove: (id: string) => void;
+  onConfigure: (off: OffRow) => void;
 }) {
   const { t } = useI18n();
   const { attributes, listeners, setNodeRef, transform, isDragging } =
@@ -146,16 +152,30 @@ function OfferingCard({
         transform: CSS.Translate.toString(transform),
         opacity: isDragging ? 0.5 : 1,
       }}
-      className="group/offer glass relative cursor-grab p-2 pr-8 text-sm active:cursor-grabbing"
-      {...listeners}
-      {...attributes}
+      className="group/offer glass relative flex min-h-[2.5rem] items-stretch text-sm"
     >
-      <div className="font-medium text-slate-100">{off.course.name}</div>
+      <button
+        type="button"
+        className="flex shrink-0 cursor-grab items-center border-r border-white/10 px-1.5 text-slate-500 hover:bg-white/5 active:cursor-grabbing"
+        aria-label={t("admin.osmDragA11y")}
+        title={t("admin.osmDragHint")}
+        {...listeners}
+        {...attributes}
+      >
+        <GripVertical className="h-4 w-4" />
+      </button>
+      <button
+        type="button"
+        className="min-w-0 flex-1 cursor-pointer px-2 py-1.5 text-left transition hover:bg-white/5"
+        onClick={() => onConfigure(off)}
+      >
+        <div className="font-medium text-slate-100">{off.course.name}</div>
+        <div className="text-[11px] text-slate-500">{t("admin.osmOpenHint")}</div>
+      </button>
       <button
         type="button"
         aria-label={t("admin.schedARemove")}
-        className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-md text-rose-300/90 opacity-0 transition hover:bg-rose-500/20 group-hover/offer:opacity-100"
-        onPointerDown={(e) => e.stopPropagation()}
+        className="flex shrink-0 items-start px-1.5 py-1.5 text-rose-300/90 opacity-0 transition hover:bg-rose-500/20 group-hover/offer:opacity-100"
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -173,11 +193,13 @@ function TermColumn({
   offerings,
   onDeleteTerm,
   onRemoveOffering,
+  onConfigureOffering,
 }: {
   term: TermRow;
   offerings: OffRow[];
   onDeleteTerm: (id: string) => void;
   onRemoveOffering: (id: string) => void;
+  onConfigureOffering: (off: OffRow) => void;
 }) {
   const { t } = useI18n();
   const { setNodeRef, isOver } = useDroppable({ id: D_TERM(term.id) });
@@ -210,6 +232,7 @@ function TermColumn({
             key={o.id}
             off={o}
             onRemove={onRemoveOffering}
+            onConfigure={onConfigureOffering}
           />
         ))}
       </div>
@@ -223,6 +246,9 @@ export function ScheduleBoard() {
   const [offers, setOffers] = useState<OffRow[]>([]);
   const [courses, setCourses] = useState<CourseRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [configOffering, setConfigOffering] = useState<ConfigOffering | null>(
+    null
+  );
 
   const load = useCallback(async () => {
     const [tRes, oRes, cRes] = await Promise.all([
@@ -295,6 +321,12 @@ export function ScheduleBoard() {
       window.dispatchEvent(new Event("schedule-refresh"));
     }
   }, [t]);
+
+  const openConfigure = useCallback((term: TermRow) => {
+    return (off: OffRow) => {
+      setConfigOffering({ ...off, term });
+    };
+  }, []);
 
   const onDragEnd = async (e: DragEndEvent) => {
     const { active, over } = e;
@@ -387,6 +419,7 @@ export function ScheduleBoard() {
                 offerings={byTerm(term.id)}
                 onDeleteTerm={deleteTerm}
                 onRemoveOffering={removeOffering}
+                onConfigureOffering={openConfigure(term)}
               />
             ))}
           </div>
@@ -397,6 +430,10 @@ export function ScheduleBoard() {
           {t("admin.schedNoTerms")}
         </p>
       )}
+      <OfferingSectionsModal
+        offering={configOffering}
+        onClose={() => setConfigOffering(null)}
+      />
     </div>
   );
 }

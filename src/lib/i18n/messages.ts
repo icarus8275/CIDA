@@ -192,8 +192,8 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "admin.scheduleNav": { en: "Schedule", ko: "학기/배정" },
   "admin.scheduleTitle": { en: "Schedule & section assignments", ko: "학기별 수업·섹션" },
   "admin.schedIntro": {
-    en: "Drag a course into a term column to schedule it. Add sections and assign faculty below.",
-    ko: "과목을 학기 열로 끌어다 놓으면 그 학기에 배정됩니다. 아래에서 섹션을 만들고 담당 교수를 지정하세요.",
+    en: "Drag a course into a term, then click a course (or the ⋮ handle to move it). A popup sets section count and faculty. Professors see their sections on Faculty.",
+    ko: "과목을 학기 열로 끌어다 놓은 뒤, 학기 칸의 과목을 누르면(또는 옆의 ⋮으로 옮기면) 팝업에서 섹션 수·교수를 지정하세요. 교수는「교수」에서 본인 섹션만 봅니다.",
   },
   "admin.schedSectionsTitle": { en: "Sections & faculty", ko: "섹션·담당 교수" },
   "admin.schedYearBlurb": {
@@ -274,6 +274,41 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "admin.schedSelect": { en: "Select", ko: "선택" },
   "admin.schedAssign": { en: "Assign faculty", ko: "교수 지정" },
   "admin.schedRemove": { en: "Remove", ko: "제거" },
+  "admin.schedPanelHint": {
+    en: "Click any course in the schedule above to add sections and assign professors. This list is a full overview; remove a row only if you need a quick un-assign.",
+    ko: "위 스케줄에서 학기·과목을 클릭하면 섹션·교수를 지정할 수 있습니다. 아래는 전체 배정 요약이며, 빠른 해제가 필요할 때만 행의 제거를 쓰세요.",
+  },
+  "admin.schedPanelEmpty": {
+    en: "No faculty assigned to any section yet.",
+    ko: "아직 섹션에 지정된 교수가 없습니다.",
+  },
+  "admin.osmSub": {
+    en: "Each term offering has its own sections, items, and faculty. Adding a professor here lets them see this section under Faculty when they log in.",
+    ko: "학기·과목(오퍼링)마다 섹션·항목·담당이 따로입니다. 여기서 교수를 붙이면 그 교수는 로그인 시「교수」에 이 섹션이 보입니다.",
+  },
+  "admin.osmClose": { en: "Close", ko: "닫기" },
+  "admin.osmSectionCount": { en: "Number of sections", ko: "섹션 수" },
+  "admin.osmApply": { en: "Apply", ko: "적용" },
+  "admin.osmAddOne": { en: "Add one section", ko: "섹션 하나 추가" },
+  "admin.osmLabel": { en: "Label", ko: "구분" },
+  "admin.osmPickFaculty": { en: "Add professor to this section", ko: "이 섹션에 교수 지정" },
+  "admin.osmNone": {
+    en: "No sections yet. Set the count and Apply, or add one at a time.",
+    ko: "섹션이 아직 없습니다. 위에서 수를 맞춘 뒤 적용하거나, 섹션 하나씩 추가하세요.",
+  },
+  "admin.osmConfirmTrim": {
+    en: "Remove the last {n} section(s)? Any items and links in those sections will be deleted.",
+    ko: "끝에서 {n}개 섹션을 삭제할까요? 해당 섹션의 항목·연결도 함께 사라집니다.",
+  },
+  "admin.osmErrCreate": { en: "Could not add section.", ko: "섹션을 추가하지 못했습니다." },
+  "admin.osmErrDelete": { en: "Could not remove section.", ko: "섹션을 삭제하지 못했습니다." },
+  "admin.osmErrExists": { en: "That assignment already exists.", ko: "이미 같은 배정이 있습니다." },
+  "admin.osmDragHint": { en: "Drag to move to another term", ko: "끌어서 다른 학기로 이동" },
+  "admin.osmDragA11y": { en: "Drag offering", ko: "배정 끌기" },
+  "admin.osmOpenHint": {
+    en: "Click for sections & faculty",
+    ko: "클릭: 섹션·교수 지정",
+  },
   "admin.profPageTitle": { en: "Faculty & courses", ko: "교수·과목" },
   "admin.coursesLoadFail": { en: "Failed to load courses.", ko: "과목을 불러오지 못했습니다." },
   "admin.coursesCreateFail": { en: "Failed to create course.", ko: "과목을 만들지 못했습니다." },
