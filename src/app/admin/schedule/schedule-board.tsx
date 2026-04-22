@@ -69,7 +69,8 @@ function resolveDropTarget(
   return parseDropTarget(overId, offers);
 }
 
-function UnscheduledPool({
+/** Full course catalog as a drag palette. Same course can be added to many terms; each term is a separate offering (sections, items, faculty). */
+function CourseCatalogPool({
   courseIds,
   courseById,
 }: {
@@ -94,7 +95,7 @@ function UnscheduledPool({
       <div className="mt-1 min-h-24">
         {courseIds.length === 0 && (
           <p className="text-xs text-slate-500">
-            {t("admin.schedAllInTerms")}
+            {t("admin.schedNoCourses")}
           </p>
         )}
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -258,15 +259,14 @@ export function ScheduleBoard() {
   );
 
   const courseById = new Map(courses.map((c) => [c.id, c]));
-  const offerCourseIds = new Set(offers.map((o) => o.courseId));
-  const unscheduledIds = courses
-    .map((c) => c.id)
-    .filter((id) => !offerCourseIds.has(id))
+  /** All catalog courses always shown in the palette; each (course, term) creates a distinct offering. */
+  const catalogCourseIds = [...courses]
     .sort((a, b) => {
-      const ca = courseById.get(a);
-      const cb = courseById.get(b);
-      return (ca?.sortOrder ?? 0) - (cb?.sortOrder ?? 0) || (ca?.name ?? "").localeCompare(cb?.name ?? "");
-    });
+      return (
+        a.sortOrder - b.sortOrder || a.name.localeCompare(b.name)
+      );
+    })
+    .map((c) => c.id);
 
   const byTerm = (tid: string) =>
     offers
@@ -375,8 +375,8 @@ export function ScheduleBoard() {
         onDragEnd={onDragEnd}
       >
         <div className="flex w-full flex-col gap-4">
-          <UnscheduledPool
-            courseIds={unscheduledIds}
+          <CourseCatalogPool
+            courseIds={catalogCourseIds}
             courseById={courseById}
           />
           <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2">

@@ -235,14 +235,17 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     en: "Could not add the course to that term.",
     ko: "과목을 그 학기에 넣을 수 없습니다.",
   },
-  "admin.schedUnscheduled": { en: "Unscheduled courses", ko: "미배정 과목" },
-  "admin.schedUnscheduledHelp": {
-    en: "Drag into a term column below, or drop a scheduled course here to unschedule. Up to three courses per row.",
-    ko: "아래 학기 열로 끌어다 놓거나, 배정된 과목을 여기에 놓으면 배정이 해제됩니다. 한 줄에 최대 세 과목까지 표시됩니다.",
+  "admin.schedUnscheduled": {
+    en: "Course catalog (reusable)",
+    ko: "과목 목록(재사용)",
   },
-  "admin.schedAllInTerms": {
-    en: "All catalog courses are placed in a term.",
-    ko: "목록의 모든 과목이 어느 학기에든 배정되었습니다.",
+  "admin.schedUnscheduledHelp": {
+    en: "Drag a course into a term to add that course for that semester—each term gets its own sections, faculty, and items. The same course can be taught in multiple terms. You cannot add the same course twice in one term. Drop a scheduled card here to remove that term’s offering only.",
+    ko: "과목을 학기 열로 끌어다 놓으면 그 학기 전용 수업이 추가됩니다(학기마다 섹션·교수·항목이 따로입니다). 같은 과목을 여러 학기에 둘 수 있고, 같은 학기에만 중복은 안 됩니다. 배정된 카드를 여기에 놓으면 그 학기 배정만 제거됩니다.",
+  },
+  "admin.schedNoCourses": {
+    en: "No courses in the catalog yet. Add them under Admin → Courses.",
+    ko: "과목 목록이 비어 있습니다. 관리 → 과목에서 추가하세요.",
   },
   "admin.schedNoTerms": {
     en: 'No terms yet. Add an academic year and a season, then use "Add term" above. Each (year, season) pair can only exist once.',
