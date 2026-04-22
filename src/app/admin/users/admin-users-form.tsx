@@ -27,10 +27,10 @@ export function AdminUsersForm() {
 
   return (
     <div className="space-y-6">
-      {err && <p className="text-sm text-red-600">{err}</p>}
+      {err && <p className="text-sm text-red-300">{err}</p>}
 
       <form
-        className="max-w-md space-y-2 rounded-lg border border-slate-200 bg-white p-4"
+        className="glass max-w-md space-y-2 p-4"
         onSubmit={async (e) => {
           e.preventDefault();
           setErr(null);
@@ -56,9 +56,9 @@ export function AdminUsersForm() {
           await load();
         }}
       >
-        <h2 className="text-sm font-semibold">New user</h2>
+        <h2 className="text-sm font-semibold text-slate-100">New user</h2>
         <input
-          className="w-full rounded border border-slate-200 px-2 py-1.5"
+          className="input-glass w-full px-2 py-1.5"
           type="email"
           placeholder="Email"
           value={email}
@@ -66,7 +66,7 @@ export function AdminUsersForm() {
           required
         />
         <input
-          className="w-full rounded border border-slate-200 px-2 py-1.5"
+          className="input-glass w-full px-2 py-1.5"
           type="password"
           placeholder="Password (8+)"
           value={password}
@@ -75,13 +75,13 @@ export function AdminUsersForm() {
           required
         />
         <input
-          className="w-full rounded border border-slate-200 px-2 py-1.5"
+          className="input-glass w-full px-2 py-1.5"
           placeholder="Name (optional)"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
         <select
-          className="w-full rounded border border-slate-200 px-2 py-1.5"
+          className="input-glass w-full px-2 py-1.5"
           value={role}
           onChange={(e) =>
             setRole(e.target.value as "PROFESSOR" | "ADMIN" | "CIDA")
@@ -91,10 +91,7 @@ export function AdminUsersForm() {
           <option value="ADMIN">Admin</option>
           <option value="CIDA">CIDA (read-only)</option>
         </select>
-        <button
-          type="submit"
-          className="w-full rounded bg-slate-900 py-2 text-sm text-white"
-        >
+        <button type="submit" className="btn-glass-primary w-full py-2 text-sm">
           Create user
         </button>
       </form>
@@ -103,15 +100,15 @@ export function AdminUsersForm() {
         {list.map((u) => (
           <li
             key={u.id}
-            className="flex flex-col gap-2 rounded border border-slate-200 bg-white p-3 sm:flex-row sm:items-center sm:justify-between"
+            className="glass flex flex-col gap-2 p-3 sm:flex-row sm:items-center sm:justify-between"
           >
             <div>
-              <span className="font-medium">{u.email}</span>{" "}
-              <span className="text-xs text-slate-500">{u.role}</span>
+              <span className="font-medium text-slate-100">{u.email}</span>{" "}
+              <span className="text-xs text-slate-400">{u.role}</span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <select
-                className="rounded border border-slate-200 px-2 py-1 text-sm"
+                className="input-glass px-2 py-1 text-sm"
                 value={u.role}
                 onChange={async (e) => {
                   const next = e.target.value as UserRow["role"];
@@ -129,7 +126,7 @@ export function AdminUsersForm() {
               </select>
               <button
                 type="button"
-                className="text-sm text-red-600"
+                className="text-sm text-red-300"
                 onClick={async () => {
                   if (!confirm("Delete this user?")) return;
                   await fetch(`/api/admin/users?id=${encodeURIComponent(u.id)}`, {

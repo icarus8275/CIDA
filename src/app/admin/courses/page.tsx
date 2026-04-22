@@ -6,7 +6,7 @@ export default async function AdminCoursesPage() {
   const locale = await getServerLocale();
   return (
     <div>
-      <h1 className="mb-2 text-lg font-bold text-slate-900">
+      <h1 className="mb-2 text-lg font-bold text-white">
         {t(locale, "admin.coursesPageTitle")}
       </h1>
       <AdminCoursesForm />

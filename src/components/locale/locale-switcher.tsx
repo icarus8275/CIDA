@@ -13,29 +13,29 @@ export function LocaleSwitcher() {
   const { locale, setLocale, t } = useI18n();
   return (
     <div
-      className="fixed right-3 top-3 z-50 flex items-center gap-1 rounded-lg border border-slate-200 bg-white/90 px-2 py-1 text-sm shadow-sm backdrop-blur"
+      className="fixed right-3 top-3 z-50 flex items-center gap-1 rounded-xl border border-white/15 bg-white/10 px-2 py-1 text-sm text-slate-200 shadow-lg backdrop-blur-xl"
       role="group"
       aria-label={t("locale.label")}
     >
       <button
         type="button"
         onClick={() => setLocale("en")}
-        className={`rounded px-2 py-0.5 ${
+        className={`rounded-lg px-2 py-0.5 transition ${
           locale === "en"
-            ? "bg-slate-900 text-white"
-            : "text-slate-600 hover:bg-slate-100"
+            ? "bg-white/20 text-white shadow-sm"
+            : "text-slate-400 hover:bg-white/10 hover:text-slate-200"
         }`}
       >
         {t("locale.en")}
       </button>
-      <span className="text-slate-300">|</span>
+      <span className="text-white/25">|</span>
       <button
         type="button"
         onClick={() => setLocale("ko")}
-        className={`rounded px-2 py-0.5 ${
+        className={`rounded-lg px-2 py-0.5 transition ${
           locale === "ko"
-            ? "bg-slate-900 text-white"
-            : "text-slate-600 hover:bg-slate-100"
+            ? "bg-white/20 text-white shadow-sm"
+            : "text-slate-400 hover:bg-white/10 hover:text-slate-200"
         }`}
       >
         {t("locale.ko")}

@@ -6,10 +6,10 @@ export default async function ItemTypesPage() {
   const locale = await getServerLocale();
   return (
     <div>
-      <h1 className="mb-2 text-lg font-bold text-slate-900">
+      <h1 className="mb-2 text-lg font-bold text-white">
         {t(locale, "admin.itemTypesPageTitle")}
       </h1>
-      <p className="mb-4 text-sm text-slate-600">
+      <p className="mb-4 text-sm text-slate-400">
         {t(locale, "admin.itemTypesPageBody")}
       </p>
       <AdminItemTypesForm />

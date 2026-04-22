@@ -31,7 +31,7 @@ export function AddOfferingForm() {
 
   return (
     <form
-      className="mb-4 flex flex-wrap items-end gap-2 rounded border border-dashed border-slate-300 bg-white p-3 text-sm"
+      className="glass glass-dashed mb-4 flex flex-wrap items-end gap-2 p-3 text-sm text-slate-200"
       onSubmit={async (e) => {
         e.preventDefault();
         if (!courseId || !termId) return;
@@ -46,9 +46,11 @@ export function AddOfferingForm() {
         }
       }}
     >
-      <span className="font-medium text-slate-700">Schedule a course in a term:</span>
+      <span className="font-medium text-slate-200">
+        Schedule a course in a term:
+      </span>
       <select
-        className="rounded border border-slate-200 px-2 py-1"
+        className="input-glass px-2 py-1.5"
         value={courseId}
         onChange={(e) => setCourseId(e.target.value)}
         required
@@ -61,7 +63,7 @@ export function AddOfferingForm() {
         ))}
       </select>
       <select
-        className="rounded border border-slate-200 px-2 py-1"
+        className="input-glass px-2 py-1.5"
         value={termId}
         onChange={(e) => setTermId(e.target.value)}
         required
@@ -73,7 +75,7 @@ export function AddOfferingForm() {
           </option>
         ))}
       </select>
-      <button type="submit" className="rounded bg-indigo-600 px-2 py-1 text-white">
+      <button type="submit" className="btn-glass-primary px-3 py-1.5 text-sm">
         Add
       </button>
     </form>

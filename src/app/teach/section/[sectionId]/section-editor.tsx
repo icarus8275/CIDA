@@ -64,10 +64,10 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
   }, [load, loadTypes]);
 
   if (err) {
-    return <p className="text-sm text-red-600">{err}</p>;
+    return <p className="text-sm text-red-300">{err}</p>;
   }
   if (!section) {
-    return <p className="text-slate-500">{t("teach.loading")}</p>;
+    return <p className="text-slate-400">{t("teach.loading")}</p>;
   }
 
   const path = `${section.courseOffering.term.academicYear.label} · ${section.courseOffering.term.termSeason.label} · ${section.courseOffering.course.name} · ${section.label}`;
@@ -75,17 +75,17 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-lg font-bold text-slate-900">{path}</h1>
+        <h1 className="text-lg font-bold text-white">{path}</h1>
         <Link
           href="/teach"
-          className="text-sm text-slate-600 hover:underline"
+          className="text-sm text-slate-400 hover:text-cyan-200 hover:underline"
         >
           {t("teach.backList")}
         </Link>
       </div>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="mb-2 font-medium text-slate-800">
+      <section className="glass p-4">
+        <h2 className="mb-2 font-medium text-slate-200">
           {t("teach.addItem")}
         </h2>
         <form
@@ -114,7 +114,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
           }}
         >
           <select
-            className="rounded border border-slate-200 px-2 py-1.5"
+            className="input-glass px-2 py-1.5"
             value={newItem.typeId}
             onChange={(e) =>
               setNewItem((x) => ({ ...x, typeId: e.target.value }))
@@ -130,7 +130,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
           </select>
           <input
             type="number"
-            className="w-20 rounded border border-slate-200 px-2 py-1.5"
+            className="input-glass w-20 px-2 py-1.5"
             value={newItem.number}
             onChange={(e) =>
               setNewItem((x) => ({ ...x, number: +e.target.value || 0 }))
@@ -139,7 +139,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
           />
           <input
             placeholder={t("teach.codesPlaceholder")}
-            className="w-40 rounded border border-slate-200 px-2 py-1.5"
+            className="input-glass w-40 px-2 py-1.5"
             value={newItem.codes}
             onChange={(e) =>
               setNewItem((x) => ({ ...x, codes: e.target.value }))
@@ -147,7 +147,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
           />
           <button
             type="submit"
-            className="rounded bg-slate-900 px-3 py-1.5 text-sm text-white"
+            className="btn-glass-primary px-3 py-1.5 text-sm"
           >
             {t("teach.add")}
           </button>
@@ -155,7 +155,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
       </section>
 
       <section>
-        <h2 className="mb-2 font-medium text-slate-800">
+        <h2 className="mb-2 font-medium text-slate-200">
           {t("teach.itemsCodes")}
         </h2>
         <ul className="space-y-3">
@@ -170,17 +170,17 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
             return (
               <li
                 key={it.id}
-                className="rounded-lg border border-slate-200 bg-white p-3"
+                className="glass p-3"
               >
                 <div className="mb-2">
-                  <span className="font-medium text-slate-900">
+                  <span className="font-medium text-slate-100">
                     {it.itemType.label} {it.number}
                   </span>
                 </div>
                 <div className="mb-2 space-y-1">
-                  <label className="text-xs text-slate-500">Title (optional)</label>
+                  <label className="text-xs text-slate-400">Title (optional)</label>
                   <input
-                    className="w-full rounded border border-slate-200 px-2 py-1 text-sm"
+                    className="input-glass w-full px-2 py-1 text-sm"
                     value={title}
                     onChange={(e) =>
                       setTitleEdit((m) => ({ ...m, [it.id]: e.target.value }))
@@ -199,10 +199,10 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
                   />
                 </div>
                 <div className="mb-2 space-y-1">
-                  <label className="text-xs text-slate-500">OneDrive share link</label>
+                  <label className="text-xs text-slate-400">OneDrive share link</label>
                   <div className="flex flex-wrap gap-2">
                     <input
-                      className="min-w-0 flex-1 rounded border border-slate-200 px-2 py-1 text-sm"
+                      className="input-glass min-w-0 flex-1 px-2 py-1 text-sm"
                       value={le.url}
                       onChange={(e) =>
                         setLinkEdit((m) => ({
@@ -213,7 +213,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
                       placeholder="https://..."
                     />
                     <input
-                      className="w-40 rounded border border-slate-200 px-2 py-1 text-sm"
+                      className="input-glass w-40 px-2 py-1 text-sm"
                       value={le.title}
                       onChange={(e) =>
                         setLinkEdit((m) => ({
@@ -225,7 +225,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
                     />
                     <button
                       type="button"
-                      className="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-sm"
+                      className="btn-glass px-2 py-1 text-sm"
                       onClick={async () => {
                         const cur = linkEdit[it.id] ?? {
                           url: it.oneDriveUrl ?? "",
@@ -250,7 +250,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
                       href={it.oneDriveUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-sm text-indigo-600 hover:underline"
+                      className="text-sm text-cyan-200 hover:underline"
                     >
                       {it.linkTitle || "Open file"}
                     </a>
@@ -258,7 +258,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
                 </div>
                 <div className="mb-1 flex flex-wrap gap-1">
                   <input
-                    className="min-w-0 flex-1 rounded border border-slate-200 px-2 py-1 text-sm"
+                    className="input-glass min-w-0 flex-1 px-2 py-1 text-sm"
                     value={ce}
                     onChange={(e) =>
                       setCodeEdit((m) => ({ ...m, [it.id]: e.target.value }))
@@ -267,7 +267,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
                   />
                   <button
                     type="button"
-                    className="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-sm"
+                    className="btn-glass px-2 py-1 text-sm"
                     onClick={async () => {
                       const raw = (codeEdit[it.id] ?? ce)
                         .split(/[,\s]+/)
@@ -292,7 +292,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
                 <div className="mt-1">
                   <button
                     type="button"
-                    className="text-xs text-red-600"
+                    className="text-xs text-red-300"
                     onClick={async () => {
                       if (!confirm(t("teach.deleteConfirm"))) return;
                       await fetch(`/api/teach/course-items/${it.id}`, {

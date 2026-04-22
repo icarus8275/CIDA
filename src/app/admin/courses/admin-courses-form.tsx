@@ -29,9 +29,9 @@ export function AdminCoursesForm() {
 
   return (
     <div className="space-y-6">
-      {err && <p className="text-sm text-red-600">{err}</p>}
+      {err && <p className="text-sm text-red-300">{err}</p>}
       <form
-        className="flex flex-wrap items-end gap-2 rounded-lg border border-slate-200 bg-white p-4"
+        className="glass flex flex-wrap items-end gap-2 p-4"
         onSubmit={async (e) => {
           e.preventDefault();
           setErr(null);
@@ -49,26 +49,26 @@ export function AdminCoursesForm() {
         }}
       >
         <div>
-          <label className="text-xs text-slate-500">
+          <label className="text-xs text-slate-400">
             {t("admin.coursesNameLabel")}
           </label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="mt-0.5 block w-72 rounded border border-slate-200 px-2 py-1.5"
+            className="input-glass mt-0.5 block w-72 px-2 py-1.5"
             required
           />
         </div>
         <button
           type="submit"
-          className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm text-white"
+          className="btn-glass-primary px-3 py-1.5 text-sm"
         >
           {t("admin.coursesAdd")}
         </button>
       </form>
 
       <form
-        className="space-y-2 rounded-lg border border-slate-200 bg-white p-4"
+        className="glass space-y-2 p-4"
         onSubmit={async (e) => {
           e.preventDefault();
           setErr(null);
@@ -90,16 +90,16 @@ export function AdminCoursesForm() {
           await load();
         }}
       >
-        <label className="text-xs text-slate-500">Bulk add (one per line or comma)</label>
+        <label className="text-xs text-slate-400">Bulk add (one per line or comma)</label>
         <textarea
           value={bulkText}
           onChange={(e) => setBulkText(e.target.value)}
-          className="mt-0.5 block w-full min-h-24 rounded border border-slate-200 p-2 text-sm"
+          className="input-glass mt-0.5 block min-h-24 w-full p-2 text-sm"
           placeholder="CS 101&#10;CS 102"
         />
         <button
           type="submit"
-          className="mt-2 rounded-lg bg-slate-700 px-3 py-1.5 text-sm text-white"
+          className="btn-glass mt-2 px-3 py-1.5 text-sm"
         >
           Add all
         </button>
@@ -109,7 +109,7 @@ export function AdminCoursesForm() {
         {list.map((c) => (
           <li
             key={c.id}
-            className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-3 sm:flex-row sm:items-center"
+            className="glass flex flex-col gap-2 p-3 sm:flex-row sm:items-center"
           >
             {editing?.id === c.id ? (
               <form
@@ -136,7 +136,7 @@ export function AdminCoursesForm() {
                   onChange={(e) =>
                     setEditing({ ...editing, name: e.target.value })
                   }
-                  className="min-w-0 flex-1 rounded border border-slate-200 px-2 py-1"
+                  className="input-glass min-w-0 flex-1 px-2 py-1"
                 />
                 <input
                   type="number"
@@ -147,9 +147,9 @@ export function AdminCoursesForm() {
                       sortOrder: parseInt(e.target.value, 10) || 0,
                     })
                   }
-                  className="w-24 rounded border border-slate-200 px-2 py-1"
+                  className="input-glass w-24 px-2 py-1"
                 />
-                <button type="submit" className="text-sm text-indigo-600">
+                <button type="submit" className="text-sm text-cyan-200 hover:underline">
                   {t("admin.coursesSave")}
                 </button>
                 <button
@@ -163,8 +163,8 @@ export function AdminCoursesForm() {
             ) : (
               <>
                 <div className="flex-1">
-                  <span className="font-medium text-slate-900">{c.name}</span>
-                  <span className="ml-2 text-sm text-slate-500">
+                  <span className="font-medium text-slate-100">{c.name}</span>
+                  <span className="ml-2 text-sm text-slate-400">
                     {t("admin.coursesOrder")} {c.sortOrder}
                   </span>
                 </div>
@@ -172,7 +172,7 @@ export function AdminCoursesForm() {
                   <button
                     type="button"
                     onClick={() => setEditing(c)}
-                    className="text-sm text-indigo-600"
+                    className="text-sm text-cyan-200 hover:underline"
                   >
                     {t("admin.coursesEdit")}
                   </button>
@@ -186,7 +186,7 @@ export function AdminCoursesForm() {
                       );
                       if (r.ok) await load();
                     }}
-                    className="text-sm text-red-600"
+                    className="text-sm text-red-300 hover:underline"
                   >
                     {t("admin.coursesDelete")}
                   </button>

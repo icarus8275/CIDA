@@ -105,9 +105,9 @@ export function SectionInstructorPanel() {
         }}
       >
         <div>
-          <span className="text-xs text-slate-500">Offering (course in term)</span>
+          <span className="text-xs text-slate-400">Offering (course in term)</span>
           <select
-            className="mt-0.5 block w-80 rounded border border-slate-200 px-2 py-1.5"
+            className="input-glass mt-0.5 block w-80 px-2 py-1.5"
             value={newOffId}
             onChange={(e) => setNewOffId(e.target.value)}
             required
@@ -121,9 +121,9 @@ export function SectionInstructorPanel() {
           </select>
         </div>
         <div>
-          <span className="text-xs text-slate-500">Section label</span>
+          <span className="text-xs text-slate-400">Section label</span>
           <input
-            className="mt-0.5 w-24 rounded border border-slate-200 px-2 py-1.5"
+            className="input-glass mt-0.5 w-24 px-2 py-1.5"
             value={newSecLabel}
             onChange={(e) => setNewSecLabel(e.target.value)}
             required
@@ -131,7 +131,7 @@ export function SectionInstructorPanel() {
         </div>
         <button
           type="submit"
-          className="rounded bg-slate-700 px-3 py-1.5 text-sm text-white"
+          className="btn-glass px-3 py-1.5 text-sm"
         >
           Add section
         </button>
@@ -154,9 +154,9 @@ export function SectionInstructorPanel() {
         }}
       >
         <div>
-          <span className="text-xs text-slate-500">User</span>
+          <span className="text-xs text-slate-400">User</span>
           <select
-            className="mt-0.5 block w-64 rounded border border-slate-200 px-2 py-1.5"
+            className="input-glass mt-0.5 block w-64 px-2 py-1.5"
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
             required
@@ -170,9 +170,9 @@ export function SectionInstructorPanel() {
           </select>
         </div>
         <div>
-          <span className="text-xs text-slate-500">Section</span>
+          <span className="text-xs text-slate-400">Section</span>
           <select
-            className="mt-0.5 block w-80 max-w-full rounded border border-slate-200 px-2 py-1.5"
+            className="input-glass mt-0.5 block w-80 max-w-full px-2 py-1.5"
             value={sectionId}
             onChange={(e) => setSectionId(e.target.value)}
             required
@@ -180,7 +180,7 @@ export function SectionInstructorPanel() {
             <option value="">Select</option>
             {sections.map((s) => {
               const o = s.courseOffering;
-              const p = `${o.term.academicYear.label} ${o.term.termSeason.label} ${o.course.name} §${s.label}`;
+              const p = `${o.term.academicYear.label} ${o.term.termSeason.label} ${o.course.name} · ${s.label}`;
               return (
                 <option key={s.id} value={s.id}>
                   {p}
@@ -191,7 +191,7 @@ export function SectionInstructorPanel() {
         </div>
         <button
           type="submit"
-          className="rounded bg-slate-900 px-3 py-1.5 text-sm text-white"
+          className="btn-glass-primary px-3 py-1.5 text-sm"
         >
           Assign faculty
         </button>
@@ -201,16 +201,16 @@ export function SectionInstructorPanel() {
         {siRows.map((r) => (
           <li
             key={`${r.userId}-${r.sectionId}`}
-            className="flex items-center justify-between gap-2 rounded border border-slate-200 bg-white px-2 py-1"
+            className="glass flex items-center justify-between gap-2 px-2 py-1.5"
           >
-            <span>
-              {r.user.email} — {r.section.courseOffering.course.name} §
+            <span className="text-slate-200">
+              {r.user.email} — {r.section.courseOffering.course.name} ·
               {r.section.label} ({r.section.courseOffering.term.academicYear.label}{" "}
               {r.section.courseOffering.term.termSeason.label})
             </span>
             <button
               type="button"
-              className="text-red-600"
+              className="text-sm text-red-300 hover:underline"
               onClick={async () => {
                 await fetch("/api/admin/section-instructors", {
                   method: "DELETE",

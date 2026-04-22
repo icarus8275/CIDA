@@ -15,7 +15,7 @@ export default async function TeachLayout({
     redirect("/explore");
   }
   return (
-    <div className="min-h-dvh bg-slate-100">
+    <div className="min-h-dvh text-slate-200">
       <TeachHeader
         email={s.user.email}
         isAdmin={s.user.role === "ADMIN"}

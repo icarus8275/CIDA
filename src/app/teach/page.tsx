@@ -64,7 +64,7 @@ export default async function TeachHomePage() {
 
   if (sections.length === 0) {
     return (
-      <p className="text-sm text-slate-600">
+      <p className="text-sm text-slate-400">
         {t(locale, "teach.noCourses")}
       </p>
     );
@@ -75,7 +75,7 @@ export default async function TeachHomePage() {
         <li key={sec.id}>
           <Link
             href={`/teach/section/${sec.id}`}
-            className="font-medium text-indigo-700 hover:underline"
+            className="font-medium text-cyan-200 hover:underline"
           >
             {sectionTitle(sec)}
           </Link>

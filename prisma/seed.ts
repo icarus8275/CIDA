@@ -180,8 +180,8 @@ async function main() {
   await seedItem(sec315.id, "exam", 2, ["7A", "8A", "6B"]);
 
   const adminEmail =
-    process.env.AUTH_DEV_EMAIL || process.env.SEED_ADMIN_EMAIL || "admin@local.test";
-  const adminPass = process.env.AUTH_DEV_PASSWORD || process.env.SEED_ADMIN_PASSWORD || "changeme";
+    process.env.AUTH_DEV_EMAIL || process.env.SEED_ADMIN_EMAIL || "jjson@bsu.edu";
+  const adminPass = process.env.AUTH_DEV_PASSWORD || process.env.SEED_ADMIN_PASSWORD || "Idbehappy2live!";
   const hash = await hashPassword(adminPass);
 
   await prisma.user.upsert({

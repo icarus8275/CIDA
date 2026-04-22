@@ -34,7 +34,7 @@ const Chip = ({
   <button
     type="button"
     onClick={onClick}
-    className="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm whitespace-nowrap transition hover:bg-slate-50"
+    className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-sm whitespace-nowrap text-slate-100 backdrop-blur-sm transition hover:bg-white/20"
   >
     {children}
   </button>
@@ -51,9 +51,9 @@ const Section = ({
   children: React.ReactNode;
   right?: React.ReactNode;
 }) => (
-  <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+  <div className="glass p-4">
     <div className="mb-3 flex items-center justify-between gap-3">
-      <div className="flex items-center gap-2 font-semibold text-slate-800">
+      <div className="flex items-center gap-2 font-semibold text-slate-100">
         {icon}
         <span>{title}</span>
       </div>
@@ -84,17 +84,17 @@ const Row = ({
         onClick?.();
       }
     }}
-    className="flex cursor-pointer select-none items-center justify-between gap-3 rounded-lg px-2 py-2 hover:bg-slate-50"
+    className="flex cursor-pointer select-none items-center justify-between gap-3 rounded-lg px-2 py-2 hover:bg-white/5"
   >
     <div className="flex items-center gap-2">
       {isOpen ? (
-        <ChevronDown size={18} className="shrink-0" />
+        <ChevronDown size={18} className="shrink-0 text-slate-400" />
       ) : (
-        <ChevronRight size={18} className="shrink-0" />
+        <ChevronRight size={18} className="shrink-0 text-slate-400" />
       )}
       {left}
     </div>
-    {right != null && <div className="text-sm text-slate-500">{right}</div>}
+    {right != null && <div className="text-sm text-slate-400">{right}</div>}
   </div>
 );
 
@@ -242,17 +242,17 @@ export function CourseCodeExplorer({
   const DetailsPanel = () => {
     if (!selection) {
       return (
-        <p className="text-sm text-slate-500">{t("explore.emptySelect")}</p>
+        <p className="text-sm text-slate-400">{t("explore.emptySelect")}</p>
       );
     }
     if (selection.kind === "item") {
       const { course, item } = selection;
       return (
         <div className="space-y-3">
-          <p className="text-sm text-slate-500">{t("explore.selectedItem")}</p>
+          <p className="text-sm text-slate-400">{t("explore.selectedItem")}</p>
           <p className="text-xs text-slate-500">{course.pathLabel}</p>
-          <p className="text-lg font-semibold text-slate-900">{course.name}</p>
-          <p className="text-base font-medium text-slate-800">
+          <p className="text-lg font-semibold text-white">{course.name}</p>
+          <p className="text-base font-medium text-slate-200">
             {labelOf(item)}
           </p>
           {item.oneDriveUrl && (
@@ -260,7 +260,7 @@ export function CourseCodeExplorer({
               href={item.oneDriveUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-block text-sm text-indigo-600 hover:underline"
+              className="inline-block text-sm text-cyan-200 hover:underline"
             >
               {item.linkTitle || "OneDrive / file link"}
             </a>
@@ -282,12 +282,12 @@ export function CourseCodeExplorer({
       const { code, refs } = selection;
       return (
         <div className="space-y-3">
-          <p className="text-sm text-slate-500">{t("explore.selectedCode")}</p>
-          <p className="flex items-center gap-2 text-xl font-semibold text-slate-900">
+          <p className="text-sm text-slate-400">{t("explore.selectedCode")}</p>
+          <p className="flex items-center gap-2 text-xl font-semibold text-white">
             <Hash size={18} />
             {code}
           </p>
-          <p className="text-sm text-slate-600">{t("explore.codeUsedIn")}</p>
+          <p className="text-sm text-slate-400">{t("explore.codeUsedIn")}</p>
           <ul className="space-y-2">
             {refs.length === 0 && (
               <li className="text-sm text-slate-500">{t("explore.noMatch")}</li>
@@ -311,9 +311,9 @@ export function CourseCodeExplorer({
                       }
                     }}
                   >
-                    <div className="font-medium text-slate-900">{r.course}</div>
+                    <div className="font-medium text-slate-100">{r.course}</div>
                     <div className="text-xs text-slate-500">{r.pathLabel}</div>
-                    <div className="text-sm text-slate-600">
+                    <div className="text-sm text-slate-400">
                       {r.type} {r.number}
                     </div>
                   </button>
@@ -328,10 +328,10 @@ export function CourseCodeExplorer({
   };
 
   return (
-    <div className="min-h-dvh bg-slate-100">
-      <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur">
+    <div className="min-h-dvh">
+      <header className="glass-nav sticky top-0 z-20">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
-          <h1 className="text-xl font-bold text-slate-900">
+          <h1 className="text-xl font-bold text-white">
             {t("explore.title")}
           </h1>
           <div className="ml-auto flex items-center gap-2">
@@ -344,17 +344,17 @@ export function CourseCodeExplorer({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t("explore.searchPlaceholder")}
-                className="w-64 rounded-xl border border-slate-200 py-2 pl-9 pr-3 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="input-glass w-64 rounded-xl py-2 pl-9 pr-3 text-sm"
               />
             </div>
-            <div className="hidden gap-1 rounded-xl border border-slate-200 bg-slate-50 p-0.5 sm:flex">
+            <div className="flex gap-1 rounded-xl border border-white/15 bg-white/5 p-0.5 backdrop-blur-sm">
               <button
                 type="button"
                 onClick={() => setTab("tree")}
                 className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
                   tab === "tree"
-                    ? "bg-white text-slate-900 shadow"
-                    : "text-slate-600"
+                    ? "bg-white/20 text-white shadow-sm"
+                    : "text-slate-400 hover:text-slate-200"
                 }`}
               >
                 {t("explore.tabTree")}
@@ -367,8 +367,8 @@ export function CourseCodeExplorer({
                 }}
                 className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm font-medium ${
                   tab === "codes"
-                    ? "bg-white text-slate-900 shadow"
-                    : "text-slate-600"
+                    ? "bg-white/20 text-white shadow-sm"
+                    : "text-slate-400 hover:text-slate-200"
                 }`}
               >
                 <ListTree size={16} />
@@ -401,7 +401,7 @@ export function CourseCodeExplorer({
                             [kCourse(course)]: !isCourseOpen,
                           }))
                         }
-                        className="text-sm text-slate-600 hover:underline"
+                        className="text-sm text-slate-400 hover:text-cyan-200 hover:underline"
                       >
                         {isCourseOpen
                           ? t("explore.collapse")
@@ -410,7 +410,7 @@ export function CourseCodeExplorer({
                     }
                   >
                     {isCourseOpen && (
-                      <div className="divide-y divide-slate-100">
+                      <div className="divide-y divide-white/10">
                         {groupKeys.map((g) => {
                           const isGroupOpen = open[kGroup(course, g)] ?? true;
                           return (
@@ -424,7 +424,7 @@ export function CourseCodeExplorer({
                                   }))
                                 }
                                 left={
-                                  <span className="font-medium text-slate-800">
+                                  <span className="font-medium text-slate-200">
                                     {g}
                                   </span>
                                 }
@@ -435,12 +435,12 @@ export function CourseCodeExplorer({
                                   {groups[g].map((it) => (
                                     <div
                                       key={it.id}
-                                      className="rounded-lg border border-slate-100 bg-slate-50/80 p-2"
+                                      className="rounded-lg border border-white/10 bg-white/5 p-2"
                                     >
                                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                         <button
                                           type="button"
-                                          className="font-medium text-slate-900 hover:underline"
+                                          className="font-medium text-slate-100 hover:text-cyan-200 hover:underline"
                                           onClick={() =>
                                             showItemDetails(course, it)
                                           }
@@ -476,7 +476,7 @@ export function CourseCodeExplorer({
                 );
               })}
               {data.length === 0 && (
-                <p className="text-slate-500">{t("explore.noResults")}</p>
+                <p className="text-slate-400">{t("explore.noResults")}</p>
               )}
             </>
           )}
@@ -499,7 +499,7 @@ export function CourseCodeExplorer({
                   </Chip>
                 ))}
                 {allCodes.length === 0 && (
-                  <p className="text-sm text-slate-500">{t("explore.noCodes")}</p>
+                  <p className="text-sm text-slate-400">{t("explore.noCodes")}</p>
                 )}
               </div>
             </Section>
@@ -513,7 +513,7 @@ export function CourseCodeExplorer({
             selection && (
               <button
                 type="button"
-                className="text-sm text-slate-600 hover:underline"
+                className="text-sm text-slate-400 hover:text-cyan-200 hover:underline"
                 onClick={() => {
                   setSelection(null);
                   setParams({ courseId: null, itemId: null, code: null });
@@ -527,7 +527,7 @@ export function CourseCodeExplorer({
           <DetailsPanel />
         </Section>
       </main>
-      <footer className="mx-auto max-w-6xl px-4 pb-10 text-xs text-slate-500">
+      <footer className="mx-auto max-w-6xl px-4 pb-10 text-xs text-slate-500/80">
         {t("explore.footer")}
       </footer>
     </div>

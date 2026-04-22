@@ -35,15 +35,17 @@ export default async function RootLayout({
   return (
     <html
       lang={locale}
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full`}
     >
-      <body className="min-h-full flex flex-col">
-        <LocaleProvider initialLocale={locale}>
-          <AuthProvider>
-            <LocaleSwitcher />
-            {children}
-          </AuthProvider>
-        </LocaleProvider>
+      <body className="min-h-dvh font-sans antialiased">
+        <div className="app-shell min-h-dvh">
+          <LocaleProvider initialLocale={locale}>
+            <AuthProvider>
+              <LocaleSwitcher />
+              {children}
+            </AuthProvider>
+          </LocaleProvider>
+        </div>
       </body>
     </html>
   );

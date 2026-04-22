@@ -28,7 +28,7 @@ export function TermSetupForm() {
   }, [load]);
 
   return (
-    <div className="mb-6 flex flex-wrap gap-4 rounded border border-slate-200 bg-white p-3 text-sm">
+    <div className="glass glass-dashed mb-6 flex flex-wrap gap-4 p-3 text-sm text-slate-200">
       <form
         className="flex flex-wrap items-end gap-2"
         onSubmit={async (e) => {
@@ -44,24 +44,24 @@ export function TermSetupForm() {
         }}
       >
         <div>
-          <div className="text-xs text-slate-500">Academic year label</div>
+          <div className="text-xs text-slate-400">Academic year label</div>
           <input
-            className="rounded border border-slate-200 px-2 py-1"
+            className="input-glass px-2 py-1"
             value={yLabel}
             onChange={(e) => setYLabel(e.target.value)}
             placeholder="2025–2026"
           />
         </div>
         <div>
-          <div className="text-xs text-slate-500">Start year</div>
+          <div className="text-xs text-slate-400">Start year</div>
           <input
             type="number"
-            className="w-24 rounded border border-slate-200 px-2 py-1"
+            className="input-glass w-24 px-2 py-1"
             value={yStart}
             onChange={(e) => setYStart(+e.target.value || 0)}
           />
         </div>
-        <button type="submit" className="rounded bg-slate-200 px-2 py-1">
+        <button type="submit" className="btn-glass px-2 py-1 text-sm">
           Add year
         </button>
       </form>
@@ -85,24 +85,24 @@ export function TermSetupForm() {
         }}
       >
         <div>
-          <div className="text-xs text-slate-500">Season key (slug)</div>
+          <div className="text-xs text-slate-400">Season key (slug)</div>
           <input
-            className="w-32 rounded border border-slate-200 px-2 py-1"
+            className="input-glass w-32 px-2 py-1"
             value={sKey}
             onChange={(e) => setSKey(e.target.value)}
             placeholder="winter"
           />
         </div>
         <div>
-          <div className="text-xs text-slate-500">Label</div>
+          <div className="text-xs text-slate-400">Label</div>
           <input
-            className="rounded border border-slate-200 px-2 py-1"
+            className="input-glass px-2 py-1"
             value={sLabel}
             onChange={(e) => setSLabel(e.target.value)}
             placeholder="Winter"
           />
         </div>
-        <button type="submit" className="rounded bg-slate-200 px-2 py-1">
+        <button type="submit" className="btn-glass px-2 py-1 text-sm">
           Add season
         </button>
       </form>
@@ -121,7 +121,7 @@ export function TermSetupForm() {
         }}
       >
         <select
-          className="rounded border border-slate-200 px-2 py-1"
+          className="input-glass px-2 py-1"
           value={termY}
           onChange={(e) => setTermY(e.target.value)}
         >
@@ -132,7 +132,7 @@ export function TermSetupForm() {
           ))}
         </select>
         <select
-          className="rounded border border-slate-200 px-2 py-1"
+          className="input-glass px-2 py-1"
           value={termS}
           onChange={(e) => setTermS(e.target.value)}
         >
@@ -142,7 +142,7 @@ export function TermSetupForm() {
             </option>
           ))}
         </select>
-        <button type="submit" className="rounded bg-slate-200 px-2 py-1">
+        <button type="submit" className="btn-glass px-2 py-1 text-sm">
           Add term
         </button>
       </form>

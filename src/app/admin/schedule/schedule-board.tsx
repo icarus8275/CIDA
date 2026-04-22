@@ -43,11 +43,11 @@ function DraggableCard({ off }: { off: OffRow }) {
         transform: CSS.Translate.toString(transform),
         opacity: isDragging ? 0.5 : 1,
       }}
-      className="rounded border border-slate-200 bg-white p-2 text-sm shadow-sm"
+      className="glass cursor-grab p-2 text-sm active:cursor-grabbing"
       {...listeners}
       {...attributes}
     >
-      <div className="font-medium text-slate-800">{off.course.name}</div>
+      <div className="font-medium text-slate-100">{off.course.name}</div>
     </div>
   );
 }
@@ -59,11 +59,13 @@ function TermColumn({ term, offerings }: { term: TermRow; offerings: OffRow[] })
   return (
     <div
       ref={setNodeRef}
-      className={`flex min-h-56 flex-1 min-w-[200px] flex-col gap-2 rounded border p-2 ${
-        isOver ? "bg-indigo-50/80 border-indigo-300" : "border-slate-200 bg-slate-50"
+      className={`glass flex min-h-56 min-w-[200px] flex-1 flex-col gap-2 p-2 ${
+        isOver
+          ? "border-cyan-400/40 bg-cyan-500/10 ring-1 ring-cyan-400/30"
+          : ""
       }`}
     >
-      <h3 className="text-sm font-semibold text-slate-800">
+      <h3 className="text-sm font-semibold text-slate-100">
         {termLabel(term)}
       </h3>
       <div className="flex flex-col gap-2">
@@ -146,7 +148,7 @@ export function ScheduleBoard() {
   };
 
   if (loading) {
-    return <p className="text-sm text-slate-600">Loading…</p>;
+    return <p className="text-sm text-slate-400">Loading…</p>;
   }
 
   return (

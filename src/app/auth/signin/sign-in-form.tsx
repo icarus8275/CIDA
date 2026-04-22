@@ -38,17 +38,17 @@ export function SignInForm({ callbackUrl }: { callbackUrl?: string }) {
       }}
     >
       <div>
-        <label className="text-xs text-slate-500">{t("signin.devEmail")}</label>
+        <label className="text-xs text-slate-400">{t("signin.devEmail")}</label>
         <input
           name="email"
           type="email"
           required
           autoComplete="username"
-          className="mt-0.5 w-full rounded border border-slate-200 px-2 py-1.5"
+          className="input-glass mt-0.5 w-full px-2 py-2"
         />
       </div>
       <div>
-        <label className="text-xs text-slate-500">
+        <label className="text-xs text-slate-400">
           {t("signin.devPassword")}
         </label>
         <input
@@ -56,14 +56,11 @@ export function SignInForm({ callbackUrl }: { callbackUrl?: string }) {
           type="password"
           required
           autoComplete="current-password"
-          className="mt-0.5 w-full rounded border border-slate-200 px-2 py-1.5"
+          className="input-glass mt-0.5 w-full px-2 py-2"
         />
       </div>
-      {err && <p className="text-sm text-red-600">{err}</p>}
-      <button
-        type="submit"
-        className="w-full rounded-xl border border-slate-200 bg-slate-900 py-2.5 text-sm font-medium text-white hover:bg-slate-800"
-      >
+      {err && <p className="text-sm text-red-300">{err}</p>}
+      <button type="submit" className="btn-glass-primary w-full py-2.5 text-sm">
         {t("signin.title")}
       </button>
     </form>

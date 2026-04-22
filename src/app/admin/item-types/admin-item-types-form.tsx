@@ -30,9 +30,9 @@ export function AdminItemTypesForm() {
 
   return (
     <div className="space-y-6">
-      {err && <p className="text-sm text-red-600">{err}</p>}
+      {err && <p className="text-sm text-red-300">{err}</p>}
       <form
-        className="space-y-2 rounded-lg border border-slate-200 bg-white p-4"
+        className="glass space-y-2 p-4"
         onSubmit={async (e) => {
           e.preventDefault();
           setErr(null);
@@ -53,7 +53,7 @@ export function AdminItemTypesForm() {
           await load();
         }}
       >
-        <h2 className="text-sm font-medium text-slate-700">
+        <h2 className="text-sm font-medium text-slate-200">
           {t("admin.itAddType")}
         </h2>
         <div className="flex flex-wrap gap-2">
@@ -61,19 +61,19 @@ export function AdminItemTypesForm() {
             placeholder={t("admin.itKeyPh")}
             value={key}
             onChange={(e) => setKey(e.target.value)}
-            className="w-40 rounded border border-slate-200 px-2 py-1.5"
+            className="input-glass w-40 px-2 py-1.5"
             required
           />
           <input
             placeholder={t("admin.itLabelPh")}
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            className="w-48 rounded border border-slate-200 px-2 py-1.5"
+            className="input-glass w-48 px-2 py-1.5"
             required
           />
           <button
             type="submit"
-            className="rounded bg-slate-900 px-3 py-1.5 text-sm text-white"
+            className="btn-glass-primary px-3 py-1.5 text-sm"
           >
             {t("admin.itAdd")}
           </button>
@@ -84,7 +84,7 @@ export function AdminItemTypesForm() {
         {list.map((row) => (
           <li
             key={row.id}
-            className="flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-3 sm:flex-row sm:items-center"
+            className="glass flex flex-col gap-2 p-3 sm:flex-row sm:items-center"
           >
             {editing?.id === row.id ? (
               <form
@@ -107,15 +107,15 @@ export function AdminItemTypesForm() {
                   }
                 }}
               >
-                <span className="text-slate-500">{row.key}</span>
+                <span className="text-slate-400">{row.key}</span>
                 <input
                   value={editing.label}
                   onChange={(e) =>
                     setEditing({ ...editing, label: e.target.value })
                   }
-                  className="flex-1 rounded border border-slate-200 px-2 py-1"
+                  className="input-glass flex-1 px-2 py-1"
                 />
-                <label className="flex items-center gap-1 text-sm">
+                <label className="flex items-center gap-1 text-sm text-slate-300">
                   <input
                     type="checkbox"
                     checked={editing.isActive}
@@ -127,7 +127,7 @@ export function AdminItemTypesForm() {
                 </label>
                 <input
                   type="number"
-                  className="w-20 rounded border border-slate-200 px-1 py-1"
+                  className="input-glass w-20 px-1 py-1"
                   value={editing.sortOrder}
                   onChange={(e) =>
                     setEditing({
@@ -136,10 +136,10 @@ export function AdminItemTypesForm() {
                     })
                   }
                 />
-                <button type="submit" className="text-sm text-indigo-600">
+                <button type="submit" className="text-sm text-cyan-200 hover:underline">
                   {t("admin.coursesSave")}
                 </button>
-                <button type="button" onClick={() => setEditing(null)}>
+                <button type="button" className="text-slate-400 hover:text-slate-200" onClick={() => setEditing(null)}>
                   {t("admin.coursesCancel")}
                 </button>
               </form>
@@ -147,9 +147,9 @@ export function AdminItemTypesForm() {
               <>
                 <div className="flex-1">
                   <code className="text-xs text-slate-500">{row.key}</code>{" "}
-                  <span className="font-medium text-slate-900">{row.label}</span>
+                  <span className="font-medium text-slate-100">{row.label}</span>
                   {!row.isActive && (
-                    <span className="ml-2 text-xs text-amber-700">
+                    <span className="ml-2 text-xs text-amber-300/90">
                       {t("admin.itInactive")}
                     </span>
                   )}
@@ -158,7 +158,7 @@ export function AdminItemTypesForm() {
                   <button
                     type="button"
                     onClick={() => setEditing(row)}
-                    className="text-sm text-indigo-600"
+                    className="text-sm text-cyan-200 hover:underline"
                   >
                     {t("admin.itEdit")}
                   </button>
@@ -173,7 +173,7 @@ export function AdminItemTypesForm() {
                       );
                       await load();
                     }}
-                    className="text-sm text-red-600"
+                    className="text-sm text-red-300 hover:underline"
                   >
                     {t("admin.itDelete")}
                   </button>
