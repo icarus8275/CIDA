@@ -8,7 +8,11 @@ import { ExploreLoading } from "./explore-loading";
 export const dynamic = "force-dynamic";
 
 export default async function ExplorePage() {
-  const [data, session] = await Promise.all([getExploreData(), auth()]);
+  const session = await auth();
+  const data =
+    session?.user != null
+      ? await getExploreData(session.user.id, session.user.role)
+      : [];
   const accountLine =
     session?.user &&
     (accountLabel(session.user.name, session.user.email) || null);

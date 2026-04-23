@@ -7,6 +7,8 @@ import { NextResponse } from "next/server";
 function revalidateTeach() {
   revalidatePath("/teach");
   revalidatePath("/teach", "layout");
+  revalidatePath("/explore");
+  revalidatePath("/explore", "layout");
 }
 
 const postSchema = z.object({

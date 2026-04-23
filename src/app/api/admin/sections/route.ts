@@ -103,5 +103,7 @@ export async function DELETE(req: Request) {
   await prisma.section.delete({ where: { id } });
   revalidatePath("/teach");
   revalidatePath("/teach", "layout");
+  revalidatePath("/explore");
+  revalidatePath("/explore", "layout");
   return NextResponse.json({ ok: true });
 }
