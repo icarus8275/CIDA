@@ -18,7 +18,8 @@ export function buildCodeIndex(
   for (const course of data) {
     for (const it of course.items) {
       for (const code of it.codes) {
-        const upper = code.toUpperCase();
+        const raw = typeof code === "string" ? code : code.value;
+        const upper = raw.toUpperCase();
         const list = map.get(upper) ?? [];
         list.push({
           code: upper,

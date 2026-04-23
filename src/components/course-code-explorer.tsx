@@ -19,30 +19,12 @@ import {
 import type { ExploreCourse } from "@/lib/explore-data";
 import { buildCodeIndex, type CodeRef } from "@/lib/build-code-index";
 import { useI18n } from "@/components/locale/locale-provider";
+import { CodesReadonlyGrouped } from "@/app/teach/section/[sectionId]/section-codes-shared";
 
 type Selection =
   | { kind: "item"; course: ExploreCourse; item: ExploreCourse["items"][0] }
   | { kind: "code"; code: string; refs: CodeRef[] }
   | null;
-
-const Chip = ({
-  children,
-  onClick,
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
-}) => (
-  <button
-    type="button"
-    onClick={(e) => {
-      e.stopPropagation();
-      onClick?.();
-    }}
-    className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-sm whitespace-nowrap text-slate-100 backdrop-blur-sm transition hover:bg-white/20"
-  >
-    {children}
-  </button>
-);
 
 const Section = ({
   title,
@@ -130,9 +112,12 @@ function matchesQuery(
 
 export function CourseCodeExplorer({
   initialData,
+  codeLabels = {},
   accountLine,
 }: {
   initialData: ExploreCourse[];
+  /** Admin 카탈로그 설명 (value 대문자 키) — Codes 탭 툴팁 */
+  codeLabels?: Record<string, string | null>;
   accountLine?: string | null;
 }) {
   const router = useRouter();
@@ -154,6 +139,13 @@ export function CourseCodeExplorer({
     );
   }, [codeIndex]);
 
+  const codeIndexEntries = useMemo(() => {
+    return allCodes.map((v) => ({
+      value: v,
+      label: codeLabels[v] ?? null,
+    }));
+  }, [allCodes, codeLabels]);
+
   const data = useMemo(() => {
     if (!query) return initialData;
     return initialData
@@ -163,7 +155,11 @@ export function CourseCodeExplorer({
         const items = c.items
           .map((it) => ({
             ...it,
-            codes: it.codes.filter((cd) => matchesQuery(cd, query)),
+            codes: it.codes.filter(
+              (cd) =>
+                matchesQuery(cd.value, query) ||
+                (cd.label != null && matchesQuery(cd.label, query))
+            ),
           }))
           .filter(
             (it) =>
@@ -320,20 +316,15 @@ export function CourseCodeExplorer({
             <p className="mb-1.5 text-xs font-medium text-slate-500">
               {t("explore.itemDetailCodes")}
             </p>
-            <div className="flex flex-wrap gap-2">
-              {item.codes.length === 0 ? (
-                <span className="text-sm text-slate-500">—</span>
-              ) : (
-                item.codes.map((cd) => (
-                  <Chip key={cd} onClick={() => showCodeDetails(cd)}>
-                    <span className="inline-flex items-center gap-1">
-                      <Hash size={14} />
-                      {cd}
-                    </span>
-                  </Chip>
-                ))
-              )}
-            </div>
+            {item.codes.length === 0 ? (
+              <span className="text-sm text-slate-500">—</span>
+            ) : (
+              <CodesReadonlyGrouped
+                codes={item.codes}
+                onCodeClick={(v) => showCodeDetails(v)}
+                idPrefix={`panel-${item.id}`}
+              />
+            )}
           </div>
         </div>
       );
@@ -347,6 +338,11 @@ export function CourseCodeExplorer({
             <Hash size={18} />
             {code}
           </p>
+          {codeLabels[code] != null && codeLabels[code] !== "" && (
+            <p className="text-sm leading-relaxed text-slate-400">
+              {codeLabels[code]}
+            </p>
+          )}
           <p className="text-sm text-slate-400">{t("explore.codeUsedIn")}</p>
           <ul className="space-y-2">
             {refs.length === 0 && (
@@ -558,25 +554,28 @@ export function CourseCodeExplorer({
                                                   }}
                                                   className="rounded-lg border border-white/10 bg-white/5 p-2 text-left outline-none ring-cyan-400/40 transition hover:border-white/20 hover:bg-white/10 focus-visible:ring-2"
                                                 >
-                                                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                                  <div className="flex flex-col gap-2">
                                                     <span className="font-medium text-slate-100">
                                                       {labelOf(it)}
                                                     </span>
-                                                    <div className="flex flex-wrap gap-2">
-                                                      {it.codes.map((cd) => (
-                                                        <Chip
-                                                          key={cd}
-                                                          onClick={() =>
-                                                            showCodeDetails(cd)
+                                                    {it.codes.length > 0 && (
+                                                      <div
+                                                        onClick={(e) =>
+                                                          e.stopPropagation()
+                                                        }
+                                                        onKeyDown={(e) =>
+                                                          e.stopPropagation()
+                                                        }
+                                                      >
+                                                        <CodesReadonlyGrouped
+                                                          codes={it.codes}
+                                                          onCodeClick={(v) =>
+                                                            showCodeDetails(v)
                                                           }
-                                                        >
-                                                          <span className="inline-flex items-center gap-1">
-                                                            <Hash size={14} />
-                                                            {cd}
-                                                          </span>
-                                                        </Chip>
-                                                      ))}
-                                                    </div>
+                                                          idPrefix={`row-${course.id}-${it.id}`}
+                                                        />
+                                                      </div>
+                                                    )}
                                                   </div>
                                                 </div>
                                               ))}
@@ -606,22 +605,17 @@ export function CourseCodeExplorer({
                 title={t("explore.codeIndex")}
                 icon={<ListTree size={18} />}
               >
-                <div className="flex max-h-[70vh] flex-wrap content-start gap-2 overflow-y-auto">
-                  {allCodes.map((c) => (
-                    <Chip
-                      key={c}
-                      onClick={() => {
+                <div className="max-h-[70vh] overflow-y-auto p-1">
+                  {allCodes.length > 0 ? (
+                    <CodesReadonlyGrouped
+                      codes={codeIndexEntries}
+                      onCodeClick={(v) => {
                         setTab("tree");
-                        showCodeDetails(c);
+                        showCodeDetails(v);
                       }}
-                    >
-                      <span className="inline-flex items-center gap-1">
-                        <Hash size={14} />
-                        {c}
-                      </span>
-                    </Chip>
-                  ))}
-                  {allCodes.length === 0 && (
+                      idPrefix="code-index"
+                    />
+                  ) : (
                     <p className="text-sm text-slate-400">
                       {t("explore.noCodes")}
                     </p>

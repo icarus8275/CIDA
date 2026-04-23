@@ -1,6 +1,6 @@
 /**
- * Calendar-year style label: for AY "2024–2025", Fall → 2024 …, Spring → 2025 …
- * so users read a single calendar year per term.
+ * Calendar-year style label: for AY "2024–2025", Fall → 2024 …, Spring / Summer
+ * → 2025 … (academic year’s ending calendar year) so users read a single year per term.
  */
 export function formatTermForDisplay(t: {
   academicYear: { label: string; startYear?: number | null };
@@ -18,6 +18,9 @@ export function formatTermForDisplay(t: {
     return `${y} ${seasonWords}`;
   }
   if (k === "spring" || k.startsWith("spring")) {
+    return `${y + 1} ${seasonWords}`;
+  }
+  if (k === "summer" || k.startsWith("summer")) {
     return `${y + 1} ${seasonWords}`;
   }
 

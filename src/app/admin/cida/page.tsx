@@ -16,7 +16,10 @@ export default async function AdminCidaViewPage() {
   if (!s?.user) {
     return null;
   }
-  const data = await getExploreData(s.user.id, UserRole.CIDA);
+  const { courses, codeLabels } = await getExploreData(
+    s.user.id,
+    UserRole.CIDA
+  );
   const accountLine = accountLabel(s.user.name, s.user.email) || null;
   return (
     <div className="space-y-4">
@@ -27,7 +30,11 @@ export default async function AdminCidaViewPage() {
         <p>{t(locale, "admin.cidaViewBanner")}</p>
       </div>
       <Suspense fallback={<ExploreLoading />}>
-        <CourseCodeExplorer initialData={data} accountLine={accountLine} />
+        <CourseCodeExplorer
+          initialData={courses}
+          codeLabels={codeLabels}
+          accountLine={accountLine}
+        />
       </Suspense>
     </div>
   );

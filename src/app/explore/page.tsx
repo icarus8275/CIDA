@@ -9,17 +9,18 @@ export const dynamic = "force-dynamic";
 
 export default async function ExplorePage() {
   const session = await auth();
-  const data =
+  const payload =
     session?.user != null
       ? await getExploreData(session.user.id, session.user.role)
-      : [];
+      : { courses: [], codeLabels: {} as Record<string, string | null> };
   const accountLine =
     session?.user &&
     (accountLabel(session.user.name, session.user.email) || null);
   return (
     <Suspense fallback={<ExploreLoading />}>
       <CourseCodeExplorer
-        initialData={data}
+        initialData={payload.courses}
+        codeLabels={payload.codeLabels}
         accountLine={accountLine}
       />
     </Suspense>

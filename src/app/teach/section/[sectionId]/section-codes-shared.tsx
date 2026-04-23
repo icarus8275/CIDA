@@ -40,7 +40,9 @@ export function codeLeadingIndex(value: string): number {
   return Number.isFinite(n) ? n : NON_NUMERIC_LEAD;
 }
 
-function groupCodeOptionsByLeadingNumber(opts: Opt[]): { lead: number; items: Opt[] }[] {
+export function groupCodeOptionsByLeadingNumber(
+  opts: Opt[]
+): { lead: number; items: Opt[] }[] {
   const map = new Map<number, Opt[]>();
   for (const o of opts) {
     const lead = codeLeadingIndex(o.value);
@@ -207,6 +209,63 @@ export function CodePicker({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/** Explore/CIDA: 항목에 붙은 코드를 교수 화면과 동일 그룹·버튼 스타일로 표시 */
+export function exploreCodesToOpts(
+  codes: { value: string; label: string | null }[]
+): Opt[] {
+  return codes.map((c, i) => ({
+    id: `ex-${c.value}-${i}`,
+    value: c.value,
+    label: c.label,
+    isActive: true,
+    sortOrder: 0,
+  }));
+}
+
+export function CodesReadonlyGrouped({
+  codes,
+  onCodeClick,
+  idPrefix = "ex",
+  className = "",
+}: {
+  codes: { value: string; label: string | null }[];
+  onCodeClick: (value: string) => void;
+  idPrefix?: string;
+  className?: string;
+}) {
+  const opts = useMemo(() => exploreCodesToOpts(codes), [codes]);
+  const rows = useMemo(
+    () => groupCodeOptionsByLeadingNumber(opts),
+    [opts]
+  );
+  if (codes.length === 0) {
+    return null;
+  }
+  return (
+    <div className={`space-y-2 ${className}`.trim()}>
+      {rows.map(({ lead, items }) => (
+        <div
+          key={lead}
+          className="flex flex-wrap gap-1.5 border-b border-white/5 pb-2 last:border-b-0 last:pb-0"
+        >
+          {items.map((o) => (
+            <button
+              key={o.id}
+              type="button"
+              id={`${idPrefix}-${o.id}`}
+              title={o.label?.trim() ? o.label : undefined}
+              onClick={() => onCodeClick(o.value)}
+              className="min-h-[2.25rem] min-w-[2.5rem] cursor-pointer rounded border border-white/10 bg-white/5 px-2 font-mono text-xs text-slate-200 transition hover:border-white/25 hover:bg-white/10"
+            >
+              {o.value}
+            </button>
+          ))}
+        </div>
+      ))}
     </div>
   );
 }

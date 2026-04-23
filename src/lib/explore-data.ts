@@ -4,13 +4,18 @@ import { Prisma } from "@/generated/prisma/client";
 import type { UserRole } from "@/generated/prisma/enums";
 import { cache } from "react";
 
+export type ExploreCode = {
+  value: string;
+  label: string | null;
+};
+
 export type ExploreItem = {
   id: string;
   itemTypeId: string;
   typeLabel: string;
   typeKey: string;
   number: number;
-  codes: string[];
+  codes: ExploreCode[];
   oneDriveUrl: string | null;
   linkTitle: string | null;
   title: string | null;
@@ -27,17 +32,24 @@ export type ExploreCourse = {
   items: ExploreItem[];
 };
 
+export type ExploreDataPayload = {
+  courses: ExploreCourse[];
+  /** value(대문자) → 관리자 설명 라벨 (툴팁) */
+  codeLabels: Record<string, string | null>;
+};
+
 /**
  * CIDA: 전체 카탈로그(읽기). ADMIN/PROFESSOR: SectionInstructor로 배정된 섹션만(강의/탐색 일치).
  */
 export const getExploreData = cache(
-  async (userId: string, role: UserRole): Promise<ExploreCourse[]> => {
+  async (userId: string, role: UserRole): Promise<ExploreDataPayload> => {
     const where: Prisma.SectionWhereInput | undefined =
       role === "CIDA"
         ? undefined
         : { instructors: { some: { userId } } };
 
-    const sections = await prisma.section.findMany({
+    const [sections, allCodeRows] = await Promise.all([
+      prisma.section.findMany({
       where,
       orderBy: { sortOrder: "asc" },
       include: {
@@ -60,7 +72,17 @@ export const getExploreData = cache(
           },
         },
       },
-    });
+    }),
+      prisma.codeNumber.findMany({
+        where: { isActive: true },
+        select: { value: true, label: true },
+      }),
+    ]);
+
+    const codeLabels: Record<string, string | null> = {};
+    for (const cn of allCodeRows) {
+      codeLabels[cn.value.trim().toUpperCase()] = cn.label;
+    }
 
     const rows = sections.map((sec) => {
       const term = sec.courseOffering.term;
@@ -81,7 +103,10 @@ export const getExploreData = cache(
           typeLabel: it.itemType.label,
           typeKey: it.itemType.key,
           number: it.number,
-          codes: it.codes.map((x) => x.codeNumber.value),
+          codes: it.codes.map((x) => ({
+            value: x.codeNumber.value,
+            label: x.codeNumber.label,
+          })),
           oneDriveUrl: it.oneDriveUrl,
           linkTitle: it.linkTitle,
           title: it.title,
@@ -97,6 +122,6 @@ export const getExploreData = cache(
         sensitivity: "base",
       });
     });
-    return rows;
+    return { courses: rows, codeLabels };
   }
 );
