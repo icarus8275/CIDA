@@ -41,11 +41,6 @@ export function SectionItemRow({
   );
   const [codeFilter, setCodeFilter] = useState("");
 
-  const codeKey = useMemo(
-    () => sortIdsKey(it.codes.map((c) => c.codeNumberId)),
-    [it.codes]
-  );
-
   useEffect(() => {
     setTitle(it.title ?? "");
   }, [it.id, it.title]);
@@ -55,9 +50,13 @@ export function SectionItemRow({
     setLinkLabel(it.linkTitle ?? "");
   }, [it.id, it.oneDriveUrl, it.linkTitle]);
 
+  // Only replace local code selection when this row is a *different* item. Syncing
+  // on every `it.codes` change overwrites with stale data while another save's
+  // debounced PUT (or a title/link reload) is still in flight — rapid multi-clicks
+  // on codes then "lose" picks. After our own code save + reload, local already matches.
   useEffect(() => {
     setCodeIds(it.codes.map((c) => c.codeNumberId));
-  }, [it.id, codeKey]);
+  }, [it.id]);
 
   useEffect(() => {
     if (title === (it.title ?? "")) return;
