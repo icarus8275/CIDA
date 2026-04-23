@@ -1,7 +1,16 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { NextResponse } from "next/server";
+
+function revalidateTeachAndExplore() {
+  revalidatePath("/teach");
+  revalidatePath("/teach", "layout");
+  revalidatePath("/explore");
+  revalidatePath("/explore", "layout");
+  revalidatePath("/admin/schedule");
+}
 
 function isPrismaUniqueViolation(e: unknown): boolean {
   return (
@@ -88,8 +97,14 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const { searchParams } = new URL(req.url);
+  if (searchParams.get("all") === "true") {
+    const r = await prisma.term.deleteMany();
+    revalidateTeachAndExplore();
+    return NextResponse.json({ ok: true, deleted: r.count });
+  }
   const id = searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id" }, { status: 400 });
   await prisma.term.delete({ where: { id } });
+  revalidateTeachAndExplore();
   return NextResponse.json({ ok: true });
 }

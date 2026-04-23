@@ -319,8 +319,47 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     ko: "이 학기와 이 앱에 배정된 수업(오퍼링)을 삭제합니다",
   },
   "admin.schedTDeleteConfirm": {
-    en: "Delete this term? All course placements and sections in this term will be removed.",
-    ko: "이 학기를 삭제할까요? 이 학기에 배정된 수업·섹션이 모두 제거됩니다.",
+    en: "Delete this term? This removes all courses scheduled for it, their sections, faculty assignments, and all section items (assignments, exams, quizzes, projects) and code links. This cannot be undone.",
+    ko: "이 학기를 정말 삭제할까요? 이 학기에 배정된 모든 과목·섹션·교수 지정, 그리고 섹션별 항목(과제·시험·퀴즈·프로젝트)과 코드 연결이 함께 삭제됩니다. 되돌릴 수 없습니다.",
+  },
+  "admin.schedDeleteAll": { en: "Delete all terms", ko: "모든 학기 삭제" },
+  "admin.schedDeleteAllTitle": {
+    en: "Remove every term from the schedule",
+    ko: "스케줄에서 모든 학기 제거",
+  },
+  "admin.schedDeleteAllConfirm": {
+    en: "Delete all terms? Every course offering, section, faculty assignment, and all section items (assignments, exams, quizzes, projects) in every term will be permanently removed. This cannot be undone.",
+    ko: "정말 모든 학기를 삭제할까요? 모든 학기에 배정된 과목·섹션·교수 지정, 그리고 모든 섹션의 항목(과제·시험·퀴즈·프로젝트)이 영구적으로 삭제됩니다. 되돌릴 수 없습니다.",
+  },
+  "admin.schedCopyTerm": { en: "Copy term", ko: "학기 복사" },
+  "admin.schedCopyTermTitle": {
+    en: "Copy this term’s course schedule to another term",
+    ko: "이 학기에 배정된 수업을 다른 학기로 복사",
+  },
+  "admin.schedCopyTitle": { en: "Copy term schedule", ko: "학기 일정 복사" },
+  "admin.schedCopyFrom": { en: "From:", ko: "원본:" },
+  "admin.schedCopyBlurb": {
+    en: "Choose a different term (year + season) to copy into. The same (year, season) term cannot be both source and target. For each course in the source, a new offering is created in the target with the same sections, faculty, items, and code links. If that course is already in the target term, it is skipped.",
+    ko: "다른 학기(학년·계절)를 선택하세요. 원본과 같은 학기로는 복사할 수 없습니다. 원본에 배정된 각 과목은 대상 학기에 새 수업(오퍼링)으로 복사되며, 섹션·교수·항목(과제·시험 등)·코드가 그대로 복제됩니다. 대상 학기에 이미 같은 과목이 있으면 그 과목은 건너뜁니다.",
+  },
+  "admin.schedCopyTarget": { en: "Copy into", ko: "복사할 학기" },
+  "admin.schedCopyNoTarget": {
+    en: "There is no other term to copy to. Add another (year, season) in the form above first.",
+    ko: "복사할 다른 학기가 없습니다. 위에서 다른 학년·계절 조합의 학기를 먼저 추가하세요.",
+  },
+  "admin.schedCopyPickTarget": {
+    en: "Select a target term.",
+    ko: "대상 학기를 선택하세요.",
+  },
+  "admin.schedCopyRun": { en: "Copy", ko: "복사" },
+  "admin.schedCopyErr": { en: "Copy failed.", ko: "복사에 실패했습니다." },
+  "admin.schedCopyDone": {
+    en: "Copied {n} course offering(s) into the target term.",
+    ko: "대상 학기에 과목(오퍼링) {n}개를 복사했습니다.",
+  },
+  "admin.schedCopyDoneWithSkip": {
+    en: "Copied {n} course offering(s). Skipped {k} (already in the target): {list}.",
+    ko: "과목(오퍼링) {n}개를 복사했습니다. {k}개는 대상에 이미 있어 건너뜀: {list}.",
   },
   "admin.schedAlrtDup": {
     en: "This course is already in that term.",

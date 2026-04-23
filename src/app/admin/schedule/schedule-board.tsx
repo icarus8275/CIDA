@@ -12,13 +12,14 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, X } from "lucide-react";
+import { Copy, GripVertical, X } from "lucide-react";
 import { formatTermForDisplay } from "@/lib/term-display";
 import { useI18n } from "@/components/locale/locale-provider";
 import {
   OfferingSectionsModal,
   type ConfigOffering,
 } from "./offering-sections-modal";
+import { TermCopyModal } from "./term-copy-modal";
 
 const POOL = "__pool__";
 const D_TERM = (id: string) => `term:${id}`;
@@ -192,12 +193,14 @@ function TermColumn({
   term,
   offerings,
   onDeleteTerm,
+  onOpenCopy,
   onRemoveOffering,
   onConfigureOffering,
 }: {
   term: TermRow;
   offerings: OffRow[];
   onDeleteTerm: (id: string) => void;
+  onOpenCopy: (t: TermRow) => void;
   onRemoveOffering: (id: string) => void;
   onConfigureOffering: (off: OffRow) => void;
 }) {
@@ -216,15 +219,26 @@ function TermColumn({
         <h3 className="text-sm font-semibold leading-tight text-slate-100">
           {formatTermForDisplay(term)}
         </h3>
-        <button
-          type="button"
-          aria-label={t("admin.schedTDelete")}
-          title={t("admin.schedTDeleteTitle")}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-rose-300/90 opacity-0 transition hover:bg-rose-500/20 group-hover/term:opacity-100"
-          onClick={() => onDeleteTerm(term.id)}
-        >
-          <X className="h-3.5 w-3.5" strokeWidth={2.5} />
-        </button>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <button
+            type="button"
+            aria-label={t("admin.schedCopyTerm")}
+            title={t("admin.schedCopyTermTitle")}
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-cyan-200/90 opacity-0 transition hover:bg-cyan-500/20 group-hover/term:opacity-100"
+            onClick={() => onOpenCopy(term)}
+          >
+            <Copy className="h-3.5 w-3.5" strokeWidth={2.5} />
+          </button>
+          <button
+            type="button"
+            aria-label={t("admin.schedTDelete")}
+            title={t("admin.schedTDeleteTitle")}
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-rose-300/90 opacity-0 transition hover:bg-rose-500/20 group-hover/term:opacity-100"
+            onClick={() => onDeleteTerm(term.id)}
+          >
+            <X className="h-3.5 w-3.5" strokeWidth={2.5} />
+          </button>
+        </div>
       </div>
       <div className="flex flex-col gap-2">
         {offerings.map((o) => (
@@ -249,6 +263,7 @@ export function ScheduleBoard() {
   const [configOffering, setConfigOffering] = useState<ConfigOffering | null>(
     null
   );
+  const [copySource, setCopySource] = useState<TermRow | null>(null);
 
   const load = useCallback(async () => {
     const [tRes, oRes, cRes] = await Promise.all([
@@ -321,6 +336,19 @@ export function ScheduleBoard() {
       window.dispatchEvent(new Event("schedule-refresh"));
     }
   }, [t]);
+
+  const deleteAllTerms = useCallback(async () => {
+    if (terms.length === 0) {
+      return;
+    }
+    if (!confirm(t("admin.schedDeleteAllConfirm"))) {
+      return;
+    }
+    const r = await fetch("/api/admin/terms?all=true", { method: "DELETE" });
+    if (r.ok) {
+      window.dispatchEvent(new Event("schedule-refresh"));
+    }
+  }, [t, terms.length]);
 
   const openConfigure = useCallback((term: TermRow) => {
     return (off: OffRow) => {
@@ -418,6 +446,7 @@ export function ScheduleBoard() {
                 term={term}
                 offerings={byTerm(term.id)}
                 onDeleteTerm={deleteTerm}
+                onOpenCopy={setCopySource}
                 onRemoveOffering={removeOffering}
                 onConfigureOffering={openConfigure(term)}
               />
@@ -425,11 +454,30 @@ export function ScheduleBoard() {
           </div>
         </div>
       </DndContext>
+      {terms.length > 0 && (
+        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-white/10 pt-4">
+          <p className="mr-auto text-xs text-slate-500">
+            {t("admin.schedDeleteAllTitle")}
+          </p>
+          <button
+            type="button"
+            className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-1.5 text-sm text-rose-100 transition hover:bg-rose-500/20"
+            onClick={() => void deleteAllTerms()}
+          >
+            {t("admin.schedDeleteAll")}
+          </button>
+        </div>
+      )}
       {terms.length === 0 && (
         <p className="text-sm text-amber-200/80">
           {t("admin.schedNoTerms")}
         </p>
       )}
+      <TermCopyModal
+        source={copySource}
+        allTerms={terms}
+        onClose={() => setCopySource(null)}
+      />
       <OfferingSectionsModal
         offering={configOffering}
         onClose={() => setConfigOffering(null)}
