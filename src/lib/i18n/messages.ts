@@ -107,6 +107,7 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     ko: "관리자가 등록한 코드에서 선택하세요. 여러 개 지정할 수 있습니다.",
   },
   "teach.codeFilter": { en: "Filter codes…", ko: "코드 필터…" },
+  "teach.codeNoMatch": { en: "No codes match this filter.", ko: "필터에 맞는 코드가 없습니다." },
   "teach.noCodeCatalog": {
     en: "No codes in the catalog yet. Ask an admin to add code numbers under Admin → Code #s.",
     ko: "목록에 코드가 아직 없습니다. 관리자에게 관리 → 코드 번호에서 등록을 요청하세요.",
@@ -116,10 +117,25 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     ko: "코드 선택을 저장하지 못했습니다.",
   },
   "teach.add": { en: "Add", ko: "추가" },
+  "teach.howMany": { en: "How many", ko: "개수" },
+  "teach.howManyHint": {
+    en: "New items are numbered in order after the current highest for this type (e.g. no items yet and count 6 → 1–6). Up to 50 at once. Codes you pick below apply only when count is 1.",
+    ko: "같은 유형의 기존 최대 번호 다음부터 이어지는 번호로 여러 개를 만듭니다(없을 때 6 → 1~6). 한 번에 최대 50개. 아래에서 고른 코드는 개수 1일 때만 새 항목에 붙습니다.",
+  },
   "teach.itemsCodes": { en: "Items & codes", ko: "항목·코드" },
   "teach.closeLink": { en: "Close link panel", ko: "연결 패널 닫기" },
   "teach.openLink": { en: "Link from OneDrive", ko: "OneDrive에서 연결" },
   "teach.saveCodes": { en: "Save codes", ko: "코드 저장" },
+  "teach.saveLink": { en: "Save link", ko: "링크 저장" },
+  "teach.saveCodeSelection": {
+    en: "Save code selection",
+    ko: "선택한 코드만 저장",
+  },
+  "teach.codeCatalogPicks": { en: "Code catalog", ko: "코드 목록" },
+  "teach.saveCodeSelectionHint": {
+    en: "Toggle codes below, then save here (separate from the link button above).",
+    ko: "아래에서 코드를 눌러 선택한 뒤 이 버튼으로만 저장합니다(위 링크 저장과 별도).",
+  },
   "teach.unlink": { en: "Unlink", ko: "연결 끊기" },
   "teach.odRoot": { en: "OneDrive root", ko: "OneDrive 루트" },
   "teach.newFolderName": { en: "New folder name", ko: "새 폴더 이름" },
@@ -129,6 +145,10 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "teach.deleteConfirm": { en: "Delete this item?", ko: "이 항목을 삭제할까요?" },
   "teach.errForbidden": { en: "You do not have permission to edit this course.", ko: "이 과목을 편집할 권한이 없습니다." },
   "teach.errLoad": { en: "Failed to load course.", ko: "불러오기에 실패했습니다." },
+  "teach.errAddItems": {
+    en: "Could not add all items. Check the last items on the list and try again.",
+    ko: "일부 항목만 추가되었을 수 있습니다. 목록을 확인한 뒤 다시 시도하세요.",
+  },
   "teach.loading": { en: "Loading…", ko: "로딩 중…" },
   "teach.odApiFail": {
     en: "OneDrive API failed. Sign in with your school Microsoft (Entra) account.",
@@ -137,6 +157,31 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   // admin layout
   "admin.navTitle": { en: "Admin", ko: "관리" },
   "admin.home": { en: "Home", ko: "개요" },
+  "admin.facultyNav": { en: "Faculty", ko: "교수" },
+  "admin.facultyPageTitle": {
+    en: "Edit faculty sections & items",
+    ko: "교수 섹션·과제 편집",
+  },
+  "admin.facultyPageBody": {
+    en: "Select a faculty member, then a section. You can add, edit, or delete assignments, exams, quizzes, projects, and code links the same as on the Faculty course page. Changes are saved to that section.",
+    ko: "교수를 고른 뒤 섹션을 선택하세요. 교수 화면의 과정과 같이 과제·시험·퀴즈·프로젝트·코드·링크를 추가·수정·삭제할 수 있으며, 해당 섹션에 저장됩니다.",
+  },
+  "admin.facultyPick": { en: "Faculty", ko: "교수 선택" },
+  "admin.facultySections": { en: "Their sections", ko: "배정된 섹션" },
+  "admin.facultyNoSections": {
+    en: "No section assignments. Add instructors on the Schedule page.",
+    ko: "배정된 섹션이 없습니다. Schedule에서 해당 교수를 섹션에 배정하세요.",
+  },
+  "admin.facultySelectFirst": {
+    en: "Choose a faculty member above to list sections.",
+    ko: "위에서 교수를 선택하면 섹션이 나열됩니다.",
+  },
+  "admin.facultyOpenSection": { en: "Open", ko: "열기" },
+  "admin.facultyBackToList": { en: "← Back to faculty & sections", ko: "← 교수·섹션으로" },
+  "admin.facultySurrogateBanner": {
+    en: "Editing as admin for: __NAME__",
+    ko: "관리자로 편집 중: __NAME__",
+  },
   "admin.courses": { en: "Courses", ko: "과목" },
   "admin.itemTypes": { en: "Item types", ko: "항목 유형" },
   "admin.codeNumbers": { en: "Code #s", ko: "코드 번호" },

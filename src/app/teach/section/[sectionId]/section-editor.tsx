@@ -25,6 +25,14 @@ type Item = {
   itemType: { id: string; key: string; label: string };
   codes: CodeLink[];
 };
+
+function nextNumberForType(items: Item[], typeId: string): number {
+  const nums = items
+    .filter((i) => i.itemType.id === typeId)
+    .map((i) => i.number);
+  if (nums.length === 0) return 1;
+  return Math.max(...nums) + 1;
+}
 type ItemType = { id: string; key: string; label: string };
 type SectionPayload = {
   id: string;
@@ -41,7 +49,13 @@ type SectionPayload = {
 
 type CatalogRow = { id: string; value: string; label: string | null; sortOrder: number };
 
-type Opt = { id: string; value: string; label: string | null; isActive: boolean };
+type Opt = {
+  id: string;
+  value: string;
+  label: string | null;
+  isActive: boolean;
+  sortOrder: number;
+};
 
 function buildOptions(
   catalog: CatalogRow[],
@@ -54,6 +68,7 @@ function buildOptions(
       value: c.value,
       label: c.label,
       isActive: true,
+      sortOrder: c.sortOrder,
     });
   }
   for (const link of itemCodes ?? []) {
@@ -64,10 +79,16 @@ function buildOptions(
         value: n.value,
         label: n.label,
         isActive: n.isActive,
+        sortOrder: 999_999,
       });
     }
   }
-  return [...m.values()].sort((a, b) => a.value.localeCompare(b.value));
+  return [...m.values()].sort((a, b) => {
+    if (a.sortOrder !== b.sortOrder) {
+      return a.sortOrder - b.sortOrder;
+    }
+    return a.value.localeCompare(b.value, undefined, { numeric: true });
+  });
 }
 
 function CodePicker({
@@ -78,6 +99,7 @@ function CodePicker({
   filter,
   onFilterChange,
   disabled,
+  idPrefix,
 }: {
   t: (k: string) => string;
   options: Opt[];
@@ -86,6 +108,8 @@ function CodePicker({
   filter: string;
   onFilterChange: (v: string) => void;
   disabled?: boolean;
+  /** 안정적인 DOM id(여러 pickers) */
+  idPrefix: string;
 }) {
   const selected = new Set(valueIds);
   const q = filter.trim().toLowerCase();
@@ -110,66 +134,79 @@ function CodePicker({
         value={filter}
         onChange={(e) => onFilterChange(e.target.value)}
         disabled={disabled}
+        autoComplete="off"
       />
-      <div className="max-h-40 overflow-y-auto rounded border border-white/10 p-2">
+      <div className="glass min-h-16 max-h-52 overflow-y-auto p-2">
         {options.length === 0 ? (
           <p className="text-sm text-amber-200/90">{t("teach.noCodeCatalog")}</p>
+        ) : shown.length === 0 ? (
+          <p className="text-sm text-slate-500">{t("teach.codeNoMatch")}</p>
         ) : (
-          <ul className="space-y-1.5 text-sm">
+          <div className="flex flex-wrap gap-1.5">
             {shown.map((o) => {
               const isOn = selected.has(o.id);
               const isDisabled = disabled || (!o.isActive && !isOn);
               return (
-                <li key={o.id} className="flex items-start gap-2">
-                  <input
-                    type="checkbox"
-                    className="mt-0.5"
-                    id={`c-${o.id}`}
-                    checked={isOn}
-                    disabled={isDisabled}
-                    onChange={(e) => {
-                      const next = new Set(valueIds);
-                      if (e.target.checked) next.add(o.id);
-                      else next.delete(o.id);
-                      onChange([...next]);
-                    }}
-                  />
-                  <label
-                    htmlFor={`c-${o.id}`}
-                    className={
-                      o.isActive || isOn
-                        ? "cursor-pointer text-slate-200"
-                        : "cursor-not-allowed text-slate-500"
+                <button
+                  key={o.id}
+                  type="button"
+                  id={`${idPrefix}-${o.id}`}
+                  title={
+                    o.label && o.label.trim()
+                      ? o.label
+                      : isOn && !o.isActive
+                        ? "inactive (saved)"
+                        : undefined
+                  }
+                  aria-pressed={isOn}
+                  disabled={isDisabled}
+                  onClick={() => {
+                    const next = new Set(valueIds);
+                    if (next.has(o.id)) {
+                      next.delete(o.id);
+                    } else {
+                      next.add(o.id);
                     }
-                  >
-                    <span className="font-mono text-cyan-100/90">{o.value}</span>
-                    {o.label && (
-                      <span className="ml-1 text-slate-500">({o.label})</span>
-                    )}
-                    {!o.isActive && isOn && (
-                      <span className="ml-1 text-xs text-amber-300">
-                        (inactive)
-                      </span>
-                    )}
-                  </label>
-                </li>
+                    onChange([...next]);
+                  }}
+                  className={[
+                    "min-h-[2.25rem] min-w-[2.5rem] rounded border px-2 font-mono text-xs transition",
+                    isOn
+                      ? "border-cyan-400/50 bg-cyan-500/20 text-cyan-100 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.2)]"
+                      : "border-white/10 bg-white/5 text-slate-200 hover:border-white/25 hover:bg-white/10",
+                    isDisabled ? "cursor-not-allowed opacity-40" : "cursor-pointer",
+                    !o.isActive && isOn ? "text-amber-200/90" : "",
+                  ].join(" ")}
+                >
+                  {o.value}
+                </button>
               );
             })}
-          </ul>
+          </div>
         )}
       </div>
     </div>
   );
 }
 
-export function SectionEditor({ sectionId }: { sectionId: string }) {
+export function SectionEditor({
+  sectionId,
+  surrogate = null,
+}: {
+  sectionId: string;
+  /** Admin: 편집 대상 교수와 관리자 화면으로의 복귀 링크 */
+  surrogate?: { facultyLabel: string; backHref: string } | null;
+}) {
   const { t } = useI18n();
   const [section, setSection] = useState<SectionPayload | null>(null);
   const [types, setTypes] = useState<ItemType[]>([]);
   const [catalog, setCatalog] = useState<CatalogRow[]>([]);
   const [err, setErr] = useState<string | null>(null);
-  const [newItem, setNewItem] = useState({ typeId: "", number: 1 });
+  const [addErr, setAddErr] = useState<string | null>(null);
+  const [newItem, setNewItem] = useState({ typeId: "" });
+  const [addCount, setAddCount] = useState(1);
   const [newItemCodes, setNewItemCodes] = useState<string[]>([]);
+  const [addBusy, setAddBusy] = useState(false);
   const [newFilter, setNewFilter] = useState("");
   const [codeSel, setCodeSel] = useState<Record<string, string[] | undefined>>(
     {}
@@ -220,12 +257,20 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
   return (
     <div className="space-y-8">
       <div>
+        {surrogate && (
+          <p className="mb-2 text-sm text-amber-200/90">
+            {t("admin.facultySurrogateBanner").replace(
+              "__NAME__",
+              surrogate.facultyLabel
+            )}
+          </p>
+        )}
         <h1 className="text-lg font-bold text-white">{path}</h1>
         <Link
-          href="/teach"
+          href={surrogate ? surrogate.backHref : "/teach"}
           className="text-sm text-slate-400 hover:text-cyan-200 hover:underline"
         >
-          {t("teach.backList")}
+          {surrogate ? t("admin.facultyBackToList") : t("teach.backList")}
         </Link>
       </div>
 
@@ -233,30 +278,49 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
         <h2 className="mb-2 font-medium text-slate-200">
           {t("teach.addItem")}
         </h2>
+        <p className="mb-1 text-xs text-slate-500">{t("teach.howManyHint")}</p>
         <p className="mb-2 text-xs text-slate-500">{t("teach.codeNumbersHint")}</p>
         <form
           className="space-y-3"
           onSubmit={async (e) => {
             e.preventDefault();
-            if (!newItem.typeId) return;
-            const r = await fetch("/api/teach/course-items", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                sectionId,
-                itemTypeId: newItem.typeId,
-                number: newItem.number,
-                codeNumberIds: newItemCodes,
-              }),
-            });
-            if (r.ok) {
-              setNewItem({ typeId: newItem.typeId, number: newItem.number + 1 });
+            if (!newItem.typeId || addBusy) return;
+            const n = Math.min(50, Math.max(1, Math.floor(addCount) || 1));
+            const start = nextNumberForType(section.courseItems, newItem.typeId);
+            const codesToAttach = n === 1 ? newItemCodes : [];
+            setAddBusy(true);
+            setAddErr(null);
+            try {
+              for (let i = 0; i < n; i++) {
+                const r = await fetch("/api/teach/course-items", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    sectionId,
+                    itemTypeId: newItem.typeId,
+                    number: start + i,
+                    codeNumberIds: i === 0 ? codesToAttach : [],
+                  }),
+                });
+                if (!r.ok) {
+                  setAddErr(t("teach.errAddItems"));
+                  await load();
+                  return;
+                }
+              }
+              setNewItem({ typeId: newItem.typeId });
+              setAddCount(1);
               setNewItemCodes([]);
               setNewFilter("");
               await load();
+            } finally {
+              setAddBusy(false);
             }
           }}
         >
+          {addErr && (
+            <p className="text-sm text-amber-200/90">{addErr}</p>
+          )}
           <div className="flex flex-wrap items-end gap-2">
             <select
               className="input-glass px-2 py-1.5"
@@ -273,29 +337,38 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
                 </option>
               ))}
             </select>
-            <input
-              type="number"
-              className="input-glass w-20 px-2 py-1.5"
-              value={newItem.number}
-              onChange={(e) =>
-                setNewItem((x) => ({ ...x, number: +e.target.value || 0 }))
-              }
-              min={0}
-            />
+            <label className="flex flex-col text-xs text-slate-400">
+              <span>{t("teach.howMany")}</span>
+              <input
+                type="number"
+                className="input-glass mt-0.5 w-20 px-2 py-1.5"
+                value={addCount}
+                onChange={(e) =>
+                  setAddCount(
+                    Math.min(50, Math.max(1, +e.target.value || 1))
+                  )
+                }
+                min={1}
+                max={50}
+              />
+            </label>
             <button
               type="submit"
-              className="btn-glass-primary px-3 py-1.5 text-sm"
+              disabled={addBusy}
+              className="btn-glass-primary px-3 py-1.5 text-sm disabled:opacity-50"
             >
-              {t("teach.add")}
+              {addBusy ? t("teach.loading") : t("teach.add")}
             </button>
           </div>
           <CodePicker
             t={t}
+            idPrefix="add-new"
             options={buildOptions(catalog, undefined)}
             valueIds={newItemCodes}
             onChange={setNewItemCodes}
             filter={newFilter}
             onFilterChange={setNewFilter}
+            disabled={addBusy}
           />
         </form>
       </section>
@@ -372,7 +445,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
                     />
                     <button
                       type="button"
-                      className="btn-glass px-2 py-1 text-sm"
+                      className="btn-glass-primary px-2 py-1 text-sm"
                       onClick={async () => {
                         const cur = linkEdit[it.id] ?? {
                           url: it.oneDriveUrl ?? "",
@@ -389,7 +462,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
                         await load();
                       }}
                     >
-                      {t("teach.saveCodes")}
+                      {t("teach.saveLink")}
                     </button>
                   </div>
                   {it.oneDriveUrl && (
@@ -405,10 +478,11 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
                 </div>
                 <div className="mb-2 space-y-1">
                   <label className="text-xs text-slate-400">
-                    {t("teach.itemsCodes")} — {t("teach.codeNumbersHint")}
+                    {t("teach.codeCatalogPicks")} — {t("teach.saveCodeSelectionHint")}
                   </label>
                   <CodePicker
                     t={t}
+                    idPrefix={`item-${it.id}`}
                     options={buildOptions(catalog, it.codes)}
                     valueIds={ce}
                     onChange={(ids) =>
@@ -421,7 +495,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
                   />
                   <button
                     type="button"
-                    className="btn-glass mt-1 px-2 py-1 text-sm"
+                    className="btn-glass-primary mt-2 px-3 py-1.5 text-sm"
                     onClick={async () => {
                       const ids = codeSel[it.id] ?? it.codes.map((c) => c.codeNumberId);
                       const r = await fetch(`/api/teach/course-items/${it.id}/codes`, {
@@ -442,7 +516,7 @@ export function SectionEditor({ sectionId }: { sectionId: string }) {
                       }
                     }}
                   >
-                    {t("teach.saveCodes")}
+                    {t("teach.saveCodeSelection")}
                   </button>
                 </div>
                 <div className="mt-1">

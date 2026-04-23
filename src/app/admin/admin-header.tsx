@@ -47,6 +47,9 @@ export function AdminHeader({
           <Link href="/admin/schedule" className="link-app">
             {t("admin.scheduleNav")}
           </Link>
+          <Link href="/admin/faculty" className="link-app">
+            {t("admin.facultyNav")}
+          </Link>
           <Link href="/explore" className="link-app-muted">
             {t("teach.explore")}
           </Link>
