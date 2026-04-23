@@ -208,8 +208,8 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "teach.add": { en: "Add", ko: "추가" },
   "teach.howMany": { en: "How many", ko: "개수" },
   "teach.howManyHint": {
-    en: "New items are numbered in order after the current highest for this type (e.g. no items yet and count 6 → 1–6). Up to 50 at once. Codes you pick below apply only when count is 1.",
-    ko: "같은 유형의 기존 최대 번호 다음부터 이어지는 번호로 여러 개를 만듭니다(없을 때 6 → 1~6). 한 번에 최대 50개. 아래에서 고른 코드는 개수 1일 때만 새 항목에 붙습니다.",
+    en: "Applies to every item type (assignment, quiz, exam, project, …). New items are numbered after the current highest for the selected type (e.g. no items yet and count 6 → 1–6). Up to 50 at once. Codes you pick below apply only when count is 1.",
+    ko: "과제·퀴즈·시험·프로젝트 등 선택한 항목 유형마다 따로 적용됩니다. 해당 유형에서 기존 최대 번호 다음부터 이어집니다(없을 때 6 → 1~6). 한 번에 최대 50개. 아래에서 고른 코드는 개수 1일 때만 새 항목에 붙습니다.",
   },
   "teach.itemsCodes": { en: "Items & codes", ko: "항목·코드" },
   "teach.closeLink": { en: "Close link panel", ko: "연결 패널 닫기" },

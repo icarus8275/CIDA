@@ -226,24 +226,60 @@ export function exploreCodesToOpts(
   }));
 }
 
+function sortCodeOptsByValue(opts: Opt[]): Opt[] {
+  return [...opts].sort((a, b) => {
+    const la = codeLeadingIndex(a.value);
+    const lb = codeLeadingIndex(b.value);
+    if (la !== lb) {
+      return la - lb;
+    }
+    if (a.sortOrder !== b.sortOrder) {
+      return a.sortOrder - b.sortOrder;
+    }
+    return a.value.localeCompare(b.value, undefined, { numeric: true });
+  });
+}
+
 export function CodesReadonlyGrouped({
   codes,
   onCodeClick,
   idPrefix = "ex",
   className = "",
+  /** Explore: all chips in one flex-wrapped row; no grouping by leading digit */
+  oneLine = false,
 }: {
   codes: { value: string; label: string | null }[];
   onCodeClick: (value: string) => void;
   idPrefix?: string;
   className?: string;
+  oneLine?: boolean;
 }) {
   const opts = useMemo(() => exploreCodesToOpts(codes), [codes]);
   const rows = useMemo(
     () => groupCodeOptionsByLeadingNumber(opts),
     [opts]
   );
+  const flatSorted = useMemo(() => sortCodeOptsByValue(opts), [opts]);
   if (codes.length === 0) {
     return null;
+  }
+  if (oneLine) {
+    return (
+      <div className={`flex flex-wrap items-center gap-1.5 ${className}`.trim()}>
+        {flatSorted.map((o) => (
+          <button
+            key={o.id}
+            type="button"
+            id={`${idPrefix}-${o.id}`}
+            title={o.label?.trim() ? o.label : undefined}
+            onClick={() => onCodeClick(o.value)}
+            className="min-h-[2.25rem] min-w-[2.5rem] cursor-pointer rounded border border-app-border/70 bg-app-card/55 px-2 font-mono text-xs text-app-fg/92 transition hover:border-app-border hover:bg-app-card/75"
+          >
+            {o.value}
+          </button>
+        ))}
+      </div>
+    );
   }
   return (
     <div className={`space-y-2 ${className}`.trim()}>

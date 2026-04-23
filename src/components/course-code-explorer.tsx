@@ -347,6 +347,7 @@ export function CourseCodeExplorer({
               <span className="text-sm text-app-muted/85">?</span>
             ) : (
               <CodesReadonlyGrouped
+                oneLine
                 codes={item.codes}
                 onCodeClick={(v) => showCodeDetails(v)}
                 idPrefix={`panel-${item.id}`}
@@ -591,7 +592,7 @@ export function CourseCodeExplorer({
                                                   }}
                                                   className="rounded-lg border border-app-border/70 bg-app-card/55 p-2 text-left outline-none ring-app-link/30 transition hover:border-app-border/90 hover:bg-app-card/75 focus-visible:ring-2"
                                                 >
-                                                  <div className="flex flex-col gap-2">
+                                                  <div className="flex min-w-0 flex-col gap-1.5">
                                                     <span className="font-medium text-app-fg">
                                                       {labelOf(it)}
                                                     </span>
@@ -605,6 +606,7 @@ export function CourseCodeExplorer({
                                                         }
                                                       >
                                                         <CodesReadonlyGrouped
+                                                          oneLine
                                                           codes={it.codes}
                                                           onCodeClick={(v) =>
                                                             showCodeDetails(v)
@@ -645,6 +647,7 @@ export function CourseCodeExplorer({
                 <div className="max-h-[70vh] overflow-y-auto p-1">
                   {allCodes.length > 0 ? (
                     <CodesReadonlyGrouped
+                      oneLine
                       codes={codeIndexEntries}
                       onCodeClick={(v) => {
                         setTab("tree");

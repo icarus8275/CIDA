@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/components/locale/locale-provider";
 import { formatTermForDisplay } from "@/lib/term-display";
@@ -18,12 +18,53 @@ type Item = {
   codes: CodeLink[];
 };
 
+/** Per item type in this section (assignment, quiz, exam, project, …); matches DB @@unique([sectionId, itemTypeId, number]). */
 function nextNumberForType(items: Item[], typeId: string): number {
   const nums = items
     .filter((i) => i.itemType.id === typeId)
     .map((i) => i.number);
   if (nums.length === 0) return 1;
   return Math.max(...nums) + 1;
+}
+
+/** Group items under type headings; order groups by `typeOrder` (admin item-types list), then by number within each group. */
+function groupItemsByType(
+  items: Item[],
+  typeOrder: ItemType[]
+): { typeId: string; label: string; items: Item[] }[] {
+  const byId = new Map<string, Item[]>();
+  for (const it of items) {
+    const id = it.itemType.id;
+    const list = byId.get(id);
+    if (list) {
+      list.push(it);
+    } else {
+      byId.set(id, [it]);
+    }
+  }
+  for (const list of byId.values()) {
+    list.sort((a, b) => a.number - b.number);
+  }
+  const out: { typeId: string; label: string; items: Item[] }[] = [];
+  const used = new Set<string>();
+  for (const ty of typeOrder) {
+    const list = byId.get(ty.id);
+    if (list?.length) {
+      out.push({ typeId: ty.id, label: ty.label, items: list });
+      used.add(ty.id);
+    }
+  }
+  for (const [id, list] of byId) {
+    if (used.has(id) || !list.length) {
+      continue;
+    }
+    out.push({
+      typeId: id,
+      label: list[0]!.itemType.label,
+      items: list,
+    });
+  }
+  return out;
 }
 type ItemType = { id: string; key: string; label: string };
 type SectionPayload = {
@@ -88,6 +129,13 @@ export function SectionEditor({
     void loadTypes();
     void loadCatalog();
   }, [load, loadTypes, loadCatalog]);
+
+  const itemsByType = useMemo(() => {
+    if (!section) {
+      return [];
+    }
+    return groupItemsByType(section.courseItems, types);
+  }, [section, types]);
 
   if (err) {
     return <p className="text-sm text-app-danger">{err}</p>;
@@ -222,17 +270,30 @@ export function SectionEditor({
         <h2 className="mb-2 font-medium text-app-fg/92">
           {t("teach.itemsCodes")}
         </h2>
-        <ul className="space-y-3">
-          {section.courseItems.map((it) => (
-            <SectionItemRow
-              key={it.id}
-              t={t}
-              it={it}
-              catalog={catalog}
-              onReload={load}
-            />
+        <div className="space-y-8">
+          {itemsByType.map((group) => (
+            <div key={group.typeId}>
+              <h3 className="mb-2 border-b border-app-border/70 pb-1.5 text-sm font-semibold tracking-wide text-app-primary">
+                {group.label}
+                <span className="ml-2 font-normal text-app-muted/90">
+                  ({group.items.length})
+                </span>
+              </h3>
+              <ul className="space-y-3">
+                {group.items.map((it) => (
+                  <li key={it.id}>
+                    <SectionItemRow
+                      t={t}
+                      it={it}
+                      catalog={catalog}
+                      onReload={load}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
-        </ul>
+        </div>
       </section>
     </div>
   );
