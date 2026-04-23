@@ -26,7 +26,7 @@ export async function requireProfessorOrAdmin() {
   return s;
 }
 
-/** CIDA = read-only; never edit sections/items */
+/** CIDA: Explore lists all sections; no writes to course items/sections */
 export function isReadOnlyRole(
   role: "ADMIN" | "PROFESSOR" | "CIDA"
 ): boolean {

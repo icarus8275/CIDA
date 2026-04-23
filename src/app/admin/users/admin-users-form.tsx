@@ -110,9 +110,11 @@ const CreateUserForm = memo(function CreateUserForm({
 function EditableUserName({
   user,
   onSaved,
+  showLabel = true,
 }: {
   user: UserRow;
   onSaved: () => void;
+  showLabel?: boolean;
 }) {
   const { t } = useI18n();
   const [value, setValue] = useState(user.name ?? "");
@@ -121,10 +123,20 @@ function EditableUserName({
   }, [user.id, user.name]);
 
   return (
-    <label className="flex w-full min-w-0 max-w-sm flex-col gap-0.5 sm:max-w-md">
-      <span className="text-[11px] text-app-muted/85">{t("admin.usersNameLabel")}</span>
+    <label
+      className={
+        showLabel
+          ? "flex w-full min-w-0 max-w-sm flex-col gap-0.5 sm:max-w-md"
+          : "block w-full min-w-0"
+      }
+    >
+      {showLabel && (
+        <span className="text-[11px] text-app-muted/85">
+          {t("admin.usersNameLabel")}
+        </span>
+      )}
       <input
-        className="input-glass w-full px-2 py-1.5 text-sm"
+        className="input-glass w-full min-w-[12rem] max-w-md px-2 py-1.5 text-sm"
         value={value}
         placeholder={t("admin.usersDisplayNamePh")}
         onChange={(e) => setValue(e.target.value)}
@@ -170,82 +182,104 @@ export function AdminUsersForm() {
   return (
     <div className="space-y-6">
       <CreateUserForm onUserCreated={onUserCreated} />
-      <ul className="space-y-2">
-        {list.map((u) => (
-          <li
-            key={u.id}
-            className="glass flex flex-col gap-3 p-3 lg:flex-row lg:items-end lg:justify-between"
-          >
-            <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-end sm:gap-4">
-              <div className="min-w-0 sm:max-w-xs">
-                <div className="text-[11px] text-app-muted/85">
-                  {t("admin.usersEmailLabel")}
-                </div>
-                <div className="font-medium text-app-fg break-all">
-                  {u.email}
-                </div>
-                {u.role === "ADMIN" ? (
-                  <span className="mt-0.5 inline-block text-xs text-app-muted/90">
-                    {t("admin.usersBadgeAdmin")}
-                    <span className="text-app-link/80">
-                      {t("admin.usersBadgeAdminPlus")}
-                    </span>
-                  </span>
-                ) : u.role === "PROFESSOR" ? (
-                  <span className="mt-0.5 inline-block text-xs text-app-muted/90">
-                    {t("admin.usersBadgeProf")}
-                  </span>
-                ) : (
-                  <span className="mt-0.5 inline-block text-xs text-app-muted/90">
-                    {t("admin.usersBadgeCida")}
-                  </span>
-                )}
-              </div>
-              <EditableUserName user={u} onSaved={load} />
-            </div>
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-2">
-              <select
-                className="input-glass px-2 py-1 text-sm"
-                value={u.role}
-                onChange={async (e) => {
-                  const next = e.target.value as UserRow["role"];
-                  const r = await fetch("/api/admin/users", {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id: u.id, role: next }),
-                  });
-                  if (!r.ok) {
-                    const j = (await r.json().catch(() => ({}))) as {
-                      message?: string;
-                    };
-                    alert(j.message || t("admin.usersRoleFail"));
-                    await load();
-                    return;
-                  }
-                  await load();
-                }}
+      <div className="overflow-x-auto rounded-2xl border border-app-border/80 bg-app-card/75 shadow-sm">
+        <table className="w-full min-w-[44rem] border-collapse text-left text-sm">
+          <thead>
+            <tr className="border-b border-app-border/80 bg-app-primary/[0.06]">
+              <th
+                scope="col"
+                className="px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-app-muted/90"
               >
-                <option value="PROFESSOR">{t("admin.usersRoleOptProf")}</option>
-                <option value="ADMIN">{t("admin.usersRoleOptAdmin")}</option>
-                <option value="CIDA">{t("admin.usersRoleOptCida")}</option>
-              </select>
-              <button
-                type="button"
-                className="text-sm text-app-danger"
-                onClick={async () => {
-                  if (!confirm(t("admin.usersDeleteConfirm"))) return;
-                  await fetch(`/api/admin/users?id=${encodeURIComponent(u.id)}`, {
-                    method: "DELETE",
-                  });
-                  await load();
-                }}
+                {t("admin.usersTableColEmail")}
+              </th>
+              <th
+                scope="col"
+                className="px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-app-muted/90"
               >
-                {t("admin.usersDelete")}
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+                {t("admin.usersTableColName")}
+              </th>
+              <th
+                scope="col"
+                className="px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-app-muted/90"
+              >
+                {t("admin.usersTableColRole")}
+              </th>
+              <th
+                scope="col"
+                className="w-24 px-3 py-2.5 text-right text-xs font-semibold uppercase tracking-wide text-app-muted/90"
+              >
+                {t("admin.usersTableColActions")}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {list.map((u) => (
+              <tr
+                key={u.id}
+                className="border-b border-app-border/45 last:border-0"
+              >
+                <td className="max-w-xs align-middle px-3 py-2.5">
+                  <div className="font-medium text-app-fg break-all">
+                    {u.email}
+                  </div>
+                </td>
+                <td className="align-middle px-3 py-2.5">
+                  <EditableUserName
+                    user={u}
+                    onSaved={load}
+                    showLabel={false}
+                  />
+                </td>
+                <td className="min-w-[14rem] align-middle px-3 py-2.5">
+                  <select
+                    className="input-glass w-full max-w-xs px-2 py-1.5 text-sm"
+                    value={u.role}
+                    onChange={async (e) => {
+                      const next = e.target.value as UserRow["role"];
+                      const r = await fetch("/api/admin/users", {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ id: u.id, role: next }),
+                      });
+                      if (!r.ok) {
+                        const j = (await r.json().catch(() => ({}))) as {
+                          message?: string;
+                        };
+                        alert(j.message || t("admin.usersRoleFail"));
+                        await load();
+                        return;
+                      }
+                      await load();
+                    }}
+                  >
+                    <option value="PROFESSOR">
+                      {t("admin.usersRoleOptProf")}
+                    </option>
+                    <option value="ADMIN">{t("admin.usersRoleOptAdmin")}</option>
+                    <option value="CIDA">{t("admin.usersRoleOptCida")}</option>
+                  </select>
+                </td>
+                <td className="whitespace-nowrap px-3 py-2.5 text-right align-middle">
+                  <button
+                    type="button"
+                    className="text-sm text-app-danger hover:underline"
+                    onClick={async () => {
+                      if (!confirm(t("admin.usersDeleteConfirm"))) return;
+                      await fetch(
+                        `/api/admin/users?id=${encodeURIComponent(u.id)}`,
+                        { method: "DELETE" }
+                      );
+                      await load();
+                    }}
+                  >
+                    {t("admin.usersDelete")}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

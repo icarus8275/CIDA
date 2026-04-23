@@ -99,7 +99,7 @@ npx tsx prisma/seed.ts
 
 - **공개 가입 없음.** 로그인은 **관리자가 만든 이메일·비밀번호**만 사용합니다.
 - **`/admin/users`**에서 계정 생성·역할(`ADMIN` / `PROFESSOR` / `CIDA`) 지정.
-- **CIDA**: 읽기 전용으로 `/explore` (코스·코드 탐색).
+- **CIDA**: `/explore`에서 개설된 모든 수업의 항목·코드 트리를 한눈에.
 - **교수**: 배정된 섹션에서 `/teach` → 항목·코드·OneDrive **공유 링크 URL** 편집.
 
 ---

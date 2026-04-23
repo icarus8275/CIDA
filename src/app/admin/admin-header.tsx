@@ -54,7 +54,7 @@ export function AdminHeader({
             {t("teach.explore")}
           </Link>
           <Link href="/teach" className="link-app-muted">
-            {t("teach.navFacultyView")}
+            {t("teach.myCourses")}
           </Link>
         </nav>
         <form className="ml-auto flex shrink-0" action={signOutToHome}>

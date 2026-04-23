@@ -41,7 +41,7 @@ export type ExploreDataPayload = {
 };
 
 /**
- * CIDA: 전체 카탈로그(읽기). ADMIN/PROFESSOR: SectionInstructor로 배정된 섹션만(강의/탐색 일치).
+ * CIDA: 모든 섹션(전체 수업) 한눈에. ADMIN/PROFESSOR: SectionInstructor로 배정된 섹션만(강의/탐색 일치).
  */
 export const getExploreData = cache(
   async (userId: string, role: UserRole): Promise<ExploreDataPayload> => {

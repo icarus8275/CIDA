@@ -20,8 +20,8 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     ko: "CIDA 자료와 모든 수업을 담는 Ball State ID Program 전용 공간",
   },
   "home.landingLead": {
-    en: "This site is for the Ball State University Interior Design program and its CIDA accreditation work. Faculty can add and organize assignments and other work across all courses, and see at a glance which CIDA standards each item supports through shared code numbers. OneDrive and other links stay with each item. The same, organized view helps the program run a clearer, more efficient CIDA review and supports reviewers who need a read-only picture of the whole curriculum.",
-    ko: "이 사이트는 Ball State University Interior Design Program의 CIDA(Interior Design) 인증 준비를 위해 사용합니다. 교수님께서는 개설된 모든 수업에 과제·시험·프로젝트 등을 추가·정리할 수 있고, 항목에 붙은 코드 번호로 각 과제가 어떤 CIDA 기준을 다루는지 한눈에 파악할 수 있습니다. OneDrive 등 자료 링크도 항목마다 이어 둡니다. 이렇게 정리된 동일한 구조는 프로그램 전체의 자체 점검과 CIDA 방문·검토를 더 수월하게 진행하도록 돕고, 읽기 전용으로 전체를 살펴야 할 검토자에게도 한눈에 보이는 그림을 제공합니다.",
+    en: "This site is for the Ball State University Interior Design program and its CIDA accreditation work. Faculty can add and organize assignments and other work across all courses, and see at a glance which CIDA standards each item supports through shared code numbers. OneDrive and other links stay with each item. The same, organized view helps the program run a clearer, more efficient CIDA review. CIDA accounts can use Explore to see every course’s items and how they align with standards, all in one place at a glance.",
+    ko: "이 사이트는 Ball State University Interior Design Program의 CIDA(Interior Design) 인증 준비를 위해 사용합니다. 교수님께서는 개설된 모든 수업에 과제·시험·프로젝트 등을 추가·정리할 수 있고, 항목에 붙은 코드 번호로 각 과제가 어떤 CIDA 기준을 다루는지 한눈에 파악할 수 있습니다. OneDrive 등 자료 링크도 항목마다 이어 둡니다. 이렇게 정리된 동일한 구조는 프로그램 전체의 자체 점검과 CIDA 방문·검토를 돕고, CIDA 계정은 Explore에서 개설된 모든 수업의 항목을 한눈에 볼 수 있어 전체 흐름을 쉽게 파악할 수 있습니다.",
   },
   "home.backToWelcome": { en: "Back to welcome", ko: "소개 페이지로" },
   "home.landingCta": { en: "Sign in to your account", ko: "계정으로 로그인" },
@@ -49,8 +49,8 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   "home.landingF4T": { en: "Smoother CIDA and program review", ko: "CIDA·프로그램 리뷰를 더 수월하게" },
   "home.landingF4B": {
-    en: "The same, consistent structure and read-only Explore view help the program present its CIDA story and run accreditation review more smoothly.",
-    ko: "일관된 구조와 읽기 전용 탐색(Explore) 뷰는 프로그램이 CIDA 자료를 제시하고 인증·자체 점검을 더 원활하게 돌릴 수 있게 돕습니다.",
+    en: "The same, consistent structure and Explore give CIDA accounts a program-wide view so they can see every course’s items at a glance and run accreditation review more smoothly.",
+    ko: "일관된 구조와 Explore는 CIDA 계정이 개설된 모든 수업의 항목을 한눈에 볼 수 있게 하여, 프로그램이 CIDA 자료를 제시하고 인증·자체 점검을 더 원활하게 돌릴 수 있게 돕습니다.",
   },
   "admin.homeGridTitle": { en: "Admin tools", ko: "관리 메뉴" },
   "admin.homeGridLead": {
@@ -178,8 +178,7 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   // teach layout
   "teach.navTitle": { en: "Faculty", ko: "교수" },
-  "teach.navFacultyView": { en: "Faculty View", ko: "교수 화면" },
-  "teach.myCourses": { en: "My courses", ko: "내 과목" },
+  "teach.myCourses": { en: "My Courses", ko: "내 과목" },
   "teach.admin": { en: "Admin", ko: "관리" },
   "teach.explore": { en: "Explore", ko: "탐색" },
   "teach.signOut": { en: "Sign out", ko: "로그아웃" },
@@ -284,8 +283,8 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "admin.signOut": { en: "Sign out", ko: "로그아웃" },
   "admin.pageTitle": { en: "Administration", ko: "관리자" },
   "admin.pageBody": {
-    en: "As an admin, you own program setup: user accounts and roles, the course catalog, item types, and the CIDA code number list. You build the schedule—academic years, terms, which courses run, sections—and assign faculty. You can open any professor’s section to edit items, codes, and resource links the same way they would. CIDA and program reviewers get the read-only, program-wide tree from Explore, not a separate page here.",
-    ko: "관리자는 사용자(역할)·강의 캐탈로그·항목 유형·CIDA 코드 번호 등 프로그램 뼈대를 관리하고, 학년·학기·수업 오퍼링·섹션으로 일정을 짜며 교수를 배정합니다. 필요하면 특정 교수의 섹션을 열어 항목·코드·자료 URL을 그 교수와 동일한 방식으로 편집할 수 있습니다. CIDA·프로그램 검토용 읽기 전용 전체 구조는 Explore(탐색)에서 보시면 됩니다(관리에 별도 CIDA 뷰는 없습니다).",
+    en: "As an admin, you own program setup: user accounts and roles, the course catalog, item types, and the CIDA code number list. You build the schedule—academic years, terms, which courses run, sections—and assign faculty. You can open any professor’s section to edit items, codes, and resource links the same way they would. CIDA accounts use Explore to see every course’s items at a glance in one program-wide tree. Editing is through Faculty/Admin, not a separate CIDA page here.",
+    ko: "관리자는 사용자(역할)·강의 캐탈로그·항목 유형·CIDA 코드 번호 등 프로그램 뼈대를 관리하고, 학년·학기·수업 오퍼링·섹션으로 일정을 짜며 교수를 배정합니다. 필요하면 특정 교수의 섹션을 열어 항목·코드·자료 URL을 그 교수와 동일한 방식으로 편집할 수 있습니다. CIDA 계정은 Explore(탐색)에서 개설된 모든 수업의 항목을 한눈에 볼 수 있습니다(편집은 교수/관리 화면, 관리에 별도 CIDA 뷰는 없습니다).",
   },
   "admin.linkCourses": { en: "Courses", ko: "과목" },
   "admin.linkItemTypes": { en: "Item types (top-level categories)", ko: "항목 유형(상위 그룹)" },
@@ -532,9 +531,13 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "admin.usersNav": { en: "Users", ko: "사용자" },
   "admin.usersPageTitle": { en: "Users", ko: "사용자" },
   "admin.usersPageBody": {
-    en: "Create accounts with email and password. CIDA = read-only explore.",
-    ko: "이메일·암호로 계정을 만듭니다. CIDA = 탐색 전용(읽기)입니다.",
+    en: "Create accounts with email and password. CIDA accounts use Explore to see every course’s items at a glance.",
+    ko: "이메일·암호로 계정을 만듭니다. CIDA 계정은 Explore에서 개설된 모든 수업의 항목을 한눈에 볼 수 있습니다.",
   },
+  "admin.usersTableColEmail": { en: "Email", ko: "이메일" },
+  "admin.usersTableColName": { en: "Name", ko: "이름" },
+  "admin.usersTableColRole": { en: "Role", ko: "역할" },
+  "admin.usersTableColActions": { en: "Actions", ko: "작업" },
   "admin.usersNewUser": { en: "New user", ko: "새 사용자" },
   "admin.usersNewHint": {
     en: "Admins use /admin and have the same teaching access as professors (sections, /teach).",
@@ -556,7 +559,10 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "admin.usersRoleFail": { en: "Could not update role.", ko: "역할을 바꾸지 못했습니다." },
   "admin.usersRoleOptProf": { en: "PROFESSOR (teaching)", ko: "PROFESSOR (강의)" },
   "admin.usersRoleOptAdmin": { en: "ADMIN (management + teaching)", ko: "ADMIN (관리+강의)" },
-  "admin.usersRoleOptCida": { en: "CIDA (read-only)", ko: "CIDA (읽기 전용)" },
+  "admin.usersRoleOptCida": {
+    en: "CIDA (all courses in Explore, at a glance)",
+    ko: "CIDA (Explore에서 모든 수업 항목 한눈에)",
+  },
   "admin.usersBadgeAdmin": { en: "ADMIN", ko: "ADMIN" },
   "admin.usersBadgeAdminPlus": { en: "+ faculty", ko: " + 강의" },
   "admin.usersBadgeProf": { en: "PROFESSOR", ko: "PROFESSOR" },
