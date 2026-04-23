@@ -11,6 +11,83 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "home.signIn": { en: "Sign in", ko: "로그인" },
   "home.admin": { en: "Admin", ko: "관리" },
   "home.faculty": { en: "Faculty", ko: "교수" },
+  "home.landingKicker": { en: "Course · code · file links", ko: "과목 · 코드 · 자료" },
+  "home.landingTitle": {
+    en: "One place for your courses, codes, and materials.",
+    ko: "과목·코드·강의 자료를 한곳에 정리합니다.",
+  },
+  "home.landingLead": {
+    en: "CIDA helps faculty and staff keep section-level items, number codes, and OneDrive share links in sync. CIDA users get a read-only view of the same tree.",
+    ko: "CIDA는 섹션별 항목, 코드 번호, OneDrive 링크를 정리·공유하도록 돕습니다. CIDA 권한은 동일한 정보를 읽기 전용으로 봅니다.",
+  },
+  "home.backToWelcome": { en: "Back to welcome", ko: "소개 페이지로" },
+  "home.landingCta": { en: "Sign in to your account", ko: "계정으로 로그인" },
+  "home.landingCtaSub": {
+    en: "Use the email and password your administrator provided.",
+    ko: "관리자가 알려준 이메일·비밀번호를 사용하세요.",
+  },
+  "home.landingF1T": { en: "By term & section", ko: "학기·섹션별" },
+  "home.landingF1B": {
+    en: "See every course in context—Fall, Spring, or Summer—down to the section you teach or review.",
+    ko: "과목을 Fall·Spring·Summer 등 시기·섹션마다 나누어 보고, 담당/검토 대상에 맞게 다룰 수 있습니다.",
+  },
+  "home.landingF2T": { en: "Code numbers", ko: "코드 번호" },
+  "home.landingF2B": {
+    en: "Assignments, exams, quizzes, and projects can carry a shared number code so the catalog stays easy to look up.",
+    ko: "과제·시험·퀴즈·프로젝트에 공통으로 쓰는 코드 번호를 붙이면 목록·역검색이 쉬워집니다.",
+  },
+  "home.landingF3T": { en: "OneDrive links", ko: "OneDrive 링크" },
+  "home.landingF3B": {
+    en: "Paste a share link per item. Explore shows what students and CIDA can expect to find.",
+    ko: "항목마다 공유 링크를 붙이면, 탐색·CIDA 뷰에서도 같은 구조로 확인할 수 있습니다.",
+  },
+  "home.landingF4T": { en: "Explore (read)", ko: "탐색(읽기)" },
+  "home.landingF4B": {
+    en: "Search the course–code tree or browse the code index without editing anything unless you are faculty on that section.",
+    ko: "과목–코드 트리를 검색하거나 코드 색인을 읽을 수 있으며, 편집 권한은 담당 섹션에 한합니다.",
+  },
+  "admin.homeGridTitle": { en: "Admin tools", ko: "관리 메뉴" },
+  "admin.homeGridLead": {
+    en: "Choose what you need. Schedule and section setup are the usual starting points.",
+    ko: "필요한 항목을 고르세요. 보통은 학기·섹션 배정부터 둡니다.",
+  },
+  "admin.homeCardOpen": { en: "Open", ko: "이동" },
+  "admin.homeCardUsersDesc": {
+    en: "Email/password accounts, roles, and names.",
+    ko: "이메일·암호 계정, 역할, 표시 이름.",
+  },
+  "admin.homeCardScheduleDesc": {
+    en: "Academic years, terms, and drag/drop of courses to sections.",
+    ko: "학년·학기 수립, 수업·섹션 끌어다 놓기.",
+  },
+  "admin.homeCardFacultyDesc": {
+    en: "Pick a professor and jump to one of their sections to edit as admin.",
+    ko: "교수를 고르고, 해당 섹션을 열어 관리자로 편집.",
+  },
+  "admin.homeCardCoursesDesc": {
+    en: "Course catalog; offerings are scheduled on the schedule page.",
+    ko: "강의 목록(캐탈로그), 배지는 스케줄에서.",
+  },
+  "admin.homeCardItemTypesDesc": {
+    en: "Top-level item categories (e.g. assignment, exam).",
+    ko: "상위 항목 유형(과제, 시험 등).",
+  },
+  "admin.homeCardCodeNumDesc": {
+    en: "Code numbers and labels for links and the explore tree.",
+    ko: "코드 번호·라벨(탐색·역검색).",
+  },
+  "admin.homeCardCidaDesc": {
+    en: "Read-only preview of the same view CIDA users see.",
+    ko: "CIDA 사용자와 같은 읽기 전용 뷰 미리보기.",
+  },
+  "teach.sectionsTitle": { en: "Your sections", ko: "내가 담당하는 섹션" },
+  "teach.sectionsLead": {
+    en: "Open a section to edit items, code numbers, and file links. Cards are listed by course and term.",
+    ko: "섹션을 열어 항목·코드·파일 링크를 편집하세요. 과목·학기 순으로 보입니다.",
+  },
+  "teach.sectionBadge": { en: "Section", ko: "섹션" },
+  "teach.termLabel": { en: "Term", ko: "학기" },
+  "teach.openSection": { en: "Open section", ko: "섹션 열기" },
   // explore
   "explore.loading": { en: "Loading…", ko: "불러오는 중…" },
   "explore.navTitle": { en: "Explore", ko: "탐색" },
