@@ -31,7 +31,7 @@ export default async function TeachHomePage() {
     return null;
   }
 
-  /** ADMIN? "My courses"? SectionInstructor ??(??? ??). ??? Admin ? ???. */
+  // For ADMIN, "my courses" uses SectionInstructor; full list is in Admin above.
   const sections = await prisma.section.findMany({
     where: {
       instructors: { some: { userId: s.user.id } },

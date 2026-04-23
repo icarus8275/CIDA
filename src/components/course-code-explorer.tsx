@@ -118,10 +118,10 @@ export function CourseCodeExplorer({
   appShellWithNav = false,
 }: {
   initialData: ExploreCourse[];
-  /** Admin ???? ?? (value ??? ?) ? Codes ? ?? */
+  // Admin catalog tooltips for code values (UPPERCASE key); Codes tab.
   codeLabels?: Record<string, string | null>;
   accountLine?: string | null;
-  /** /explore ?? ? ??(ExploreHeader)? ?? ? ?? sticky? ? ??? ?? */
+  // When /explore has ExploreHeader, offset the sticky sub-toolbar below it.
   appShellWithNav?: boolean;
 }) {
   const router = useRouter();
