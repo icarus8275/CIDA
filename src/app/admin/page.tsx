@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import {
   BookOpen,
   CalendarRange,
-  Eye,
   Hash,
   ListTree,
   UserCircle,
@@ -56,12 +55,6 @@ export default async function AdminPage() {
       title: t(locale, "admin.codeNumbers"),
       desc: t(locale, "admin.homeCardCodeNumDesc"),
       icon: <Hash className="h-6 w-6" strokeWidth={1.75} />,
-    },
-    {
-      href: "/admin/cida",
-      title: t(locale, "admin.cidaViewNav"),
-      desc: t(locale, "admin.homeCardCidaDesc"),
-      icon: <Eye className="h-6 w-6" strokeWidth={1.75} />,
     },
   ];
 

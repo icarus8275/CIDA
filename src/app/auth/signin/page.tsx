@@ -26,8 +26,8 @@ export default async function SignInPage({
   }
   return (
     <div className="mx-auto min-h-dvh w-full max-w-6xl px-4 py-10 sm:py-12">
-      <div className="grid min-h-[min(80vh,44rem)] grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-10 lg:items-stretch">
-        <div className="hidden flex-col overflow-hidden rounded-2xl border border-app-border/80 glass lg:flex">
+      <div className="grid min-h-[min(80vh,44rem)] grid-cols-1 grid-rows-1 gap-8 lg:grid-cols-2 lg:gap-10 lg:items-stretch">
+        <div className="hidden h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl border border-app-border/80 glass lg:flex">
           <div className="relative min-h-48 flex-1">
             <Image
               src="/landing-hero-cida.png"
@@ -57,8 +57,8 @@ export default async function SignInPage({
           </div>
         </div>
 
-        <div className="flex flex-col justify-center">
-          <div className="glass mb-4 overflow-hidden rounded-2xl lg:hidden">
+        <div className="flex h-full min-h-0 flex-col">
+          <div className="glass mb-4 overflow-hidden rounded-2xl lg:mb-0 lg:hidden">
             <div className="relative aspect-[21/9] w-full min-h-32">
               <Image
                 src="/landing-hero-cida.png"
@@ -70,23 +70,25 @@ export default async function SignInPage({
               />
             </div>
           </div>
-          <div className="glass rounded-2xl p-6 sm:p-8">
-            <div className="mb-2 flex items-center gap-2 text-app-link">
-              <LogIn className="h-5 w-5" />
-              <span className="text-sm font-medium uppercase tracking-wide">
+          <div className="glass flex h-full min-h-0 flex-1 flex-col rounded-2xl p-6 sm:p-8">
+            <div className="flex w-full min-w-0 flex-1 flex-col justify-center">
+              <div className="mb-2 flex items-center gap-2 text-app-link">
+                <LogIn className="h-5 w-5" />
+                <span className="text-sm font-medium uppercase tracking-wide">
+                  {t(locale, "signin.title")}
+                </span>
+              </div>
+              <h1 className="text-2xl font-bold text-app-fg">
                 {t(locale, "signin.title")}
-              </span>
+              </h1>
+              <p className="mt-2 text-sm text-app-muted/90">
+                {t(locale, "signin.hint")}
+              </p>
+              <div className="mt-6">
+                <SignInForm callbackUrl={sp.callbackUrl} />
+              </div>
             </div>
-            <h1 className="text-2xl font-bold text-app-fg">
-              {t(locale, "signin.title")}
-            </h1>
-            <p className="mt-2 text-sm text-app-muted/90">
-              {t(locale, "signin.hint")}
-            </p>
-            <div className="mt-6">
-              <SignInForm callbackUrl={sp.callbackUrl} />
-            </div>
-            <p className="mt-6 text-center text-sm text-app-muted/85">
+            <p className="mt-6 shrink-0 text-center text-sm text-app-muted/85 lg:mt-4">
               <Link href="/" className="text-app-link hover:underline">
                 ← {t(locale, "home.backToWelcome")}
               </Link>

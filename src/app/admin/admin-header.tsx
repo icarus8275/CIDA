@@ -50,9 +50,6 @@ export function AdminHeader({
           <Link href="/admin/faculty" className="link-app">
             {t("admin.facultyNav")}
           </Link>
-          <Link href="/admin/cida" className="link-app">
-            {t("admin.cidaViewNav")}
-          </Link>
           <Link href="/explore" className="link-app-muted">
             {t("teach.explore")}
           </Link>

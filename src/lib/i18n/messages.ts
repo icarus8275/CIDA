@@ -4,21 +4,24 @@ import { isEnglishOnlyI18n, type Locale } from "./types";
 export const MESSAGES: Record<string, Record<Locale, string>> = {
   // home
   "home.subtitle": {
-    en: "Courses, codes, and OneDrive links. Open Explore for the read-only tree.",
-    ko: "과목, 코드, OneDrive 링크를 한곳에 둡니다. 탐색에서 읽기 전용 트리를 엽니다.",
+    en: "Ball State Interior Design — CIDA accreditation workspace.",
+    ko: "Ball State Interior Design — CIDA 인증을 위한 전용 워크스페이스",
   },
   "home.explore": { en: "Explore (tree)", ko: "탐색 (트리)" },
   "home.signIn": { en: "Sign in", ko: "로그인" },
   "home.admin": { en: "Admin", ko: "관리" },
   "home.faculty": { en: "Faculty", ko: "교수" },
-  "home.landingKicker": { en: "Course · code · file links", ko: "과목 · 코드 · 자료" },
+  "home.landingKicker": {
+    en: "Ball State Interior Design — CIDA accreditation",
+    ko: "Ball State University Interior Design — CIDA 인증",
+  },
   "home.landingTitle": {
-    en: "One place for your courses, codes, and materials.",
-    ko: "과목·코드·강의 자료를 한곳에 정리합니다.",
+    en: "A dedicated home for the program’s CIDA evidence and your courses.",
+    ko: "CIDA 자료와 모든 수업을 담는 Ball State ID Program 전용 공간",
   },
   "home.landingLead": {
-    en: "CIDA helps faculty and staff keep section-level items, number codes, and OneDrive share links in sync. CIDA users get a read-only view of the same tree.",
-    ko: "CIDA는 섹션별 항목, 코드 번호, OneDrive 링크를 정리·공유하도록 돕습니다. CIDA 권한은 동일한 정보를 읽기 전용으로 봅니다.",
+    en: "This site is for the Ball State University Interior Design program and its CIDA accreditation work. Faculty can add and organize assignments and other work across all courses, and see at a glance which CIDA standards each item supports through shared code numbers. OneDrive and other links stay with each item. The same, organized view helps the program run a clearer, more efficient CIDA review and supports reviewers who need a read-only picture of the whole curriculum.",
+    ko: "이 사이트는 Ball State University Interior Design Program의 CIDA(Interior Design) 인증 준비를 위해 사용합니다. 교수님께서는 개설된 모든 수업에 과제·시험·프로젝트 등을 추가·정리할 수 있고, 항목에 붙은 코드 번호로 각 과제가 어떤 CIDA 기준을 다루는지 한눈에 파악할 수 있습니다. OneDrive 등 자료 링크도 항목마다 이어 둡니다. 이렇게 정리된 동일한 구조는 프로그램 전체의 자체 점검과 CIDA 방문·검토를 더 수월하게 진행하도록 돕고, 읽기 전용으로 전체를 살펴야 할 검토자에게도 한눈에 보이는 그림을 제공합니다.",
   },
   "home.backToWelcome": { en: "Back to welcome", ko: "소개 페이지로" },
   "home.landingCta": { en: "Sign in to your account", ko: "계정으로 로그인" },
@@ -26,30 +29,33 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     en: "Use the email and password your administrator provided.",
     ko: "관리자가 알려준 이메일·비밀번호를 사용하세요.",
   },
-  "home.landingF1T": { en: "By term & section", ko: "학기·섹션별" },
+  "home.landingF1T": {
+    en: "Assignments across all courses",
+    ko: "모든 수업의 과제·항목",
+  },
   "home.landingF1B": {
-    en: "See every course in context—Fall, Spring, or Summer—down to the section you teach or review.",
-    ko: "과목을 Fall·Spring·Summer 등 시기·섹션마다 나누어 보고, 담당/검토 대상에 맞게 다룰 수 있습니다.",
+    en: "Add and manage assignments, projects, and exams in each section, aligned with your schedule and offerings in the app.",
+    ko: "학기·섹션별로 과제·프로젝트·시험 등을 추가·관리하고, 스케줄에 맞게 전체 커리큘럼을 한곳에서 다룰 수 있습니다.",
   },
-  "home.landingF2T": { en: "Code numbers", ko: "코드 번호" },
+  "home.landingF2T": { en: "CIDA standards, at a glance", ko: "CIDA 기준, 한눈에" },
   "home.landingF2B": {
-    en: "Assignments, exams, quizzes, and projects can carry a shared number code so the catalog stays easy to look up.",
-    ko: "과제·시험·퀴즈·프로젝트에 공통으로 쓰는 코드 번호를 붙이면 목록·역검색이 쉬워집니다.",
+    en: "Code numbers and labels show which CIDA standard each item addresses—so alignment is visible in the tree and the code index, not only on a syllabus.",
+    ko: "코드 번호와 설명을 통해 각 항목이 어떤 CIDA 기준에 해당하는지 트리와 코드 색인에서 곧바로 확인할 수 있습니다.",
   },
-  "home.landingF3T": { en: "OneDrive links", ko: "OneDrive 링크" },
+  "home.landingF3T": { en: "Evidence and OneDrive in one place", ko: "근거·OneDrive 한곳에" },
   "home.landingF3B": {
-    en: "Paste a share link per item. Explore shows what students and CIDA can expect to find.",
-    ko: "항목마다 공유 링크를 붙이면, 탐색·CIDA 뷰에서도 같은 구조로 확인할 수 있습니다.",
+    en: "Attach OneDrive (or other) share links to each item so students and reviewers can open evidence without searching scattered folders.",
+    ko: "항목마다 OneDrive(또는 기타) 공유 링크를 붙여 학생·검토자가 폴더를 헤매지 않고 근거 자료를 열 수 있습니다.",
   },
-  "home.landingF4T": { en: "Explore (read)", ko: "탐색(읽기)" },
+  "home.landingF4T": { en: "Smoother CIDA and program review", ko: "CIDA·프로그램 리뷰를 더 수월하게" },
   "home.landingF4B": {
-    en: "Search the course–code tree or browse the code index without editing anything unless you are faculty on that section.",
-    ko: "과목–코드 트리를 검색하거나 코드 색인을 읽을 수 있으며, 편집 권한은 담당 섹션에 한합니다.",
+    en: "The same, consistent structure and read-only Explore view help the program present its CIDA story and run accreditation review more smoothly.",
+    ko: "일관된 구조와 읽기 전용 탐색(Explore) 뷰는 프로그램이 CIDA 자료를 제시하고 인증·자체 점검을 더 원활하게 돌릴 수 있게 돕습니다.",
   },
   "admin.homeGridTitle": { en: "Admin tools", ko: "관리 메뉴" },
   "admin.homeGridLead": {
-    en: "Choose what you need. Schedule and section setup are the usual starting points.",
-    ko: "필요한 항목을 고르세요. 보통은 학기·섹션 배정부터 둡니다.",
+    en: "Choose a tool below. New terms and sections usually start on Schedule; the code catalog and user accounts are common early setup too.",
+    ko: "아래에서 항목을 고르세요. 보통은 학기·섹션은 스케줄에서, 코드·사용자는 초기 셋업에 자주 씁니다.",
   },
   "admin.homeCardOpen": { en: "Open", ko: "이동" },
   "admin.homeCardUsersDesc": {
@@ -75,10 +81,6 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "admin.homeCardCodeNumDesc": {
     en: "Code numbers and labels for links and the explore tree.",
     ko: "코드 번호·라벨(탐색·역검색).",
-  },
-  "admin.homeCardCidaDesc": {
-    en: "Read-only preview of the same view CIDA users see.",
-    ko: "CIDA 사용자와 같은 읽기 전용 뷰 미리보기.",
   },
   "teach.sectionsTitle": { en: "Your sections", ko: "내가 담당하는 섹션" },
   "teach.sectionsLead": {
@@ -197,7 +199,7 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "teach.codeFilter": { en: "Filter codes…", ko: "코드 필터…" },
   "teach.codeNoMatch": { en: "No codes match this filter.", ko: "필터에 맞는 코드가 없습니다." },
   "teach.noCodeCatalog": {
-    en: "No codes in the catalog yet. Ask an admin to add code numbers under Admin → Code #s.",
+    en: "No codes in the catalog yet. Ask an admin to add code numbers under Admin → Code Numbers.",
     ko: "목록에 코드가 아직 없습니다. 관리자에게 관리 → 코드 번호에서 등록을 요청하세요.",
   },
   "teach.codeSaveFail": {
@@ -251,12 +253,6 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "admin.navTitle": { en: "Admin", ko: "관리" },
   "admin.home": { en: "Home", ko: "개요" },
   "admin.facultyNav": { en: "Faculty View", ko: "교수(섹션) 편집" },
-  "admin.cidaViewNav": { en: "CIDA View", ko: "CIDA View" },
-  "admin.cidaViewTitle": { en: "CIDA (read-only) preview", ko: "CIDA(읽기 전용) 미리보기" },
-  "admin.cidaViewBanner": {
-    en: "You are seeing the same read-only course–code tree that CIDA accounts see (all sections, no editing).",
-    ko: "CIDA 계정과 동일한 읽기 전용 과목·코드 트리입니다(전체 섹션, 편집 없음).",
-  },
   "admin.facultyPageTitle": {
     en: "Edit faculty sections & items",
     ko: "교수 섹션·과제 편집",
@@ -283,13 +279,13 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   "admin.courses": { en: "Courses", ko: "과목" },
   "admin.itemTypes": { en: "Item types", ko: "항목 유형" },
-  "admin.codeNumbers": { en: "Code #s", ko: "코드 번호" },
+  "admin.codeNumbers": { en: "Code Numbers", ko: "코드 번호" },
   "admin.profCourses": { en: "Faculty & courses", ko: "교수–과목" },
   "admin.signOut": { en: "Sign out", ko: "로그아웃" },
   "admin.pageTitle": { en: "Administration", ko: "관리자" },
   "admin.pageBody": {
-    en: "Manage courses, item types, and which faculty can edit which course. For OneDrive, sign in with Microsoft and use Faculty pages to link files.",
-    ko: "과목·항목 유형·담당 교수를 설정합니다. OneDrive는 Microsoft로 로그인한 뒤 교수 화면에서 파일을 연결하세요.",
+    en: "As an admin, you own program setup: user accounts and roles, the course catalog, item types, and the CIDA code number list. You build the schedule—academic years, terms, which courses run, sections—and assign faculty. You can open any professor’s section to edit items, codes, and resource links the same way they would. CIDA and program reviewers get the read-only, program-wide tree from Explore, not a separate page here.",
+    ko: "관리자는 사용자(역할)·강의 캐탈로그·항목 유형·CIDA 코드 번호 등 프로그램 뼈대를 관리하고, 학년·학기·수업 오퍼링·섹션으로 일정을 짜며 교수를 배정합니다. 필요하면 특정 교수의 섹션을 열어 항목·코드·자료 URL을 그 교수와 동일한 방식으로 편집할 수 있습니다. CIDA·프로그램 검토용 읽기 전용 전체 구조는 Explore(탐색)에서 보시면 됩니다(관리에 별도 CIDA 뷰는 없습니다).",
   },
   "admin.linkCourses": { en: "Courses", ko: "과목" },
   "admin.linkItemTypes": { en: "Item types (top-level categories)", ko: "항목 유형(상위 그룹)" },

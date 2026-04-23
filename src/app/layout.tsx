@@ -17,8 +17,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CIDA — Course, Code, OneDrive",
-  description: "Courses, course codes, and OneDrive links for faculty and admins.",
+  title:
+    "Ball State Interior Design Program — CIDA Accreditation",
+  description:
+    "Official workspace for the Ball State University Interior Design program's CIDA (Council for Interior Design Accreditation) review and materials.",
 };
 
 async function getLocaleFromRequest(): Promise<Locale> {
