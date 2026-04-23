@@ -399,7 +399,7 @@ export function CourseCodeExplorer({
                   >
                     <div className="mb-1.5 flex flex-wrap items-baseline gap-2">
                       <span
-                        className="inline-block rounded-md border border-app-bsu-cardinal/30 bg-app-bsu-cardinal/[0.09] px-2 py-0.5 text-sm font-bold tracking-tight text-app-bsu-cardinal"
+                        className="inline-block rounded-md border border-app-primary/25 bg-app-primary/[0.1] px-2 py-0.5 text-sm font-bold tracking-tight text-app-primary"
                         title={itemLabel}
                       >
                         {itemLabel}
