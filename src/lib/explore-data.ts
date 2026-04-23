@@ -29,6 +29,8 @@ export type ExploreCourse = {
   termId: string;
   termLabel: string;
   termSort: number;
+  /** 섹션(Section)에 지정된 교수 */
+  instructors: { name: string | null; email: string | null }[];
   items: ExploreItem[];
 };
 
@@ -61,6 +63,7 @@ export const getExploreData = cache(
             },
           },
         },
+        instructors: { include: { user: { select: { name: true, email: true } } } },
         courseItems: {
           orderBy: [{ sortOrder: "asc" }, { number: "asc" }],
           include: {
@@ -97,6 +100,10 @@ export const getExploreData = cache(
         termId: term.id,
         termLabel: formatTermForDisplay(term),
         termSort,
+        instructors: sec.instructors.map((ins) => ({
+          name: ins.user.name,
+          email: ins.user.email,
+        })),
         items: sec.courseItems.map((it) => ({
           id: it.id,
           itemTypeId: it.itemTypeId,

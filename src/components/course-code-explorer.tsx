@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { ExploreCourse } from "@/lib/explore-data";
 import { buildCodeIndex, type CodeRef } from "@/lib/build-code-index";
+import { listUserLabel } from "@/lib/user-display";
 import { useI18n } from "@/components/locale/locale-provider";
 import { CodesReadonlyGrouped } from "@/app/teach/section/[sectionId]/section-codes-shared";
 
@@ -150,8 +151,13 @@ export function CourseCodeExplorer({
     if (!query) return initialData;
     return initialData
       .map((c) => {
+        const instrQ = (c.instructors ?? [])
+          .map((i) => listUserLabel(i.name, i.email))
+          .join(" ");
         const courseMatch =
-          matchesQuery(c.name, query) || matchesQuery(c.pathLabel, query);
+          matchesQuery(c.name, query) ||
+          matchesQuery(c.pathLabel, query) ||
+          matchesQuery(instrQ, query);
         const items = c.items
           .map((it) => ({
             ...it,
@@ -284,6 +290,24 @@ export function CourseCodeExplorer({
           <p className="text-sm text-slate-400">{t("explore.selectedItem")}</p>
           <p className="text-xs text-slate-500">{course.pathLabel}</p>
           <p className="text-sm font-medium text-slate-300">{course.name}</p>
+          <div>
+            <p className="mb-0.5 text-xs text-slate-500">
+              {t("explore.itemDetailInstructors")}
+            </p>
+            {(course.instructors?.length ?? 0) > 0 ? (
+              <ul className="list-inside list-disc text-sm text-slate-200">
+                {course.instructors!.map((i, idx) => (
+                  <li key={idx} className="marker:text-slate-500">
+                    {listUserLabel(i.name, i.email)}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-slate-500">
+                {t("explore.itemDetailNoInstructors")}
+              </p>
+            )}
+          </div>
           <p className="text-xs text-slate-500">
             {t("explore.itemDetailType")}:{" "}
             <span className="text-slate-200">
@@ -369,6 +393,12 @@ export function CourseCodeExplorer({
                   >
                     <div className="font-medium text-slate-100">{r.course}</div>
                     <div className="text-xs text-slate-500">{r.pathLabel}</div>
+                    {r.instructorsLabel ? (
+                      <div className="text-xs text-slate-500">
+                        {t("explore.itemDetailInstructors")}:{" "}
+                        {r.instructorsLabel}
+                      </div>
+                    ) : null}
                     <div className="text-sm text-slate-400">
                       {r.type} {r.number}
                     </div>
