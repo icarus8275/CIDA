@@ -20,6 +20,10 @@ export type ExploreCourse = {
   id: string;
   name: string;
   pathLabel: string;
+  /** 같은 학기(학기) 섹션끼리 그룹 */
+  termId: string;
+  termLabel: string;
+  termSort: number;
   items: ExploreItem[];
 };
 
@@ -58,14 +62,19 @@ export const getExploreData = cache(
       },
     });
 
-    return sections.map((sec) => {
+    const rows = sections.map((sec) => {
       const term = sec.courseOffering.term;
       const c = sec.courseOffering.course.name;
       const pathLabel = `${formatTermForDisplay(term)} · ${c} · Sec ${sec.label}`;
+      const y = term.academicYear.startYear ?? 0;
+      const termSort = y * 10_000 + term.sortOrder;
       return {
         id: sec.id,
         name: `${c} — ${sec.label}`,
         pathLabel,
+        termId: term.id,
+        termLabel: formatTermForDisplay(term),
+        termSort,
         items: sec.courseItems.map((it) => ({
           id: it.id,
           itemTypeId: it.itemTypeId,
@@ -79,5 +88,15 @@ export const getExploreData = cache(
         })),
       };
     });
+    rows.sort((a, b) => {
+      if (a.termSort !== b.termSort) {
+        return a.termSort - b.termSort;
+      }
+      return a.pathLabel.localeCompare(b.pathLabel, undefined, {
+        numeric: true,
+        sensitivity: "base",
+      });
+    });
+    return rows;
   }
 );

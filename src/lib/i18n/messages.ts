@@ -45,6 +45,10 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     en: "Click an item to focus its codes; click a code to see where it is used. Share state via URL query parameters.",
     ko: "항목을 누르면 코드에 집중되고, 코드를 누르면 사용처로 전환됩니다. URL 쿼리로 공유할 수 있습니다.",
   },
+  "explore.itemDetailType": { en: "Type", ko: "유형" },
+  "explore.itemDetailCodes": { en: "Codes on this item", ko: "이 항목의 코드" },
+  "explore.itemDetailNoLink": { en: "No file link for this item.", ko: "이 항목에 연결된 파일 링크가 없습니다." },
+  "explore.itemDetailFile": { en: "File / OneDrive", ko: "자료(OneDrive)" },
   // signin
   "signin.title": { en: "Sign in", ko: "로그인" },
   "signin.hint": {

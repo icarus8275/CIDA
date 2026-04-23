@@ -9,6 +9,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   BookOpen,
+  CalendarRange,
   ChevronDown,
   ChevronRight,
   Hash,
@@ -33,7 +34,10 @@ const Chip = ({
 }) => (
   <button
     type="button"
-    onClick={onClick}
+    onClick={(e) => {
+      e.stopPropagation();
+      onClick?.();
+    }}
     className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-sm whitespace-nowrap text-slate-100 backdrop-blur-sm transition hover:bg-white/20"
   >
     {children}
@@ -175,6 +179,35 @@ export function CourseCodeExplorer({
       .filter(Boolean) as ExploreCourse[];
   }, [query, initialData]);
 
+  const termsGrouped = useMemo(() => {
+    const map = new Map<
+      string,
+      { termId: string; termLabel: string; termSort: number; courses: ExploreCourse[] }
+    >();
+    for (const c of data) {
+      const ex = map.get(c.termId);
+      if (ex) {
+        ex.courses.push(c);
+      } else {
+        map.set(c.termId, {
+          termId: c.termId,
+          termLabel: c.termLabel,
+          termSort: c.termSort,
+          courses: [c],
+        });
+      }
+    }
+    for (const g of map.values()) {
+      g.courses.sort((a, b) =>
+        a.pathLabel.localeCompare(b.pathLabel, undefined, {
+          numeric: true,
+          sensitivity: "base",
+        })
+      );
+    }
+    return [...map.values()].sort((a, b) => a.termSort - b.termSort);
+  }, [data]);
+
   const setParams = useCallback(
     (p: {
       courseId?: string | null;
@@ -238,6 +271,7 @@ export function CourseCodeExplorer({
     }
   }, [searchParams, initialData, codeIndex]);
 
+  const kTerm = (termId: string) => `term:${termId}`;
   const kCourse = (c: ExploreCourse) => `course:${c.id}`;
   const kGroup = (c: ExploreCourse, g: string) => `group:${c.id}:${g}`;
 
@@ -253,29 +287,53 @@ export function CourseCodeExplorer({
         <div className="space-y-3">
           <p className="text-sm text-slate-400">{t("explore.selectedItem")}</p>
           <p className="text-xs text-slate-500">{course.pathLabel}</p>
-          <p className="text-lg font-semibold text-white">{course.name}</p>
-          <p className="text-base font-medium text-slate-200">
+          <p className="text-sm font-medium text-slate-300">{course.name}</p>
+          <p className="text-xs text-slate-500">
+            {t("explore.itemDetailType")}:{" "}
+            <span className="text-slate-200">
+              {item.typeLabel} {item.number}
+            </span>
+          </p>
+          <p className="text-lg font-semibold text-white">
             {labelOf(item)}
           </p>
-          {item.oneDriveUrl && (
-            <a
-              href={item.oneDriveUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-block text-sm text-cyan-200 hover:underline"
-            >
-              {item.linkTitle || t("explore.fileLinkDefault")}
-            </a>
-          )}
-          <div className="flex flex-wrap gap-2 pt-2">
-            {item.codes.map((cd) => (
-              <Chip key={cd} onClick={() => showCodeDetails(cd)}>
-                <span className="inline-flex items-center gap-1">
-                  <Hash size={14} />
-                  {cd}
-                </span>
-              </Chip>
-            ))}
+          <div>
+            <p className="mb-1 text-xs font-medium text-slate-500">
+              {t("explore.itemDetailFile")}
+            </p>
+            {item.oneDriveUrl ? (
+              <a
+                href={item.oneDriveUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex text-sm font-medium text-cyan-200 hover:underline"
+              >
+                {item.linkTitle || t("explore.fileLinkDefault")}
+              </a>
+            ) : (
+              <p className="text-sm text-slate-500">
+                {t("explore.itemDetailNoLink")}
+              </p>
+            )}
+          </div>
+          <div>
+            <p className="mb-1.5 text-xs font-medium text-slate-500">
+              {t("explore.itemDetailCodes")}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {item.codes.length === 0 ? (
+                <span className="text-sm text-slate-500">—</span>
+              ) : (
+                item.codes.map((cd) => (
+                  <Chip key={cd} onClick={() => showCodeDetails(cd)}>
+                    <span className="inline-flex items-center gap-1">
+                      <Hash size={14} />
+                      {cd}
+                    </span>
+                  </Chip>
+                ))
+              )}
+            </div>
           </div>
         </div>
       );
@@ -389,153 +447,217 @@ export function CourseCodeExplorer({
         </div>
       </header>
 
-      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-6 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
-          {tab === "tree" && (
-            <>
-              {data.map((course) => {
-                const isCourseOpen = open[kCourse(course)] ?? true;
-                const groups = groupByType(course.items);
-                const groupKeys = Object.keys(groups).sort();
-                return (
-                  <Section
-                    key={course.id}
-                    title={course.pathLabel}
-                    icon={<BookOpen size={18} />}
-                    right={
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setOpen((o) => ({
-                            ...o,
-                            [kCourse(course)]: !isCourseOpen,
-                          }))
-                        }
-                        className="text-sm text-slate-400 hover:text-cyan-200 hover:underline"
-                      >
-                        {isCourseOpen
-                          ? t("explore.collapse")
-                          : t("explore.expand")}
-                      </button>
-                    }
-                  >
-                    {isCourseOpen && (
-                      <div className="divide-y divide-white/10">
-                        {groupKeys.map((g) => {
-                          const isGroupOpen = open[kGroup(course, g)] ?? true;
-                          return (
-                            <div key={g} className="py-2">
-                              <Row
-                                isOpen={isGroupOpen}
-                                onClick={() =>
-                                  setOpen((o) => ({
-                                    ...o,
-                                    [kGroup(course, g)]: !isGroupOpen,
-                                  }))
-                                }
-                                left={
-                                  <span className="font-medium text-slate-200">
-                                    {g}
-                                  </span>
-                                }
-                                right={`${groups[g].length}`}
-                              />
-                              {isGroupOpen && (
-                                <div className="space-y-1 pl-7 pt-1">
-                                  {groups[g].map((it) => (
-                                    <div
-                                      key={it.id}
-                                      className="rounded-lg border border-white/10 bg-white/5 p-2"
-                                    >
-                                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                                        <button
-                                          type="button"
-                                          className="font-medium text-slate-100 hover:text-cyan-200 hover:underline"
-                                          onClick={() =>
-                                            showItemDetails(course, it)
-                                          }
-                                        >
-                                          {labelOf(it)}
-                                        </button>
-                                        <div className="flex flex-wrap gap-2">
-                                          {it.codes.map((cd) => (
-                                            <Chip
-                                              key={cd}
-                                              onClick={() =>
-                                                showCodeDetails(cd)
-                                              }
-                                            >
-                                              <span className="inline-flex items-center gap-1">
-                                                <Hash size={14} />
-                                                {cd}
-                                              </span>
-                                            </Chip>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
+      <main className="mx-auto max-w-7xl px-4 py-6">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+          <div className="min-w-0 flex-1 space-y-4">
+            {tab === "tree" && (
+              <>
+                {termsGrouped.map((tg) => {
+                  const isTermOpen = open[kTerm(tg.termId)] ?? true;
+                  return (
+                    <div
+                      key={tg.termId}
+                      className="glass overflow-hidden rounded-xl p-0"
+                    >
+                      <div className="flex items-center justify-between gap-2 border-b border-white/10 px-4 py-3">
+                        <div className="flex min-w-0 items-center gap-2 font-semibold text-slate-100">
+                          <CalendarRange
+                            size={20}
+                            className="shrink-0 text-cyan-300/90"
+                            aria-hidden
+                          />
+                          <span className="truncate">{tg.termLabel}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setOpen((o) => ({
+                              ...o,
+                              [kTerm(tg.termId)]: !isTermOpen,
+                            }))
+                          }
+                          className="shrink-0 text-sm text-slate-400 hover:text-cyan-200 hover:underline"
+                        >
+                          {isTermOpen
+                            ? t("explore.collapse")
+                            : t("explore.expand")}
+                        </button>
                       </div>
-                    )}
-                  </Section>
-                );
-              })}
-              {data.length === 0 && (
-                <p className="text-slate-400">{t("explore.noResults")}</p>
-              )}
-            </>
-          )}
-
-          {tab === "codes" && (
-            <Section
-              title={t("explore.codeIndex")}
-              icon={<ListTree size={18} />}
-            >
-              <div className="flex max-h-[70vh] flex-wrap content-start gap-2 overflow-y-auto">
-                {allCodes.map((c) => (
-                  <Chip key={c} onClick={() => {
-                    setTab("tree");
-                    showCodeDetails(c);
-                  }}>
-                    <span className="inline-flex items-center gap-1">
-                      <Hash size={14} />
-                      {c}
-                    </span>
-                  </Chip>
-                ))}
-                {allCodes.length === 0 && (
-                  <p className="text-sm text-slate-400">{t("explore.noCodes")}</p>
+                      {isTermOpen && (
+                        <div className="space-y-4 p-4 pt-2">
+                          {tg.courses.map((course) => {
+                            const isCourseOpen = open[kCourse(course)] ?? true;
+                            const groups = groupByType(course.items);
+                            const groupKeys = Object.keys(groups).sort();
+                            return (
+                              <Section
+                                key={course.id}
+                                title={course.pathLabel}
+                                icon={<BookOpen size={18} />}
+                                right={
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setOpen((o) => ({
+                                        ...o,
+                                        [kCourse(course)]: !isCourseOpen,
+                                      }))
+                                    }
+                                    className="text-sm text-slate-400 hover:text-cyan-200 hover:underline"
+                                  >
+                                    {isCourseOpen
+                                      ? t("explore.collapse")
+                                      : t("explore.expand")}
+                                  </button>
+                                }
+                              >
+                                {isCourseOpen && (
+                                  <div className="divide-y divide-white/10">
+                                    {groupKeys.map((g) => {
+                                      const isGroupOpen =
+                                        open[kGroup(course, g)] ?? true;
+                                      return (
+                                        <div key={g} className="py-2">
+                                          <Row
+                                            isOpen={isGroupOpen}
+                                            onClick={() =>
+                                              setOpen((o) => ({
+                                                ...o,
+                                                [kGroup(course, g)]:
+                                                  !isGroupOpen,
+                                              }))
+                                            }
+                                            left={
+                                              <span className="font-medium text-slate-200">
+                                                {g}
+                                              </span>
+                                            }
+                                            right={`${groups[g].length}`}
+                                          />
+                                          {isGroupOpen && (
+                                            <div className="space-y-1 pl-7 pt-1">
+                                              {groups[g].map((it) => (
+                                                <div
+                                                  key={it.id}
+                                                  role="button"
+                                                  tabIndex={0}
+                                                  onClick={() =>
+                                                    showItemDetails(course, it)
+                                                  }
+                                                  onKeyDown={(e) => {
+                                                    if (
+                                                      e.key === "Enter" ||
+                                                      e.key === " "
+                                                    ) {
+                                                      e.preventDefault();
+                                                      showItemDetails(
+                                                        course,
+                                                        it
+                                                      );
+                                                    }
+                                                  }}
+                                                  className="rounded-lg border border-white/10 bg-white/5 p-2 text-left outline-none ring-cyan-400/40 transition hover:border-white/20 hover:bg-white/10 focus-visible:ring-2"
+                                                >
+                                                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                                    <span className="font-medium text-slate-100">
+                                                      {labelOf(it)}
+                                                    </span>
+                                                    <div className="flex flex-wrap gap-2">
+                                                      {it.codes.map((cd) => (
+                                                        <Chip
+                                                          key={cd}
+                                                          onClick={() =>
+                                                            showCodeDetails(cd)
+                                                          }
+                                                        >
+                                                          <span className="inline-flex items-center gap-1">
+                                                            <Hash size={14} />
+                                                            {cd}
+                                                          </span>
+                                                        </Chip>
+                                                      ))}
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          )}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </Section>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {data.length === 0 && (
+                  <p className="text-slate-400">{t("explore.noResults")}</p>
                 )}
-              </div>
-            </Section>
-          )}
-        </div>
+              </>
+            )}
 
-        <Section
-          title={t("explore.panelTitle")}
-          icon={<ChevronRight size={18} />}
-          right={
-            selection && (
-              <button
-                type="button"
-                className="text-sm text-slate-400 hover:text-cyan-200 hover:underline"
-                onClick={() => {
-                  setSelection(null);
-                  setParams({ courseId: null, itemId: null, code: null });
-                }}
+            {tab === "codes" && (
+              <Section
+                title={t("explore.codeIndex")}
+                icon={<ListTree size={18} />}
               >
-                {t("explore.clear")}
-              </button>
-            )
-          }
-        >
-          <DetailsPanel />
-        </Section>
+                <div className="flex max-h-[70vh] flex-wrap content-start gap-2 overflow-y-auto">
+                  {allCodes.map((c) => (
+                    <Chip
+                      key={c}
+                      onClick={() => {
+                        setTab("tree");
+                        showCodeDetails(c);
+                      }}
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        <Hash size={14} />
+                        {c}
+                      </span>
+                    </Chip>
+                  ))}
+                  {allCodes.length === 0 && (
+                    <p className="text-sm text-slate-400">
+                      {t("explore.noCodes")}
+                    </p>
+                  )}
+                </div>
+              </Section>
+            )}
+          </div>
+
+          <aside className="w-full min-w-0 shrink-0 lg:sticky lg:top-20 lg:max-w-sm lg:self-start z-10 max-h-[min(100vh,56rem)] overflow-y-auto">
+            <Section
+              title={t("explore.panelTitle")}
+              icon={<ChevronRight size={18} />}
+              right={
+                selection && (
+                  <button
+                    type="button"
+                    className="text-sm text-slate-400 hover:text-cyan-200 hover:underline"
+                    onClick={() => {
+                      setSelection(null);
+                      setParams({
+                        courseId: null,
+                        itemId: null,
+                        code: null,
+                      });
+                    }}
+                  >
+                    {t("explore.clear")}
+                  </button>
+                )
+              }
+            >
+              <DetailsPanel />
+            </Section>
+          </aside>
+        </div>
       </main>
       <footer className="mx-auto max-w-6xl px-4 pb-10 text-xs text-slate-500/80">
         {t("explore.footer")}
