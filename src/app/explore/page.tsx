@@ -18,7 +18,6 @@ export default async function ExplorePage() {
         initialData={payload.courses}
         codeLabels={payload.codeLabels}
         accountLine={null}
-        appShellWithNav
       />
     </Suspense>
   );

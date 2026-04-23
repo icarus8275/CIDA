@@ -115,14 +115,11 @@ export function CourseCodeExplorer({
   initialData,
   codeLabels = {},
   accountLine,
-  appShellWithNav = false,
 }: {
   initialData: ExploreCourse[];
   // Admin catalog tooltips for code values (UPPERCASE key); Codes tab.
   codeLabels?: Record<string, string | null>;
   accountLine?: string | null;
-  // When /explore has ExploreHeader, offset the sticky sub-toolbar below it.
-  appShellWithNav?: boolean;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -379,15 +376,20 @@ export function CourseCodeExplorer({
             {refs.map((r) => {
               const crs = initialData.find((c) => c.id === r.courseId);
               const itm = crs?.items.find((i) => i.id === r.itemId);
+              const itemLabel = `${r.type} ${r.number}`;
               return (
                 <li
                   key={`${r.itemId}-${r.code}`}
                   className="flex items-start gap-2"
                 >
-                  <BookOpen size={16} className="mt-1 shrink-0" />
+                  <BookOpen
+                    size={16}
+                    className="mt-2 shrink-0 text-app-primary/80"
+                    aria-hidden
+                  />
                   <button
                     type="button"
-                    className="text-left hover:underline"
+                    className="w-full min-w-0 rounded-lg border border-app-border/70 bg-app-card/40 p-2.5 text-left text-app-fg transition hover:border-app-primary/35 hover:bg-app-card/65 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-link/30"
                     onClick={() => {
                       if (crs && itm) {
                         showItemDetails(crs, itm);
@@ -395,17 +397,26 @@ export function CourseCodeExplorer({
                       }
                     }}
                   >
-                    <div className="font-medium text-app-fg">{r.course}</div>
-                    <div className="text-xs text-app-muted/85">{r.pathLabel}</div>
+                    <div className="mb-1.5 flex flex-wrap items-baseline gap-2">
+                      <span
+                        className="inline-block rounded-md border border-app-bsu-cardinal/30 bg-app-bsu-cardinal/[0.09] px-2 py-0.5 text-sm font-bold tracking-tight text-app-bsu-cardinal"
+                        title={itemLabel}
+                      >
+                        {itemLabel}
+                      </span>
+                    </div>
+                    <div className="text-sm font-medium text-app-fg">
+                      {r.course}
+                    </div>
+                    <div className="mt-0.5 text-xs text-app-muted/85">
+                      {r.pathLabel}
+                    </div>
                     {r.instructorsLabel ? (
-                      <div className="text-xs text-app-muted/85">
+                      <div className="mt-0.5 text-xs text-app-muted/85">
                         {t("explore.itemDetailInstructors")}:{" "}
                         {r.instructorsLabel}
                       </div>
                     ) : null}
-                    <div className="text-sm text-app-muted/90">
-                      {r.type} {r.number}
-                    </div>
                   </button>
                 </li>
               );
@@ -419,11 +430,8 @@ export function CourseCodeExplorer({
 
   return (
     <div className="min-h-dvh">
-      <header
-        className={`glass-nav sticky z-20 border-b border-app-border/50 ${
-          appShellWithNav ? "top-16" : "top-0"
-        }`}
-      >
+      {/* Not sticky: a sticky sub-toolbar was overlapping the tree when scrolling. */}
+      <header className="relative z-10 border-b border-app-border/50 bg-app-bg/95 backdrop-blur supports-[backdrop-filter]:bg-app-bg/80">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
           <h1 className="text-xl font-bold text-app-fg">
             {t("explore.title")}
