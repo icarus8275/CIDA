@@ -39,7 +39,7 @@ export default async function SignInPage({
             />
           </div>
           <div className="border-t border-app-border/60 p-6">
-            <p className="text-sm font-medium text-app-link">
+            <p className="text-sm font-medium uppercase tracking-wide text-app-bsu-cardinal">
               {t(locale, "home.landingKicker")}
             </p>
             <p className="mt-2 text-balance text-lg font-semibold text-app-fg">

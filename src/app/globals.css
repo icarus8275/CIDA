@@ -13,6 +13,8 @@
   --app-fg: #1c2430;
   --app-fg-secondary: #44505c;
   --app-link: #0a66c2;
+  /* Ball State University cardinal */
+  --app-bsu-cardinal: rgb(186, 12, 47);
   --app-primary: #1f4e79;
   --app-btn-text: #ffffff;
   --app-border: #d6dee6;
@@ -31,6 +33,7 @@
   --color-app-fg: var(--app-fg);
   --color-app-muted: var(--app-fg-secondary);
   --color-app-link: var(--app-link);
+  --color-app-bsu-cardinal: var(--app-bsu-cardinal);
   --color-app-primary: var(--app-primary);
   --color-app-border: var(--app-border);
   --color-app-danger: var(--app-danger);

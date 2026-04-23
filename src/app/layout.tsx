@@ -21,6 +21,10 @@ export const metadata: Metadata = {
     "Ball State Interior Design Program — CIDA Accreditation",
   description:
     "Official workspace for the Ball State University Interior Design program's CIDA (Council for Interior Design Accreditation) review and materials.",
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png", sizes: "any" }],
+    apple: "/icon.png",
+  },
 };
 
 async function getLocaleFromRequest(): Promise<Locale> {

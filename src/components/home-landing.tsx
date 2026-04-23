@@ -34,7 +34,7 @@ export async function HomeLanding() {
           />
         </div>
         <div className="space-y-3 border-t border-app-border/60 p-5 sm:p-7">
-          <p className="text-sm font-medium uppercase tracking-wide text-app-link">
+          <p className="text-sm font-medium uppercase tracking-wide text-app-bsu-cardinal">
             {t(locale, "home.landingKicker")}
           </p>
           <h1 className="text-balance text-2xl font-bold leading-tight text-app-fg sm:text-3xl">
