@@ -50,11 +50,14 @@ export function AdminHeader({
           <Link href="/admin/faculty" className="link-app">
             {t("admin.facultyNav")}
           </Link>
+          <Link href="/admin/cida" className="link-app">
+            {t("admin.cidaViewNav")}
+          </Link>
           <Link href="/explore" className="link-app-muted">
             {t("teach.explore")}
           </Link>
           <Link href="/teach" className="link-app-muted">
-            {t("home.faculty")}
+            {t("teach.navFacultyView")}
           </Link>
         </nav>
         <form className="ml-auto flex shrink-0" action={signOutToHome}>

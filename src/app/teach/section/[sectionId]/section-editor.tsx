@@ -1,20 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/components/locale/locale-provider";
 import { formatTermForDisplay } from "@/lib/term-display";
+import { CodePicker, buildOptions, type CatalogRow, type CodeLink } from "./section-codes-shared";
+import { SectionItemRow } from "./section-item-row";
 
-type CodeLink = {
-  id: string;
-  codeNumberId: string;
-  codeNumber: {
-    id: string;
-    value: string;
-    label: string | null;
-    isActive: boolean;
-  };
-};
 type Item = {
   id: string;
   number: number;
@@ -47,148 +39,6 @@ type SectionPayload = {
   courseItems: Item[];
 };
 
-type CatalogRow = { id: string; value: string; label: string | null; sortOrder: number };
-
-type Opt = {
-  id: string;
-  value: string;
-  label: string | null;
-  isActive: boolean;
-  sortOrder: number;
-};
-
-function buildOptions(
-  catalog: CatalogRow[],
-  itemCodes: CodeLink[] | undefined
-): Opt[] {
-  const m = new Map<string, Opt>();
-  for (const c of catalog) {
-    m.set(c.id, {
-      id: c.id,
-      value: c.value,
-      label: c.label,
-      isActive: true,
-      sortOrder: c.sortOrder,
-    });
-  }
-  for (const link of itemCodes ?? []) {
-    const n = link.codeNumber;
-    if (!m.has(n.id)) {
-      m.set(n.id, {
-        id: n.id,
-        value: n.value,
-        label: n.label,
-        isActive: n.isActive,
-        sortOrder: 999_999,
-      });
-    }
-  }
-  return [...m.values()].sort((a, b) => {
-    if (a.sortOrder !== b.sortOrder) {
-      return a.sortOrder - b.sortOrder;
-    }
-    return a.value.localeCompare(b.value, undefined, { numeric: true });
-  });
-}
-
-function CodePicker({
-  t,
-  options,
-  valueIds,
-  onChange,
-  filter,
-  onFilterChange,
-  disabled,
-  idPrefix,
-}: {
-  t: (k: string) => string;
-  options: Opt[];
-  valueIds: string[];
-  onChange: (ids: string[]) => void;
-  filter: string;
-  onFilterChange: (v: string) => void;
-  disabled?: boolean;
-  /** 안정적인 DOM id(여러 pickers) */
-  idPrefix: string;
-}) {
-  const selected = new Set(valueIds);
-  const q = filter.trim().toLowerCase();
-  const shown = useMemo(
-    () =>
-      !q
-        ? options
-        : options.filter(
-            (o) =>
-              o.value.toLowerCase().includes(q) ||
-              (o.label && o.label.toLowerCase().includes(q))
-          ),
-    [options, q]
-  );
-
-  return (
-    <div className="space-y-2">
-      <input
-        type="search"
-        className="input-glass w-full max-w-md px-2 py-1 text-sm"
-        placeholder={t("teach.codeFilter")}
-        value={filter}
-        onChange={(e) => onFilterChange(e.target.value)}
-        disabled={disabled}
-        autoComplete="off"
-      />
-      <div className="glass min-h-16 max-h-52 overflow-y-auto p-2">
-        {options.length === 0 ? (
-          <p className="text-sm text-amber-200/90">{t("teach.noCodeCatalog")}</p>
-        ) : shown.length === 0 ? (
-          <p className="text-sm text-slate-500">{t("teach.codeNoMatch")}</p>
-        ) : (
-          <div className="flex flex-wrap gap-1.5">
-            {shown.map((o) => {
-              const isOn = selected.has(o.id);
-              const isDisabled = disabled || (!o.isActive && !isOn);
-              return (
-                <button
-                  key={o.id}
-                  type="button"
-                  id={`${idPrefix}-${o.id}`}
-                  title={
-                    o.label && o.label.trim()
-                      ? o.label
-                      : isOn && !o.isActive
-                        ? "inactive (saved)"
-                        : undefined
-                  }
-                  aria-pressed={isOn}
-                  disabled={isDisabled}
-                  onClick={() => {
-                    const next = new Set(valueIds);
-                    if (next.has(o.id)) {
-                      next.delete(o.id);
-                    } else {
-                      next.add(o.id);
-                    }
-                    onChange([...next]);
-                  }}
-                  className={[
-                    "min-h-[2.25rem] min-w-[2.5rem] rounded border px-2 font-mono text-xs transition",
-                    isOn
-                      ? "border-cyan-400/50 bg-cyan-500/20 text-cyan-100 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.2)]"
-                      : "border-white/10 bg-white/5 text-slate-200 hover:border-white/25 hover:bg-white/10",
-                    isDisabled ? "cursor-not-allowed opacity-40" : "cursor-pointer",
-                    !o.isActive && isOn ? "text-amber-200/90" : "",
-                  ].join(" ")}
-                >
-                  {o.value}
-                </button>
-              );
-            })}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export function SectionEditor({
   sectionId,
   surrogate = null,
@@ -208,12 +58,6 @@ export function SectionEditor({
   const [newItemCodes, setNewItemCodes] = useState<string[]>([]);
   const [addBusy, setAddBusy] = useState(false);
   const [newFilter, setNewFilter] = useState("");
-  const [codeSel, setCodeSel] = useState<Record<string, string[] | undefined>>(
-    {}
-  );
-  const [itemFilter, setItemFilter] = useState<Record<string, string>>({});
-  const [linkEdit, setLinkEdit] = useState<Record<string, { url: string; title: string }>>({});
-  const [titleEdit, setTitleEdit] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     setErr(null);
@@ -279,7 +123,8 @@ export function SectionEditor({
           {t("teach.addItem")}
         </h2>
         <p className="mb-1 text-xs text-slate-500">{t("teach.howManyHint")}</p>
-        <p className="mb-2 text-xs text-slate-500">{t("teach.codeNumbersHint")}</p>
+        <p className="mb-1 text-xs text-slate-500">{t("teach.codeNumbersHint")}</p>
+        <p className="mb-2 text-[11px] text-slate-500">{t("teach.autoSaveHint")}</p>
         <form
           className="space-y-3"
           onSubmit={async (e) => {
@@ -378,165 +223,15 @@ export function SectionEditor({
           {t("teach.itemsCodes")}
         </h2>
         <ul className="space-y-3">
-          {section.courseItems.map((it) => {
-            const ce = codeSel[it.id] ?? it.codes.map((c) => c.codeNumberId);
-            const le = linkEdit[it.id] ?? {
-              url: it.oneDriveUrl ?? "",
-              title: it.linkTitle ?? "",
-            };
-            const title = titleEdit[it.id] ?? it.title ?? "";
-            const f = itemFilter[it.id] ?? "";
-            return (
-              <li key={it.id} className="glass p-3">
-                <div className="mb-2">
-                  <span className="font-medium text-slate-100">
-                    {it.itemType.label} {it.number}
-                  </span>
-                </div>
-                <div className="mb-2 space-y-1">
-                  <label className="text-xs text-slate-400">
-                    {t("teach.itemTitleOpt")}
-                  </label>
-                  <input
-                    className="input-glass w-full px-2 py-1 text-sm"
-                    value={title}
-                    onChange={(e) =>
-                      setTitleEdit((m) => ({ ...m, [it.id]: e.target.value }))
-                    }
-                    onBlur={async () => {
-                      const v = titleEdit[it.id] ?? it.title ?? "";
-                      if (v === (it.title ?? "")) return;
-                      await fetch(`/api/teach/course-items/${it.id}`, {
-                        method: "PATCH",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ title: v || null }),
-                      });
-                      await load();
-                    }}
-                    placeholder={t("teach.customTitle")}
-                  />
-                </div>
-                <div className="mb-2 space-y-1">
-                  <label className="text-xs text-slate-400">
-                    {t("teach.odShareLink")}
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    <input
-                      className="input-glass min-w-0 flex-1 px-2 py-1 text-sm"
-                      value={le.url}
-                      onChange={(e) =>
-                        setLinkEdit((m) => ({
-                          ...m,
-                          [it.id]: { ...le, url: e.target.value },
-                        }))
-                      }
-                      placeholder="https://..."
-                    />
-                    <input
-                      className="input-glass w-40 px-2 py-1 text-sm"
-                      value={le.title}
-                      onChange={(e) =>
-                        setLinkEdit((m) => ({
-                          ...m,
-                          [it.id]: { ...le, title: e.target.value },
-                        }))
-                      }
-                      placeholder={t("teach.linkLabelOpt")}
-                    />
-                    <button
-                      type="button"
-                      className="btn-glass-primary px-2 py-1 text-sm"
-                      onClick={async () => {
-                        const cur = linkEdit[it.id] ?? {
-                          url: it.oneDriveUrl ?? "",
-                          title: it.linkTitle ?? "",
-                        };
-                        await fetch(`/api/teach/course-items/${it.id}`, {
-                          method: "PATCH",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({
-                            oneDriveUrl: cur.url || null,
-                            linkTitle: cur.title || null,
-                          }),
-                        });
-                        await load();
-                      }}
-                    >
-                      {t("teach.saveLink")}
-                    </button>
-                  </div>
-                  {it.oneDriveUrl && (
-                    <a
-                      href={it.oneDriveUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-sm text-cyan-200 hover:underline"
-                    >
-                      {it.linkTitle || t("teach.openFile")}
-                    </a>
-                  )}
-                </div>
-                <div className="mb-2 space-y-1">
-                  <label className="text-xs text-slate-400">
-                    {t("teach.codeCatalogPicks")} — {t("teach.saveCodeSelectionHint")}
-                  </label>
-                  <CodePicker
-                    t={t}
-                    idPrefix={`item-${it.id}`}
-                    options={buildOptions(catalog, it.codes)}
-                    valueIds={ce}
-                    onChange={(ids) =>
-                      setCodeSel((m) => ({ ...m, [it.id]: ids }))
-                    }
-                    filter={f}
-                    onFilterChange={(v) =>
-                      setItemFilter((m) => ({ ...m, [it.id]: v }))
-                    }
-                  />
-                  <button
-                    type="button"
-                    className="btn-glass-primary mt-2 px-3 py-1.5 text-sm"
-                    onClick={async () => {
-                      const ids = codeSel[it.id] ?? it.codes.map((c) => c.codeNumberId);
-                      const r = await fetch(`/api/teach/course-items/${it.id}/codes`, {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ codeNumberIds: ids }),
-                      });
-                      if (r.ok) {
-                        setCodeSel((m) => {
-                          const c = { ...m };
-                          delete c[it.id];
-                          return c;
-                        });
-                        await load();
-                      } else {
-                        alert(t("teach.codeSaveFail"));
-                        await load();
-                      }
-                    }}
-                  >
-                    {t("teach.saveCodeSelection")}
-                  </button>
-                </div>
-                <div className="mt-1">
-                  <button
-                    type="button"
-                    className="text-xs text-red-300"
-                    onClick={async () => {
-                      if (!confirm(t("teach.deleteConfirm"))) return;
-                      await fetch(`/api/teach/course-items/${it.id}`, {
-                        method: "DELETE",
-                      });
-                      await load();
-                    }}
-                  >
-                    {t("teach.deleteItem")}
-                  </button>
-                </div>
-              </li>
-            );
-          })}
+          {section.courseItems.map((it) => (
+            <SectionItemRow
+              key={it.id}
+              t={t}
+              it={it}
+              catalog={catalog}
+              onReload={load}
+            />
+          ))}
         </ul>
       </section>
     </div>

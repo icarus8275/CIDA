@@ -89,6 +89,7 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   // teach layout
   "teach.navTitle": { en: "Faculty", ko: "교수" },
+  "teach.navFacultyView": { en: "Faculty View", ko: "교수 화면" },
   "teach.myCourses": { en: "My courses", ko: "내 과목" },
   "teach.admin": { en: "Admin", ko: "관리" },
   "teach.explore": { en: "Explore", ko: "탐색" },
@@ -136,6 +137,11 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     en: "Toggle codes below, then save here (separate from the link button above).",
     ko: "아래에서 코드를 눌러 선택한 뒤 이 버튼으로만 저장합니다(위 링크 저장과 별도).",
   },
+  "teach.autoSaveHint": {
+    en: "Title, link, and code picks save automatically a short moment after you stop typing or selecting.",
+    ko: "제목·링크·코드는 입력·선택을 멈춘 뒤 잠시 후 자동으로 저장됩니다.",
+  },
+  "teach.save": { en: "Save", ko: "저장" },
   "teach.unlink": { en: "Unlink", ko: "연결 끊기" },
   "teach.odRoot": { en: "OneDrive root", ko: "OneDrive 루트" },
   "teach.newFolderName": { en: "New folder name", ko: "새 폴더 이름" },
@@ -157,7 +163,13 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   // admin layout
   "admin.navTitle": { en: "Admin", ko: "관리" },
   "admin.home": { en: "Home", ko: "개요" },
-  "admin.facultyNav": { en: "Faculty", ko: "교수" },
+  "admin.facultyNav": { en: "Faculty View", ko: "교수(섹션) 편집" },
+  "admin.cidaViewNav": { en: "CIDA View", ko: "CIDA View" },
+  "admin.cidaViewTitle": { en: "CIDA (read-only) preview", ko: "CIDA(읽기 전용) 미리보기" },
+  "admin.cidaViewBanner": {
+    en: "You are seeing the same read-only course–code tree that CIDA accounts see (all sections, no editing).",
+    ko: "CIDA 계정과 동일한 읽기 전용 과목·코드 트리입니다(전체 섹션, 편집 없음).",
+  },
   "admin.facultyPageTitle": {
     en: "Edit faculty sections & items",
     ko: "교수 섹션·과제 편집",
