@@ -131,7 +131,7 @@ export function AdminFacultyClient() {
   }, [userId]);
 
   if (loadErr && users.length === 0) {
-    return <p className="text-sm text-red-300">{loadErr}</p>;
+    return <p className="text-sm text-app-danger">{loadErr}</p>;
   }
 
   if (sectionId && userId) {
@@ -150,15 +150,15 @@ export function AdminFacultyClient() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-xl font-bold text-white">
+      <h1 className="text-xl font-bold text-app-fg">
         {t("admin.facultyPageTitle")}
       </h1>
-      <p className="text-sm text-slate-400">{t("admin.facultyPageBody")}</p>
+      <p className="text-sm text-app-muted/90">{t("admin.facultyPageBody")}</p>
 
-      {loadErr && <p className="text-sm text-amber-200/90">{loadErr}</p>}
+      {loadErr && <p className="text-sm text-amber-900/90">{loadErr}</p>}
 
       <div className="glass space-y-2 p-4">
-        <label className="block text-xs text-slate-400" htmlFor="admin-faculty-pick">
+        <label className="block text-xs text-app-muted/90" htmlFor="admin-faculty-pick">
           {t("admin.facultyPick")}
         </label>
         <select
@@ -177,7 +177,7 @@ export function AdminFacultyClient() {
             }
           }}
         >
-          <option value="">{t("admin.facultyPick")}…</option>
+          <option value="">{t("admin.facultyPick")}</option>
           {users.map((u) => (
             <option key={u.id} value={u.id}>
               {listUserLabel(u.name, u.email)}
@@ -188,13 +188,13 @@ export function AdminFacultyClient() {
 
       {userId && (
         <div className="space-y-2">
-          <h2 className="text-sm font-medium text-slate-200">
+          <h2 className="text-sm font-medium text-app-fg/92">
             {t("admin.facultySections")}
           </h2>
           {listBusy ? (
-            <p className="text-sm text-slate-500">{t("teach.loading")}</p>
+            <p className="text-sm text-app-muted/85">{t("teach.loading")}</p>
           ) : sections.length === 0 ? (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-app-muted/85">
               {t("admin.facultyNoSections")}
             </p>
           ) : (
@@ -209,7 +209,7 @@ export function AdminFacultyClient() {
                     }}
                     className="link-app w-full text-left"
                   >
-                    {sectionPath(sec)} — {t("admin.facultyOpenSection")}
+                    {sectionPath(sec)} · {t("admin.facultyOpenSection")}
                   </button>
                 </li>
               ))}
@@ -219,7 +219,7 @@ export function AdminFacultyClient() {
       )}
 
       {!userId && (
-        <p className="text-sm text-slate-500">{t("admin.facultySelectFirst")}</p>
+        <p className="text-sm text-app-muted/85">{t("admin.facultySelectFirst")}</p>
       )}
     </div>
   );

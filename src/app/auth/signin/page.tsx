@@ -24,10 +24,10 @@ export default async function SignInPage({
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col justify-center gap-6 px-4 py-12">
       <div className="glass p-8">
-        <h1 className="text-2xl font-bold text-white">
+        <h1 className="text-2xl font-bold text-app-fg">
           {t(locale, "signin.title")}
         </h1>
-        <p className="mt-2 text-sm text-slate-400">
+        <p className="mt-2 text-sm text-app-muted/90">
           {t(locale, "signin.hint")}
         </p>
         <div className="mt-6">

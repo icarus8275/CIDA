@@ -23,8 +23,8 @@ export default async function AdminCidaViewPage() {
   const accountLine = accountLabel(s.user.name, s.user.email) || null;
   return (
     <div className="space-y-4">
-      <div className="glass rounded-lg p-3 text-sm text-slate-300">
-        <h1 className="mb-1 text-base font-semibold text-white">
+      <div className="glass rounded-lg p-3 text-sm text-app-muted">
+        <h1 className="mb-1 text-base font-semibold text-app-fg">
           {t(locale, "admin.cidaViewTitle")}
         </h1>
         <p>{t(locale, "admin.cidaViewBanner")}</p>

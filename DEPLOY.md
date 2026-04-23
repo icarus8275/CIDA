@@ -47,7 +47,7 @@ git push origin main
 
 ## 5. Vercel 환경 변수 (필수·선택)
 
-배포 후 브라우저에 열리는 주소가 예를 들어 `https://cida.vercel.app` 이라면, **`AUTH_URL`** 은 그 주소와 **완전히 같아야** 합니다(끝에 `/` 없음).
+배포 후 브라우저에 열리는 주소가 예를 들어 `https://cida-three.vercel.app` 이라면, **`AUTH_URL`** 은 그 주소와 **완전히 같아야** 합니다(끝에 `/` 없음). Vercel 프로젝트 URL이 바뀌면(예: `*.vercel.app` 변경) **Vercel → Settings → Environment Variables** 의 `AUTH_URL` 도 함께 바꾸고 **재배포**하세요. 로그아웃 후 열리는 루트 URL도 `AUTH_URL` 을 따릅니다(코드는 `src/lib/auth-actions.ts` 참고).
 
 | Name | 필수 | 설명 / 예시 |
 |------|------|-------------|
@@ -61,6 +61,20 @@ git push origin main
 
 **더 이상 필요 없음(이전 Entra/OAuth 버전용):**  
 `AUTH_MICROSOFT_ENTRA_ID_*`, `OAUTH_ENCRYPTION_KEY`, Microsoft **Redirect URI** 등.
+
+### `jakeson.net/cida` 로 보내고 싶을 때 (선택)
+
+원하는 동작에 따라 아래 중 하나를 씁니다.
+
+1. **짧은 주소만 쓰고, 실제 앱은 Vercel 그대로 두기 (가장 단순)**  
+   `jakeson.net` 을 **원래 쓰는 호스팅**(WordPress, Cloudflare, Netlify DNS, Nginx 등)에서 **리다이렉트**만 설정합니다.  
+   - 예: `https://jakeson.net/cida` → `https://cida-three.vercel.app` (301/302)  
+   - 하위 경로도 보내려면 `jakeson.net/cida/*` → `https://cida-three.vercel.app/*` 규칙을 추가합니다.  
+   이 경우 **이 저장소 코드 변경은 필요 없고**, `AUTH_URL` 은 **실제 로그인·세션이 돌아가는 URL** (`https://cida-three.vercel.app`) 로 두는 것이 일반적입니다. 사용자가 항상 `jakeson.net` 으로만 들어오게 하려면, 리다이렉트 후 브라우저 주소창이 Vercel로 바뀌는 것을 감수하거나, 아래 2번을 검토합니다.
+
+2. **브라우저 주소가 항상 `jakeson.net` 이었으면 한다**  
+   - **서브도메인**이 가장 단순합니다: 예) `cida.jakeson.net` 을 Vercel 프로젝트 **Custom Domains** 에 추가하고, DNS에 `CNAME` 으로 `cida.jakeson.net` → Vercel 안내값. 그다음 **`AUTH_URL=https://cida.jakeson.net`** (끝 `/` 없음). 앱 코드 수정은 보통 불필요합니다.  
+   - **정확히 `jakeson.net/cida` 경로**에 앱을 두려면 Next.js에서 `basePath: '/cida'` 도메인·프록시 설정이 필요해 **구성이 커집니다**. 대부분은 1번 리다이렉트 또는 `cida.jakeson.net` 을 권장합니다.
 
 ---
 

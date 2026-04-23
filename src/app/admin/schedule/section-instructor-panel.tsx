@@ -113,11 +113,11 @@ export function SectionInstructorPanel() {
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-slate-400">{t("admin.schedPanelHint")}</p>
+      <p className="text-sm text-app-muted/90">{t("admin.schedPanelHint")}</p>
 
       <ul className="space-y-1 text-sm">
         {siRows.length === 0 && (
-          <li className="text-sm text-slate-500">
+          <li className="text-sm text-app-muted/85">
             {t("admin.schedPanelEmpty")}
           </li>
         )}
@@ -126,14 +126,14 @@ export function SectionInstructorPanel() {
             key={`${r.userId}-${r.sectionId}`}
             className="glass flex items-center justify-between gap-2 px-2 py-1.5"
           >
-            <span className="text-slate-200">
-              {listUserLabel(r.user.name, r.user.email)} —{" "}
-              {r.section.courseOffering.course.name} ·{r.section.label} (
+            <span className="text-app-fg/92">
+              {listUserLabel(r.user.name, r.user.email)} ·{" "}
+              {r.section.courseOffering.course.name} · {r.section.label} (
               {formatTermForDisplay(r.section.courseOffering.term)})
             </span>
             <button
               type="button"
-              className="text-sm text-red-300 hover:underline"
+              className="text-sm text-app-danger hover:underline"
               onClick={async () => {
                 const res = await fetch("/api/admin/section-instructors", {
                   method: "DELETE",

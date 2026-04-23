@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { AdminFacultyClient } from "./admin-faculty-client";
 
 function FacultyFallback() {
-  return <p className="text-slate-400">…</p>;
+  return <p className="text-app-muted/90">Loading…</p>;
 }
 
 export const dynamic = "force-dynamic";

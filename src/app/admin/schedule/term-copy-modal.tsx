@@ -118,7 +118,7 @@ export function TermCopyModal({ source, allTerms, onClose }: Props) {
     >
       <button
         type="button"
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-app-fg/45 backdrop-blur-sm"
         aria-label={t("admin.osmClose")}
         onClick={onClose}
       />
@@ -126,31 +126,31 @@ export function TermCopyModal({ source, allTerms, onClose }: Props) {
         <div className="mb-3 flex items-start justify-between gap-2">
           <h2
             id="term-copy-title"
-            className="pr-2 text-base font-semibold text-white"
+            className="pr-2 text-base font-semibold text-app-fg"
           >
             {t("admin.schedCopyTitle")}
           </h2>
           <button
             type="button"
-            className="shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white"
+            className="shrink-0 rounded-lg p-1.5 text-app-muted/90 hover:bg-app-card/75 hover:text-app-fg"
             onClick={onClose}
           >
             <X className="h-5 w-5" />
           </button>
         </div>
-        <p className="mb-1 text-sm text-slate-200">
-          <span className="text-slate-400">{t("admin.schedCopyFrom")}</span>{" "}
-          <span className="font-medium text-cyan-100/90">{sourceLabel}</span>
+        <p className="mb-1 text-sm text-app-fg/92">
+          <span className="text-app-muted/90">{t("admin.schedCopyFrom")}</span>{" "}
+          <span className="font-medium text-app-primary/90">{sourceLabel}</span>
         </p>
-        <p className="mb-4 text-xs text-slate-400">{t("admin.schedCopyBlurb")}</p>
+        <p className="mb-4 text-xs text-app-muted/90">{t("admin.schedCopyBlurb")}</p>
 
-        {err && <p className="mb-3 text-sm text-rose-300">{err}</p>}
+        {err && <p className="mb-3 text-sm text-app-danger">{err}</p>}
 
-        <label className="mb-1 block text-[11px] text-slate-500">
+        <label className="mb-1 block text-[11px] text-app-muted/85">
           {t("admin.schedCopyTarget")}
         </label>
         {candidates.length === 0 ? (
-          <p className="mb-4 text-sm text-amber-200/90">
+          <p className="mb-4 text-sm text-amber-900/90">
             {t("admin.schedCopyNoTarget")}
           </p>
         ) : (

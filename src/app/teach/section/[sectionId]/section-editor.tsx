@@ -90,10 +90,10 @@ export function SectionEditor({
   }, [load, loadTypes, loadCatalog]);
 
   if (err) {
-    return <p className="text-sm text-red-300">{err}</p>;
+    return <p className="text-sm text-app-danger">{err}</p>;
   }
   if (!section) {
-    return <p className="text-slate-400">{t("teach.loading")}</p>;
+    return <p className="text-app-muted/90">{t("teach.loading")}</p>;
   }
 
   const path = `${formatTermForDisplay(section.courseOffering.term)} · ${section.courseOffering.course.name} · ${section.label}`;
@@ -102,29 +102,29 @@ export function SectionEditor({
     <div className="space-y-8">
       <div>
         {surrogate && (
-          <p className="mb-2 text-sm text-amber-200/90">
+          <p className="mb-2 text-sm text-amber-900/90">
             {t("admin.facultySurrogateBanner").replace(
               "__NAME__",
               surrogate.facultyLabel
             )}
           </p>
         )}
-        <h1 className="text-lg font-bold text-white">{path}</h1>
+        <h1 className="text-lg font-bold text-app-fg">{path}</h1>
         <Link
           href={surrogate ? surrogate.backHref : "/teach"}
-          className="text-sm text-slate-400 hover:text-cyan-200 hover:underline"
+          className="text-sm text-app-muted/90 hover:text-app-link hover:underline"
         >
           {surrogate ? t("admin.facultyBackToList") : t("teach.backList")}
         </Link>
       </div>
 
       <section className="glass p-4">
-        <h2 className="mb-2 font-medium text-slate-200">
+        <h2 className="mb-2 font-medium text-app-fg/92">
           {t("teach.addItem")}
         </h2>
-        <p className="mb-1 text-xs text-slate-500">{t("teach.howManyHint")}</p>
-        <p className="mb-1 text-xs text-slate-500">{t("teach.codeNumbersHint")}</p>
-        <p className="mb-2 text-[11px] text-slate-500">{t("teach.autoSaveHint")}</p>
+        <p className="mb-1 text-xs text-app-muted/85">{t("teach.howManyHint")}</p>
+        <p className="mb-1 text-xs text-app-muted/85">{t("teach.codeNumbersHint")}</p>
+        <p className="mb-2 text-[11px] text-app-muted/85">{t("teach.autoSaveHint")}</p>
         <form
           className="space-y-3"
           onSubmit={async (e) => {
@@ -164,7 +164,7 @@ export function SectionEditor({
           }}
         >
           {addErr && (
-            <p className="text-sm text-amber-200/90">{addErr}</p>
+            <p className="text-sm text-amber-900/90">{addErr}</p>
           )}
           <div className="flex flex-wrap items-end gap-2">
             <select
@@ -182,7 +182,7 @@ export function SectionEditor({
                 </option>
               ))}
             </select>
-            <label className="flex flex-col text-xs text-slate-400">
+            <label className="flex flex-col text-xs text-app-muted/90">
               <span>{t("teach.howMany")}</span>
               <input
                 type="number"
@@ -219,7 +219,7 @@ export function SectionEditor({
       </section>
 
       <section>
-        <h2 className="mb-2 font-medium text-slate-200">
+        <h2 className="mb-2 font-medium text-app-fg/92">
           {t("teach.itemsCodes")}
         </h2>
         <ul className="space-y-3">

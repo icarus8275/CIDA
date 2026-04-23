@@ -30,7 +30,7 @@ export function AdminItemTypesForm() {
 
   return (
     <div className="space-y-6">
-      {err && <p className="text-sm text-red-300">{err}</p>}
+      {err && <p className="text-sm text-app-danger">{err}</p>}
       <form
         className="glass space-y-2 p-4"
         onSubmit={async (e) => {
@@ -53,7 +53,7 @@ export function AdminItemTypesForm() {
           await load();
         }}
       >
-        <h2 className="text-sm font-medium text-slate-200">
+        <h2 className="text-sm font-medium text-app-fg/92">
           {t("admin.itAddType")}
         </h2>
         <div className="flex flex-wrap gap-2">
@@ -107,7 +107,7 @@ export function AdminItemTypesForm() {
                   }
                 }}
               >
-                <span className="text-slate-400">{row.key}</span>
+                <span className="text-app-muted/90">{row.key}</span>
                 <input
                   value={editing.label}
                   onChange={(e) =>
@@ -115,7 +115,7 @@ export function AdminItemTypesForm() {
                   }
                   className="input-glass flex-1 px-2 py-1"
                 />
-                <label className="flex items-center gap-1 text-sm text-slate-300">
+                <label className="flex items-center gap-1 text-sm text-app-muted">
                   <input
                     type="checkbox"
                     checked={editing.isActive}
@@ -136,20 +136,20 @@ export function AdminItemTypesForm() {
                     })
                   }
                 />
-                <button type="submit" className="text-sm text-cyan-200 hover:underline">
+                <button type="submit" className="text-sm text-app-link hover:underline">
                   {t("admin.coursesSave")}
                 </button>
-                <button type="button" className="text-slate-400 hover:text-slate-200" onClick={() => setEditing(null)}>
+                <button type="button" className="text-app-muted/90 hover:text-app-fg" onClick={() => setEditing(null)}>
                   {t("admin.coursesCancel")}
                 </button>
               </form>
             ) : (
               <>
                 <div className="flex-1">
-                  <code className="text-xs text-slate-500">{row.key}</code>{" "}
-                  <span className="font-medium text-slate-100">{row.label}</span>
+                  <code className="text-xs text-app-muted/85">{row.key}</code>{" "}
+                  <span className="font-medium text-app-fg">{row.label}</span>
                   {!row.isActive && (
-                    <span className="ml-2 text-xs text-amber-300/90">
+                    <span className="ml-2 text-xs text-amber-800/90">
                       {t("admin.itInactive")}
                     </span>
                   )}
@@ -158,7 +158,7 @@ export function AdminItemTypesForm() {
                   <button
                     type="button"
                     onClick={() => setEditing(row)}
-                    className="text-sm text-cyan-200 hover:underline"
+                    className="text-sm text-app-link hover:underline"
                   >
                     {t("admin.itEdit")}
                   </button>
@@ -173,7 +173,7 @@ export function AdminItemTypesForm() {
                       );
                       await load();
                     }}
-                    className="text-sm text-red-300 hover:underline"
+                    className="text-sm text-app-danger hover:underline"
                   >
                     {t("admin.itDelete")}
                   </button>

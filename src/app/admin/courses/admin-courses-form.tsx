@@ -29,7 +29,7 @@ export function AdminCoursesForm() {
 
   return (
     <div className="space-y-6">
-      {err && <p className="text-sm text-red-300">{err}</p>}
+      {err && <p className="text-sm text-app-danger">{err}</p>}
       <form
         className="glass flex flex-wrap items-end gap-2 p-4"
         onSubmit={async (e) => {
@@ -49,7 +49,7 @@ export function AdminCoursesForm() {
         }}
       >
         <div>
-          <label className="text-xs text-slate-400">
+          <label className="text-xs text-app-muted/90">
             {t("admin.coursesNameLabel")}
           </label>
           <input
@@ -90,7 +90,7 @@ export function AdminCoursesForm() {
           await load();
         }}
       >
-        <label className="text-xs text-slate-400">
+        <label className="text-xs text-app-muted/90">
           {t("admin.coursesBulkLabel")}
         </label>
         <textarea
@@ -151,13 +151,13 @@ export function AdminCoursesForm() {
                   }
                   className="input-glass w-24 px-2 py-1"
                 />
-                <button type="submit" className="text-sm text-cyan-200 hover:underline">
+                <button type="submit" className="text-sm text-app-link hover:underline">
                   {t("admin.coursesSave")}
                 </button>
                 <button
                   type="button"
                   onClick={() => setEditing(null)}
-                  className="text-sm text-slate-500"
+                  className="text-sm text-app-muted/85"
                 >
                   {t("admin.coursesCancel")}
                 </button>
@@ -165,8 +165,8 @@ export function AdminCoursesForm() {
             ) : (
               <>
                 <div className="flex-1">
-                  <span className="font-medium text-slate-100">{c.name}</span>
-                  <span className="ml-2 text-sm text-slate-400">
+                  <span className="font-medium text-app-fg">{c.name}</span>
+                  <span className="ml-2 text-sm text-app-muted/90">
                     {t("admin.coursesOrder")} {c.sortOrder}
                   </span>
                 </div>
@@ -174,7 +174,7 @@ export function AdminCoursesForm() {
                   <button
                     type="button"
                     onClick={() => setEditing(c)}
-                    className="text-sm text-cyan-200 hover:underline"
+                    className="text-sm text-app-link hover:underline"
                   >
                     {t("admin.coursesEdit")}
                   </button>
@@ -188,7 +188,7 @@ export function AdminCoursesForm() {
                       );
                       if (r.ok) await load();
                     }}
-                    className="text-sm text-red-300 hover:underline"
+                    className="text-sm text-app-danger hover:underline"
                   >
                     {t("admin.coursesDelete")}
                   </button>

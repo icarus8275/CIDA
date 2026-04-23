@@ -153,15 +153,15 @@ export function CodePicker({
       />
       <div className="glass min-h-16 max-h-52 overflow-y-auto p-2">
         {options.length === 0 ? (
-          <p className="text-sm text-amber-200/90">{t("teach.noCodeCatalog")}</p>
+          <p className="text-sm text-amber-900/90">{t("teach.noCodeCatalog")}</p>
         ) : shown.length === 0 ? (
-          <p className="text-sm text-slate-500">{t("teach.codeNoMatch")}</p>
+          <p className="text-sm text-app-muted/85">{t("teach.codeNoMatch")}</p>
         ) : (
           <div className="space-y-2">
             {codeRows.map(({ lead, items }) => (
               <div
                 key={lead}
-                className="flex flex-wrap gap-1.5 border-b border-white/5 pb-2 last:border-b-0 last:pb-0"
+                className="flex flex-wrap gap-1.5 border-b border-app-border/50 pb-2 last:border-b-0 last:pb-0"
               >
                 {items.map((o) => {
                   const isOn = selected.has(o.id);
@@ -192,12 +192,12 @@ export function CodePicker({
                       className={[
                         "min-h-[2.25rem] min-w-[2.5rem] rounded border px-2 font-mono text-xs transition",
                         isOn
-                          ? "border-cyan-400/50 bg-cyan-500/20 text-cyan-100 shadow-[inset_0_0_0_1px_rgba(34,211,238,0.2)]"
-                          : "border-white/10 bg-white/5 text-slate-200 hover:border-white/25 hover:bg-white/10",
+                          ? "border-app-link/35 bg-app-link/15 text-app-link shadow-[inset_0_0_0_1px_rgba(10,102,194,0.22)]"
+                          : "border-app-border/70 bg-app-card/55 text-app-fg/92 hover:border-app-border hover:bg-app-card/75",
                         isDisabled
                           ? "cursor-not-allowed opacity-40"
                           : "cursor-pointer",
-                        !o.isActive && isOn ? "text-amber-200/90" : "",
+                        !o.isActive && isOn ? "text-amber-900/90" : "",
                       ].join(" ")}
                     >
                       {o.value}
@@ -250,7 +250,7 @@ export function CodesReadonlyGrouped({
       {rows.map(({ lead, items }) => (
         <div
           key={lead}
-          className="flex flex-wrap gap-1.5 border-b border-white/5 pb-2 last:border-b-0 last:pb-0"
+          className="flex flex-wrap gap-1.5 border-b border-app-border/50 pb-2 last:border-b-0 last:pb-0"
         >
           {items.map((o) => (
             <button
@@ -259,7 +259,7 @@ export function CodesReadonlyGrouped({
               id={`${idPrefix}-${o.id}`}
               title={o.label?.trim() ? o.label : undefined}
               onClick={() => onCodeClick(o.value)}
-              className="min-h-[2.25rem] min-w-[2.5rem] cursor-pointer rounded border border-white/10 bg-white/5 px-2 font-mono text-xs text-slate-200 transition hover:border-white/25 hover:bg-white/10"
+              className="min-h-[2.25rem] min-w-[2.5rem] cursor-pointer rounded border border-app-border/70 bg-app-card/55 px-2 font-mono text-xs text-app-fg/92 transition hover:border-app-border hover:bg-app-card/75"
             >
               {o.value}
             </button>

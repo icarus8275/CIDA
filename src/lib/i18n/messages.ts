@@ -13,6 +13,7 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "home.faculty": { en: "Faculty", ko: "교수" },
   // explore
   "explore.loading": { en: "Loading…", ko: "불러오는 중…" },
+  "explore.navTitle": { en: "Explore", ko: "탐색" },
   "explore.title": { en: "Course–Code", ko: "Course–Code" },
   "explore.searchPlaceholder": {
     en: "Search course, item, or code…",

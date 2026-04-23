@@ -31,8 +31,8 @@ export function AdminCodeNumbersForm() {
 
   return (
     <div className="space-y-6">
-      {err && <p className="text-sm text-red-300">{err}</p>}
-      {info && <p className="text-sm text-amber-200/90">{info}</p>}
+      {err && <p className="text-sm text-app-danger">{err}</p>}
+      {info && <p className="text-sm text-amber-900/90">{info}</p>}
       <form
         className="glass space-y-2 p-4"
         onSubmit={async (e) => {
@@ -57,10 +57,10 @@ export function AdminCodeNumbersForm() {
           await load();
         }}
       >
-        <h2 className="text-sm font-medium text-slate-200">
+        <h2 className="text-sm font-medium text-app-fg/92">
           {t("admin.cnAdd")}
         </h2>
-        <p className="text-xs text-slate-500">{t("admin.cnAddHint")}</p>
+        <p className="text-xs text-app-muted/85">{t("admin.cnAddHint")}</p>
         <div className="flex flex-wrap gap-2">
           <input
             placeholder={t("admin.cnValuePh")}
@@ -136,7 +136,7 @@ export function AdminCodeNumbersForm() {
                         })
                       }
                     />
-                    <label className="flex items-center gap-1 text-sm text-slate-300">
+                    <label className="flex items-center gap-1 text-sm text-app-muted">
                       <input
                         type="checkbox"
                         checked={editing.isActive}
@@ -175,18 +175,18 @@ export function AdminCodeNumbersForm() {
             ) : (
               <>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm leading-snug text-slate-200 break-words">
-                    <span className="font-mono text-cyan-100/90">{row.value}</span>
+                  <p className="text-sm leading-snug text-app-fg/92 break-words">
+                    <span className="font-mono text-app-primary/90">{row.value}</span>
                     {row.label && (
-                      <span className="text-slate-400"> — {row.label}</span>
+                      <span className="text-app-muted/90"> · {row.label}</span>
                     )}
-                    <span className="whitespace-nowrap text-xs text-slate-500">
+                    <span className="whitespace-nowrap text-xs text-app-muted/85">
                       {" "}
                       #{row.sortOrder}
                     </span>
                   </p>
                   {!row.isActive && (
-                    <p className="mt-0.5 text-xs text-amber-300">
+                    <p className="mt-0.5 text-xs text-amber-800">
                       {t("admin.itInactive")}
                     </p>
                   )}
@@ -201,7 +201,7 @@ export function AdminCodeNumbersForm() {
                   </button>
                   <button
                     type="button"
-                    className="btn-glass px-2 py-1 text-sm text-amber-200"
+                    className="btn-glass px-2 py-1 text-sm text-amber-900/85"
                     onClick={async () => {
                       if (!confirm(t("admin.cnDeleteConfirm"))) return;
                       setInfo(null);

@@ -38,7 +38,7 @@ export function SignInForm({ callbackUrl }: { callbackUrl?: string }) {
       }}
     >
       <div>
-        <label className="text-xs text-slate-400">{t("signin.devEmail")}</label>
+        <label className="text-xs text-app-muted/90">{t("signin.devEmail")}</label>
         <input
           name="email"
           type="email"
@@ -48,7 +48,7 @@ export function SignInForm({ callbackUrl }: { callbackUrl?: string }) {
         />
       </div>
       <div>
-        <label className="text-xs text-slate-400">
+        <label className="text-xs text-app-muted/90">
           {t("signin.devPassword")}
         </label>
         <input
@@ -59,7 +59,7 @@ export function SignInForm({ callbackUrl }: { callbackUrl?: string }) {
           className="input-glass mt-0.5 w-full px-2 py-2"
         />
       </div>
-      {err && <p className="text-sm text-red-300">{err}</p>}
+      {err && <p className="text-sm text-app-danger">{err}</p>}
       <button type="submit" className="btn-glass-primary w-full py-2.5 text-sm">
         {t("signin.title")}
       </button>

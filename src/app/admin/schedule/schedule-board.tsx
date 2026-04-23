@@ -88,18 +88,18 @@ function CourseCatalogPool({
     <div
       ref={setNodeRef}
       className={`group/pool glass flex w-full flex-col gap-2 p-3 ${
-        isOver ? "ring-1 ring-cyan-400/40" : ""
+        isOver ? "ring-1 ring-app-link/30" : ""
       }`}
     >
-      <h3 className="text-sm font-semibold text-slate-100">
+      <h3 className="text-sm font-semibold text-app-fg">
         {t("admin.schedUnscheduled")}
       </h3>
-      <p className="text-xs text-slate-400">
+      <p className="text-xs text-app-muted/90">
         {t("admin.schedUnscheduledHelp")}
       </p>
       <div className="mt-1 min-h-24">
         {courseIds.length === 0 && (
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-app-muted/85">
             {t("admin.schedNoCourses")}
           </p>
         )}
@@ -129,7 +129,7 @@ function CatalogDraggable({ course }: { course: CourseRow }) {
       {...listeners}
       {...attributes}
     >
-      <div className="font-medium text-slate-100">{course.name}</div>
+      <div className="font-medium text-app-fg">{course.name}</div>
     </div>
   );
 }
@@ -157,7 +157,7 @@ function OfferingCard({
     >
       <button
         type="button"
-        className="flex shrink-0 cursor-grab items-center border-r border-white/10 px-1.5 text-slate-500 hover:bg-white/5 active:cursor-grabbing"
+        className="flex shrink-0 cursor-grab items-center border-r border-app-border/70 px-1.5 text-app-muted/85 hover:bg-app-card/55 active:cursor-grabbing"
         aria-label={t("admin.osmDragA11y")}
         title={t("admin.osmDragHint")}
         {...listeners}
@@ -167,16 +167,16 @@ function OfferingCard({
       </button>
       <button
         type="button"
-        className="min-w-0 flex-1 cursor-pointer px-2 py-1.5 text-left transition hover:bg-white/5"
+        className="min-w-0 flex-1 cursor-pointer px-2 py-1.5 text-left transition hover:bg-app-card/55"
         onClick={() => onConfigure(off)}
       >
-        <div className="font-medium text-slate-100">{off.course.name}</div>
-        <div className="text-[11px] text-slate-500">{t("admin.osmOpenHint")}</div>
+        <div className="font-medium text-app-fg">{off.course.name}</div>
+        <div className="text-[11px] text-app-muted/85">{t("admin.osmOpenHint")}</div>
       </button>
       <button
         type="button"
         aria-label={t("admin.schedARemove")}
-        className="flex shrink-0 items-start px-1.5 py-1.5 text-rose-300/90 opacity-0 transition hover:bg-rose-500/20 group-hover/offer:opacity-100"
+        className="flex shrink-0 items-start px-1.5 py-1.5 text-app-danger/90 opacity-0 transition hover:bg-app-danger/15 group-hover/offer:opacity-100"
         onClick={(e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -211,12 +211,12 @@ function TermColumn({
       ref={setNodeRef}
       className={`group/term glass relative flex min-h-56 min-w-[200px] flex-1 flex-col gap-2 p-2 ${
         isOver
-          ? "border-cyan-400/40 bg-cyan-500/10 ring-1 ring-cyan-400/30"
+          ? "border-app-link/30 bg-app-link/10 ring-1 ring-app-link/25"
           : ""
       }`}
     >
       <div className="flex items-start justify-between gap-1 pr-1">
-        <h3 className="text-sm font-semibold leading-tight text-slate-100">
+        <h3 className="text-sm font-semibold leading-tight text-app-fg">
           {formatTermForDisplay(term)}
         </h3>
         <div className="flex shrink-0 items-center gap-0.5">
@@ -224,7 +224,7 @@ function TermColumn({
             type="button"
             aria-label={t("admin.schedCopyTerm")}
             title={t("admin.schedCopyTermTitle")}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-cyan-200/90 opacity-0 transition hover:bg-cyan-500/20 group-hover/term:opacity-100"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-app-link/90 opacity-0 transition hover:bg-app-link/12 group-hover/term:opacity-100"
             onClick={() => onOpenCopy(term)}
           >
             <Copy className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -233,7 +233,7 @@ function TermColumn({
             type="button"
             aria-label={t("admin.schedTDelete")}
             title={t("admin.schedTDeleteTitle")}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-rose-300/90 opacity-0 transition hover:bg-rose-500/20 group-hover/term:opacity-100"
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-app-danger/90 opacity-0 transition hover:bg-app-danger/15 group-hover/term:opacity-100"
             onClick={() => onDeleteTerm(term.id)}
           >
             <X className="h-3.5 w-3.5" strokeWidth={2.5} />
@@ -424,7 +424,7 @@ export function ScheduleBoard() {
   };
 
   if (loading) {
-    return <p className="text-sm text-slate-400">{t("teach.loading")}</p>;
+    return <p className="text-sm text-app-muted/90">{t("teach.loading")}</p>;
   }
 
   return (
@@ -455,13 +455,13 @@ export function ScheduleBoard() {
         </div>
       </DndContext>
       {terms.length > 0 && (
-        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-white/10 pt-4">
-          <p className="mr-auto text-xs text-slate-500">
+        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-app-border/70 pt-4">
+          <p className="mr-auto text-xs text-app-muted/85">
             {t("admin.schedDeleteAllTitle")}
           </p>
           <button
             type="button"
-            className="rounded-lg border border-rose-500/40 bg-rose-500/10 px-3 py-1.5 text-sm text-rose-100 transition hover:bg-rose-500/20"
+            className="rounded-lg border border-app-danger/40 bg-app-danger/10 px-3 py-1.5 text-sm text-app-danger/90 transition hover:bg-app-danger/15"
             onClick={() => void deleteAllTerms()}
           >
             {t("admin.schedDeleteAll")}
@@ -469,7 +469,7 @@ export function ScheduleBoard() {
         </div>
       )}
       {terms.length === 0 && (
-        <p className="text-sm text-amber-200/80">
+        <p className="text-sm text-amber-900/85">
           {t("admin.schedNoTerms")}
         </p>
       )}

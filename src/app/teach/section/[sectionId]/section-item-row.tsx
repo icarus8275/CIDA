@@ -141,12 +141,12 @@ export function SectionItemRow({
   return (
     <li className="glass p-3">
       <div className="mb-2">
-        <span className="font-medium text-slate-100">
+        <span className="font-medium text-app-fg">
           {it.itemType.label} {it.number}
         </span>
       </div>
       <div className="mb-2 space-y-1">
-        <label className="text-xs text-slate-400" htmlFor={`item-title-${it.id}`}>
+        <label className="text-xs text-app-muted/90" htmlFor={`item-title-${it.id}`}>
           {t("teach.itemTitleOpt")}
         </label>
         <input
@@ -158,7 +158,7 @@ export function SectionItemRow({
         />
       </div>
       <div className="mb-2 space-y-1">
-        <label className="text-xs text-slate-400" htmlFor={`item-od-${it.id}`}>
+        <label className="text-xs text-app-muted/90" htmlFor={`item-od-${it.id}`}>
           {t("teach.odShareLink")}
         </label>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
@@ -182,15 +182,15 @@ export function SectionItemRow({
             href={it.oneDriveUrl}
             target="_blank"
             rel="noreferrer"
-            className="text-sm text-cyan-200 hover:underline"
+            className="text-sm text-app-link hover:underline"
           >
             {it.linkTitle || t("teach.openFile")}
           </a>
         )}
       </div>
       <div className="mb-1 space-y-1">
-        <p className="text-xs text-slate-500">{t("teach.codeCatalogPicks")}</p>
-        <p className="text-[11px] text-slate-500">{t("teach.autoSaveHint")}</p>
+        <p className="text-xs text-app-muted/85">{t("teach.codeCatalogPicks")}</p>
+        <p className="text-[11px] text-app-muted/85">{t("teach.autoSaveHint")}</p>
         <CodePicker
           t={t}
           idPrefix={`item-${it.id}`}
@@ -204,7 +204,7 @@ export function SectionItemRow({
       <div className="mt-1">
         <button
           type="button"
-          className="text-xs text-red-300 hover:underline"
+          className="text-xs text-app-danger hover:underline"
           onClick={async () => {
             if (!confirm(t("teach.deleteConfirm"))) return;
             await fetch(`/api/teach/course-items/${it.id}`, {

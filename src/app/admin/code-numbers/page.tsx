@@ -6,10 +6,10 @@ export default async function CodeNumbersPage() {
   const locale = await getServerLocale();
   return (
     <div>
-      <h1 className="mb-2 text-lg font-bold text-white">
+      <h1 className="mb-2 text-lg font-bold text-app-fg">
         {t(locale, "admin.cnPageTitle")}
       </h1>
-      <p className="mb-4 text-sm text-slate-400">
+      <p className="mb-4 text-sm text-app-muted/90">
         {t(locale, "admin.cnPageBody")}
       </p>
       <AdminCodeNumbersForm />

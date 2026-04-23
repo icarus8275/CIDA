@@ -17,12 +17,12 @@ export function AdminHeader({
   return (
     <header className="glass-nav sticky top-0 z-20">
       <div className="mx-auto flex max-w-5xl items-center gap-4 px-4 py-3">
-        <span className="font-semibold text-white">
+        <span className="font-semibold text-app-fg">
           {t("admin.navTitle")}
         </span>
         {who && (
           <span
-            className="max-w-[min(18rem,36vw)] truncate text-sm text-slate-400"
+            className="max-w-[min(18rem,36vw)] truncate text-sm text-app-muted/90"
             title={who}
           >
             {who}
@@ -63,7 +63,7 @@ export function AdminHeader({
         <form className="ml-auto flex shrink-0" action={signOutToHome}>
           <button
             type="submit"
-            className="text-sm text-slate-300 hover:text-white hover:underline"
+            className="text-sm text-app-muted hover:text-app-fg hover:underline"
           >
             {t("admin.signOut")}
           </button>

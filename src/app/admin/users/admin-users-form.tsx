@@ -25,7 +25,7 @@ const CreateUserForm = memo(function CreateUserForm({
 
   return (
     <div>
-      {err && <p className="mb-2 text-sm text-red-300">{err}</p>}
+      {err && <p className="mb-2 text-sm text-app-danger">{err}</p>}
       <form
         key={formKey}
         className="glass max-w-md space-y-2 p-4"
@@ -56,10 +56,10 @@ const CreateUserForm = memo(function CreateUserForm({
           onUserCreated();
         }}
       >
-        <h2 className="text-sm font-semibold text-slate-100">
+        <h2 className="text-sm font-semibold text-app-fg">
           {t("admin.usersNewUser")}
         </h2>
-        <p className="text-xs text-slate-500">{t("admin.usersNewHint")}</p>
+        <p className="text-xs text-app-muted/85">{t("admin.usersNewHint")}</p>
         <input
           className="input-glass w-full px-2 py-1.5"
           type="email"
@@ -122,7 +122,7 @@ function EditableUserName({
 
   return (
     <label className="flex w-full min-w-0 max-w-sm flex-col gap-0.5 sm:max-w-md">
-      <span className="text-[11px] text-slate-500">{t("admin.usersNameLabel")}</span>
+      <span className="text-[11px] text-app-muted/85">{t("admin.usersNameLabel")}</span>
       <input
         className="input-glass w-full px-2 py-1.5 text-sm"
         value={value}
@@ -178,25 +178,25 @@ export function AdminUsersForm() {
           >
             <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-end sm:gap-4">
               <div className="min-w-0 sm:max-w-xs">
-                <div className="text-[11px] text-slate-500">
+                <div className="text-[11px] text-app-muted/85">
                   {t("admin.usersEmailLabel")}
                 </div>
-                <div className="font-medium text-slate-100 break-all">
+                <div className="font-medium text-app-fg break-all">
                   {u.email}
                 </div>
                 {u.role === "ADMIN" ? (
-                  <span className="mt-0.5 inline-block text-xs text-slate-400">
+                  <span className="mt-0.5 inline-block text-xs text-app-muted/90">
                     {t("admin.usersBadgeAdmin")}
-                    <span className="text-cyan-200/80">
+                    <span className="text-app-link/80">
                       {t("admin.usersBadgeAdminPlus")}
                     </span>
                   </span>
                 ) : u.role === "PROFESSOR" ? (
-                  <span className="mt-0.5 inline-block text-xs text-slate-400">
+                  <span className="mt-0.5 inline-block text-xs text-app-muted/90">
                     {t("admin.usersBadgeProf")}
                   </span>
                 ) : (
-                  <span className="mt-0.5 inline-block text-xs text-slate-400">
+                  <span className="mt-0.5 inline-block text-xs text-app-muted/90">
                     {t("admin.usersBadgeCida")}
                   </span>
                 )}
@@ -231,7 +231,7 @@ export function AdminUsersForm() {
               </select>
               <button
                 type="button"
-                className="text-sm text-red-300"
+                className="text-sm text-app-danger"
                 onClick={async () => {
                   if (!confirm(t("admin.usersDeleteConfirm"))) return;
                   await fetch(`/api/admin/users?id=${encodeURIComponent(u.id)}`, {

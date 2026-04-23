@@ -43,12 +43,12 @@ export function TermSetupForm() {
   }, [load]);
 
   return (
-    <div className="glass glass-dashed mb-6 p-4 text-sm text-slate-200">
-      <p className="mb-4 text-xs text-slate-400">{t("admin.schedYearBlurb")}</p>
+    <div className="glass glass-dashed mb-6 p-4 text-sm text-app-fg/92">
+      <p className="mb-4 text-xs text-app-muted/90">{t("admin.schedYearBlurb")}</p>
 
       <div className="space-y-4">
-        <section className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
-          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <section className="rounded-xl border border-app-border/70 bg-app-primary/4 p-4">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-app-muted/90">
             {t("admin.sched1Title")}
           </h3>
           <form
@@ -66,7 +66,7 @@ export function TermSetupForm() {
             }}
           >
             <label className="flex min-w-[10rem] flex-col gap-1">
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-app-muted/90">
                 {t("admin.schedLabelDisplay")}
               </span>
               <input
@@ -77,7 +77,7 @@ export function TermSetupForm() {
               />
             </label>
             <label className="flex w-28 flex-col gap-1">
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-app-muted/90">
                 {t("admin.schedStartYear")}
               </span>
               <input
@@ -93,8 +93,8 @@ export function TermSetupForm() {
           </form>
         </section>
 
-        <section className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
-          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <section className="rounded-xl border border-app-border/70 bg-app-primary/4 p-4">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-app-muted/90">
             {t("admin.sched2Title")}
           </h3>
           <form
@@ -116,7 +116,7 @@ export function TermSetupForm() {
             }}
           >
             <label className="flex w-32 flex-col gap-1">
-              <span className="text-xs text-slate-400">{t("admin.schedKey")}</span>
+              <span className="text-xs text-app-muted/90">{t("admin.schedKey")}</span>
               <input
                 className="input-glass px-2 py-1.5"
                 value={sKey}
@@ -125,7 +125,7 @@ export function TermSetupForm() {
               />
             </label>
             <label className="flex min-w-[8rem] flex-col gap-1">
-              <span className="text-xs text-slate-400">{t("admin.schedLabel")}</span>
+              <span className="text-xs text-app-muted/90">{t("admin.schedLabel")}</span>
               <input
                 className="input-glass px-2 py-1.5"
                 value={sLabel}
@@ -137,13 +137,13 @@ export function TermSetupForm() {
               {t("admin.schedAddSeason")}
             </button>
           </form>
-          <p className="mt-2 text-[11px] leading-relaxed text-slate-500">
+          <p className="mt-2 text-[11px] leading-relaxed text-app-muted/85">
             {t("admin.schedSeasonHelp")}
           </p>
         </section>
 
-        <section className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
-          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <section className="rounded-xl border border-app-border/70 bg-app-primary/4 p-4">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-app-muted/90">
             {t("admin.sched3Title")}
           </h3>
           <form
@@ -178,7 +178,7 @@ export function TermSetupForm() {
           >
             <div className="flex flex-wrap items-end gap-3">
               <label className="flex min-w-[11rem] flex-col gap-1">
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-app-muted/90">
                   {t("admin.schedAcademicYear")}
                 </span>
                 <select
@@ -197,7 +197,7 @@ export function TermSetupForm() {
                 </select>
               </label>
               <label className="flex min-w-[11rem] flex-col gap-1">
-                <span className="text-xs text-slate-400">
+                <span className="text-xs text-app-muted/90">
                   {t("admin.schedSeason")}
                 </span>
                 <select
@@ -220,7 +220,7 @@ export function TermSetupForm() {
               </button>
             </div>
             {addTermError && (
-              <p className="text-xs text-rose-200">{addTermError}</p>
+              <p className="text-xs text-app-danger">{addTermError}</p>
             )}
           </form>
         </section>

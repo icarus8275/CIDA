@@ -8,7 +8,7 @@ export default async function AdminLayout({
 }) {
   const s = await requireAdmin();
   return (
-    <div className="min-h-dvh text-slate-200">
+    <div className="min-h-dvh text-app-fg/92">
       <AdminHeader name={s.user.name} email={s.user.email} />
       <div className="mx-auto max-w-5xl p-4">{children}</div>
     </div>

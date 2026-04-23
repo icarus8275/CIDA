@@ -18,7 +18,7 @@ function sectionTitle(s: {
   };
 }) {
   const c = s.courseOffering.course.name;
-  return `${formatTermForDisplay(s.courseOffering.term)} · ${c} · ${s.label}`;
+  return `${formatTermForDisplay(s.courseOffering.term)} \u00b7 ${c} \u00b7 ${s.label}`;
 }
 
 export default async function TeachHomePage() {
@@ -31,7 +31,7 @@ export default async function TeachHomePage() {
     return null;
   }
 
-  /** ADMIN도 "My courses"는 SectionInstructor 기준(배정된 섹션만). 전체는 Admin 스케줄에서. */
+  /** ADMIN? "My courses"? SectionInstructor ??(??? ??). ??? Admin ? ???. */
   const sections = await prisma.section.findMany({
     where: {
       instructors: { some: { userId: s.user.id } },
@@ -51,7 +51,7 @@ export default async function TeachHomePage() {
 
   if (sections.length === 0) {
     return (
-      <p className="text-sm text-slate-400">
+      <p className="text-sm text-app-muted/90">
         {t(locale, "teach.noCourses")}
       </p>
     );
@@ -62,7 +62,7 @@ export default async function TeachHomePage() {
         <li key={sec.id}>
           <Link
             href={`/teach/section/${sec.id}`}
-            className="font-medium text-cyan-200 hover:underline"
+            className="font-medium text-app-link hover:underline"
           >
             {sectionTitle(sec)}
           </Link>

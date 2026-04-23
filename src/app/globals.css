@@ -1,29 +1,55 @@
 @import "tailwindcss";
 
+/*
+  Palette 3 (Modern Type) — high contrast, elderly-friendly, light + glassmorphism
+  --app-bg #F4F7FA, --app-card #FFFFFF, --app-fg #1C2430, --app-muted #44505C
+  --app-link #0A66C2, --app-primary #1F4E79, --app-border #D6DEE6, --app-danger #B23A48
+*/
 :root {
-  --background: #0a0f1c;
-  --foreground: #f1f5f9;
+  --background: #f4f7fa;
+  --foreground: #1c2430;
+  --app-bg: #f4f7fa;
+  --app-card: #ffffff;
+  --app-fg: #1c2430;
+  --app-fg-secondary: #44505c;
+  --app-link: #0a66c2;
+  --app-primary: #1f4e79;
+  --app-btn-text: #ffffff;
+  --app-border: #d6dee6;
+  --app-danger: #b23a48;
+  --app-glass-surface: rgba(255, 255, 255, 0.78);
+  --app-glass-surface-weak: rgba(255, 255, 255, 0.5);
+  --app-glass-border: rgba(214, 222, 230, 0.95);
+  --app-shadow: rgba(28, 36, 48, 0.08);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--app-bg);
+  --color-foreground: var(--app-fg);
+  --color-app-bg: var(--app-bg);
+  --color-app-card: var(--app-card);
+  --color-app-fg: var(--app-fg);
+  --color-app-muted: var(--app-fg-secondary);
+  --color-app-link: var(--app-link);
+  --color-app-primary: var(--app-primary);
+  --color-app-border: var(--app-border);
+  --color-app-danger: var(--app-danger);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--app-bg);
+  color: var(--app-fg);
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Full-page mesh behind content */
+/* Subtle light mesh; keeps depth without dark-theme purple */
 .app-shell {
   position: relative;
   isolation: isolate;
   min-height: 100dvh;
-  background: linear-gradient(165deg, #0a0f1c 0%, #1a0f2e 38%, #0c2347 100%);
+  background: linear-gradient(165deg, #f4f7fa 0%, #eef3f8 45%, #e8f0f7 100%);
 }
 
 .app-shell::before {
@@ -34,17 +60,17 @@ body {
   pointer-events: none;
   background: radial-gradient(
       ellipse 90% 70% at 0% 0%,
-      rgba(99, 102, 241, 0.42) 0%,
+      rgba(10, 102, 194, 0.07) 0%,
       transparent 55%
     ),
     radial-gradient(
-      ellipse 70% 60% at 100% 20%,
-      rgba(6, 182, 212, 0.22) 0%,
+      ellipse 70% 60% at 100% 15%,
+      rgba(31, 78, 121, 0.06) 0%,
       transparent 50%
     ),
     radial-gradient(
       ellipse 50% 45% at 60% 100%,
-      rgba(168, 85, 247, 0.2) 0%,
+      rgba(214, 222, 230, 0.5) 0%,
       transparent 55%
     );
 }
@@ -52,96 +78,99 @@ body {
 @layer components {
   .glass {
     border-radius: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(255, 255, 255, 0.07);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--app-glass-border);
+    background: var(--app-glass-surface);
+    box-shadow: 0 8px 32px var(--app-shadow);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
   }
 
   .glass-dashed {
     border-style: dashed;
-    border-color: rgba(255, 255, 255, 0.22);
+    border-color: var(--app-border);
   }
 
   .glass-nav {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(255, 255, 255, 0.06);
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    border-bottom: 1px solid var(--app-glass-border);
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 4px 24px var(--app-shadow);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
   }
 
   .input-glass {
     border-radius: 0.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.08);
-    color: #f1f5f9;
+    border: 1px solid var(--app-border);
+    background: var(--app-card);
+    color: var(--app-fg);
   }
 
   .input-glass::placeholder {
-    color: rgba(203, 213, 225, 0.5);
+    color: color-mix(in srgb, var(--app-fg-secondary) 55%, white);
   }
 
   .input-glass:focus {
     outline: none;
-    border-color: rgba(34, 211, 238, 0.45);
-    box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.22);
+    border-color: color-mix(in srgb, var(--app-link) 60%, var(--app-border));
+    box-shadow: 0 0 0 2px
+      color-mix(in srgb, var(--app-link) 22%, transparent);
   }
 
-  /* <select> closed + open list: avoid white-on-white options (OS defaults) */
   select.input-glass {
-    color: #f1f5f9;
-    background-color: rgba(15, 23, 42, 0.92);
+    color: var(--app-fg);
+    background-color: var(--app-card);
   }
   select.input-glass option,
   select.input-glass optgroup {
-    background-color: #0f172a;
-    color: #e2e8f0;
+    background-color: var(--app-card);
+    color: var(--app-fg);
   }
 
   .btn-glass {
     border-radius: 0.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.12);
-    color: #f8fafc;
+    border: 1px solid var(--app-border);
+    background: var(--app-glass-surface-weak);
+    color: var(--app-fg);
   }
 
   .btn-glass:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: color-mix(in srgb, var(--app-primary) 8%, var(--app-card));
+    border-color: color-mix(in srgb, var(--app-primary) 25%, var(--app-border));
   }
 
   .btn-glass-primary {
     border-radius: 0.75rem;
-    border: 1px solid rgba(34, 211, 238, 0.35);
+    border: 1px solid color-mix(in srgb, var(--app-primary) 85%, #000);
     background: linear-gradient(
-      135deg,
-      rgba(6, 182, 212, 0.88) 0%,
-      rgba(99, 102, 241, 0.92) 100%
+      180deg,
+      color-mix(in srgb, var(--app-primary) 100%, #fff) 0%,
+      var(--app-primary) 100%
     );
-    color: white;
+    color: var(--app-btn-text);
     font-weight: 500;
-    box-shadow: 0 4px 20px rgba(6, 182, 212, 0.28);
+    box-shadow: 0 4px 16px
+      color-mix(in srgb, var(--app-primary) 25%, transparent);
   }
 
   .btn-glass-primary:hover {
-    filter: brightness(1.08);
+    filter: brightness(1.04);
   }
 
   .link-app {
-    color: rgba(165, 243, 252, 0.95);
+    color: var(--app-link);
+    font-weight: 500;
   }
 
   .link-app:hover {
     text-decoration: underline;
-    color: #ecfeff;
+    color: color-mix(in srgb, var(--app-link) 90%, #000);
   }
 
   .link-app-muted {
-    color: rgba(203, 213, 225, 0.88);
+    color: var(--app-fg-secondary);
   }
 
   .link-app-muted:hover {
-    color: #f8fafc;
+    color: var(--app-fg);
   }
 }

@@ -31,23 +31,23 @@ export default async function AuthErrorPage({
   return (
     <div className="mx-auto max-w-lg px-4 py-16">
       <div className="glass p-6">
-        <h1 className="mb-2 text-xl font-bold text-white">
+        <h1 className="mb-2 text-xl font-bold text-app-fg">
           {t(locale, "authError.title")}
         </h1>
-        <p className="mb-6 text-sm text-slate-400">
+        <p className="mb-6 text-sm text-app-muted/90">
           {t(locale, "authError.body")}
         </p>
-        <p className="mb-4 rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 font-mono text-sm text-amber-100">
+        <p className="mb-4 rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 font-mono text-sm text-amber-900">
           {sp.error || "—"}
         </p>
-        <ul className="mb-8 list-inside list-disc space-y-2 text-sm text-slate-300">
+        <ul className="mb-8 list-inside list-disc space-y-2 text-sm text-app-muted">
           {hints.map((hText) => (
             <li key={hText.slice(0, 64)}>{hText}</li>
           ))}
         </ul>
         <Link
           href="/auth/signin"
-          className="text-sm font-medium text-cyan-200 hover:underline"
+          className="text-sm font-medium text-app-link hover:underline"
         >
           {t(locale, "authError.back")}
         </Link>

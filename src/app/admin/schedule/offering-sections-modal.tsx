@@ -248,7 +248,7 @@ export function OfferingSectionsModal({ offering, onClose }: Props) {
     >
       <button
         type="button"
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-app-fg/45 backdrop-blur-sm"
         aria-label={t("admin.osmClose")}
         onClick={onClose}
       />
@@ -256,25 +256,25 @@ export function OfferingSectionsModal({ offering, onClose }: Props) {
         <div className="mb-3 flex items-start justify-between gap-2">
           <h2
             id="osm-title"
-            className="pr-2 text-base font-semibold leading-snug text-white"
+            className="pr-2 text-base font-semibold leading-snug text-app-fg"
           >
             {head}
           </h2>
           <button
             type="button"
-            className="shrink-0 rounded-lg p-1.5 text-slate-400 hover:bg-white/10 hover:text-white"
+            className="shrink-0 rounded-lg p-1.5 text-app-muted/90 hover:bg-app-card/75 hover:text-app-fg"
             onClick={onClose}
           >
             <X className="h-5 w-5" />
           </button>
         </div>
-        <p className="mb-3 text-xs text-slate-400">{t("admin.osmSub")}</p>
+        <p className="mb-3 text-xs text-app-muted/90">{t("admin.osmSub")}</p>
 
-        {err && <p className="mb-2 text-sm text-rose-300">{err}</p>}
+        {err && <p className="mb-2 text-sm text-app-danger">{err}</p>}
 
-        <div className="mb-4 flex flex-wrap items-end gap-2 border-b border-white/10 pb-3">
+        <div className="mb-4 flex flex-wrap items-end gap-2 border-b border-app-border/70 pb-3">
           <div>
-            <label className="text-[11px] text-slate-500">
+            <label className="text-[11px] text-app-muted/85">
               {t("admin.osmSectionCount")}
             </label>
             <div className="mt-0.5 flex items-center gap-2">
@@ -305,9 +305,9 @@ export function OfferingSectionsModal({ offering, onClose }: Props) {
         </div>
 
         {loading ? (
-          <p className="text-sm text-slate-400">{t("teach.loading")}</p>
+          <p className="text-sm text-app-muted/90">{t("teach.loading")}</p>
         ) : sections.length === 0 ? (
-          <p className="text-sm text-slate-500">{t("admin.osmNone")}</p>
+          <p className="text-sm text-app-muted/85">{t("admin.osmNone")}</p>
         ) : (
           <ul className="space-y-3">
             {sections
@@ -321,11 +321,11 @@ export function OfferingSectionsModal({ offering, onClose }: Props) {
                 return (
                   <li
                     key={sec.id}
-                    className="group/osmsec relative rounded-lg border border-white/10 bg-white/[0.04] p-3 pr-10"
+                    className="group/osmsec relative rounded-lg border border-app-border/70 bg-app-primary/4 p-3 pr-10"
                   >
                     <button
                       type="button"
-                      className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-lg text-rose-300/90 opacity-0 shadow-sm transition hover:bg-rose-500/25 group-hover/osmsec:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50"
+                      className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-lg text-app-danger/90 opacity-0 shadow-sm transition hover:bg-app-danger/18 group-hover/osmsec:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-danger/35"
                       title={t("admin.osmDeleteSection")}
                       aria-label={t("admin.osmDeleteSection")}
                       onClick={() => void deleteSection(sec)}
@@ -333,7 +333,7 @@ export function OfferingSectionsModal({ offering, onClose }: Props) {
                       <X className="h-4 w-4" strokeWidth={2.5} />
                     </button>
                     <div className="mb-2 flex items-center gap-2">
-                      <span className="text-[11px] uppercase text-slate-500">
+                      <span className="text-[11px] uppercase text-app-muted/85">
                         {t("admin.osmLabel")}
                       </span>
                       <input
@@ -352,12 +352,12 @@ export function OfferingSectionsModal({ offering, onClose }: Props) {
                       {sec.instructors.map((ins) => (
                         <span
                           key={ins.user.id}
-                          className="inline-flex items-center gap-1 rounded-md bg-cyan-500/15 px-2 py-0.5 text-xs text-cyan-100"
+                          className="inline-flex items-center gap-1 rounded-md bg-app-link/12 px-2 py-0.5 text-xs text-app-link"
                         >
                           {listUserLabel(ins.user.name, ins.user.email)}
                           <button
                             type="button"
-                            className="text-rose-300/90 hover:underline"
+                            className="text-app-danger/90 hover:underline"
                             onClick={() => void unassign(sec.id, ins.user.id)}
                           >
                             ×
@@ -366,7 +366,7 @@ export function OfferingSectionsModal({ offering, onClose }: Props) {
                       ))}
                     </div>
                     <div className="mt-2">
-                      <label className="text-[11px] text-slate-500">
+                      <label className="text-[11px] text-app-muted/85">
                         {t("admin.osmPickFaculty")}
                       </label>
                       <select

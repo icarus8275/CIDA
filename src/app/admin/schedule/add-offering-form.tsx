@@ -43,7 +43,7 @@ export function AddOfferingForm() {
 
   return (
     <form
-      className="glass glass-dashed mb-4 flex flex-col gap-1 p-3 text-sm text-slate-200"
+      className="glass glass-dashed mb-4 flex flex-col gap-1 p-3 text-sm text-app-fg/92"
       onSubmit={async (e) => {
         e.preventDefault();
         setFormErr(null);
@@ -67,7 +67,7 @@ export function AddOfferingForm() {
       }}
     >
       <div className="flex flex-wrap items-end gap-2">
-      <span className="font-medium text-slate-200">
+      <span className="font-medium text-app-fg/92">
         {t("admin.schedAddCourseRow")}
       </span>
       <select
@@ -100,7 +100,7 @@ export function AddOfferingForm() {
         {t("admin.schedAdd")}
       </button>
       </div>
-      {formErr && <p className="text-xs text-rose-200">{formErr}</p>}
+      {formErr && <p className="text-xs text-app-danger">{formErr}</p>}
     </form>
   );
 }

@@ -6,13 +6,13 @@ export default async function AdminPage() {
   const locale = await getServerLocale();
   return (
     <div className="glass space-y-4 p-6">
-      <h1 className="text-xl font-bold text-white">
+      <h1 className="text-xl font-bold text-app-fg">
         {t(locale, "admin.pageTitle")}
       </h1>
-      <p className="text-sm text-slate-400">
+      <p className="text-sm text-app-muted/90">
         {t(locale, "admin.pageBody")}
       </p>
-      <ul className="list-inside list-disc text-sm text-cyan-100/90">
+      <ul className="list-inside list-disc text-sm text-app-primary/90">
         <li>
           <Link className="link-app" href="/admin/users">
             Users (password accounts)
