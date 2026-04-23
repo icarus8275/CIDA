@@ -1,7 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { formatTermForDisplay } from "@/lib/term-display";
-import { Prisma } from "@/generated/prisma/client";
-import type { UserRole } from "@/generated/prisma/enums";
 import { cache } from "react";
 
 export type ExploreCode = {
@@ -41,18 +39,13 @@ export type ExploreDataPayload = {
 };
 
 /**
- * CIDA: 모든 섹션(전체 수업) 한눈에. ADMIN/PROFESSOR: SectionInstructor로 배정된 섹션만(강의/탐색 일치).
+ * Program-wide course–code tree: every section, every item (same view for CIDA, faculty, and admins).
+ * Editing is still limited to assigned sections on /teach; Explore is read-only and shows the full program.
  */
 export const getExploreData = cache(
-  async (userId: string, role: UserRole): Promise<ExploreDataPayload> => {
-    const where: Prisma.SectionWhereInput | undefined =
-      role === "CIDA"
-        ? undefined
-        : { instructors: { some: { userId } } };
-
+  async (): Promise<ExploreDataPayload> => {
     const [sections, allCodeRows] = await Promise.all([
       prisma.section.findMany({
-      where,
       orderBy: { sortOrder: "asc" },
       include: {
         courseOffering: {

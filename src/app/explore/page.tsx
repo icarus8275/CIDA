@@ -10,7 +10,7 @@ export default async function ExplorePage() {
   const session = await auth();
   const payload =
     session?.user != null
-      ? await getExploreData(session.user.id, session.user.role)
+      ? await getExploreData()
       : { courses: [], codeLabels: {} as Record<string, string | null> };
   return (
     <Suspense fallback={<ExploreLoading />}>
