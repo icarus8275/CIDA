@@ -163,6 +163,9 @@ model Section {
   /// e.g. "001", "A"
   label            String
   sortOrder        Int      @default(0)
+  /// Pasted OneDrive (or any) share URL for the section syllabus
+  syllabusUrl      String?  @map("syllabus_url")
+  syllabusLinkTitle String? @map("syllabus_link_title")
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 

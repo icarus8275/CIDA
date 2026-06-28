@@ -29,6 +29,8 @@ export type ExploreCourse = {
   termSort: number;
   /** 섹션(Section)에 지정된 교수 */
   instructors: { name: string | null; email: string | null }[];
+  syllabusUrl: string | null;
+  syllabusLinkTitle: string | null;
   items: ExploreItem[];
 };
 
@@ -97,6 +99,8 @@ export const getExploreData = cache(
           name: ins.user.name,
           email: ins.user.email,
         })),
+        syllabusUrl: sec.syllabusUrl,
+        syllabusLinkTitle: sec.syllabusLinkTitle,
         items: sec.courseItems.map((it) => ({
           id: it.id,
           itemTypeId: it.itemTypeId,

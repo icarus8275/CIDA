@@ -114,9 +114,16 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "explore.panelTitle": { en: "Details / reverse lookup", ko: "상세 / 역검색" },
   "explore.clear": { en: "Clear", ko: "지우기" },
   "explore.emptySelect": {
-    en: "Click an assignment, project, or exam, or a code, to see details and reverse lookup.",
-    ko: "과제·시험 등 항목이나 코드를 클릭하면 상세와 역검색을 볼 수 있습니다.",
+    en: "Click a course, an assignment or project, or a code to see details and reverse lookup.",
+    ko: "과목·과제·프로젝트·코드를 클릭하면 상세와 역검색을 볼 수 있습니다.",
   },
+  "explore.selectedCourse": { en: "Selected course", ko: "선택한 과목(섹션)" },
+  "explore.courseDetailSyllabus": { en: "Syllabus", ko: "강의계획서" },
+  "explore.courseDetailNoSyllabus": {
+    en: "No syllabus link for this section yet.",
+    ko: "이 섹션에 연결된 강의계획서 링크가 없습니다.",
+  },
+  "explore.syllabusLinkDefault": { en: "Open syllabus", ko: "강의계획서 열기" },
   "explore.selectedItem": { en: "Selected item", ko: "선택한 항목" },
   "explore.selectedCode": { en: "Selected code", ko: "선택한 코드" },
   "explore.codeUsedIn": { en: "This code is used in:", ko: "이 코드는 다음에 사용됩니다." },
@@ -580,6 +587,14 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "teach.itemTitleOpt": { en: "Title (optional)", ko: "제목(선택)" },
   "teach.customTitle": { en: "Custom title", ko: "사용자 지정 제목" },
   "teach.odShareLink": { en: "OneDrive share link", ko: "OneDrive 공유 링크" },
+  "teach.syllabusShareLink": {
+    en: "Syllabus share link (OneDrive or web)",
+    ko: "강의계획서 공유 링크(OneDrive 등)",
+  },
+  "teach.syllabusLinkLabel": {
+    en: "Syllabus link label (optional)",
+    ko: "강의계획서 링크 이름(선택)",
+  },
   "teach.linkLabelOpt": { en: "Link label (optional)", ko: "링크 이름(선택)" },
   "teach.openFile": { en: "Open file", ko: "파일 열기" },
   "explore.fileLinkDefault": { en: "OneDrive / file link", ko: "OneDrive·파일 링크" },

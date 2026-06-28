@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/components/locale/locale-provider";
 import { formatTermForDisplay } from "@/lib/term-display";
@@ -70,6 +70,8 @@ type ItemType = { id: string; key: string; label: string };
 type SectionPayload = {
   id: string;
   label: string;
+  syllabusUrl: string | null;
+  syllabusLinkTitle: string | null;
   courseOffering: {
     course: { id: string; name: string };
     term: {
@@ -99,6 +101,10 @@ export function SectionEditor({
   const [newItemCodes, setNewItemCodes] = useState<string[]>([]);
   const [addBusy, setAddBusy] = useState(false);
   const [newFilter, setNewFilter] = useState("");
+  const [syllabusUrl, setSyllabusUrl] = useState("");
+  const [syllabusLabel, setSyllabusLabel] = useState("");
+  const sectionRef = useRef(section);
+  sectionRef.current = section;
 
   const load = useCallback(async () => {
     setErr(null);
@@ -129,6 +135,44 @@ export function SectionEditor({
     void loadTypes();
     void loadCatalog();
   }, [load, loadTypes, loadCatalog]);
+
+  useEffect(() => {
+    if (!section) return;
+    setSyllabusUrl(section.syllabusUrl ?? "");
+    setSyllabusLabel(section.syllabusLinkTitle ?? "");
+  }, [section?.id]);
+
+  useEffect(() => {
+    if (!section) return;
+    const serverUrl = section.syllabusUrl ?? "";
+    const serverLabel = section.syllabusLinkTitle ?? "";
+    if (syllabusUrl === serverUrl && syllabusLabel === serverLabel) return;
+    const timer = setTimeout(() => {
+      const s = sectionRef.current;
+      if (!s) return;
+      if (
+        syllabusUrl === (s.syllabusUrl ?? "") &&
+        syllabusLabel === (s.syllabusLinkTitle ?? "")
+      ) {
+        return;
+      }
+      void (async () => {
+        const r = await fetch(`/api/teach/section/${sectionId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            syllabusUrl: syllabusUrl.trim() === "" ? null : syllabusUrl.trim(),
+            syllabusLinkTitle:
+              syllabusLabel.trim() === "" ? null : syllabusLabel.trim(),
+          }),
+        });
+        if (r.ok) {
+          setSection(await r.json());
+        }
+      })();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [syllabusUrl, syllabusLabel, section, sectionId]);
 
   const itemsByType = useMemo(() => {
     if (!section) {
@@ -165,6 +209,42 @@ export function SectionEditor({
           {surrogate ? t("admin.facultyBackToList") : t("teach.backList")}
         </Link>
       </div>
+
+      <section className="glass p-4">
+        <h2 className="mb-2 font-medium text-app-fg/92">
+          {t("explore.courseDetailSyllabus")}
+        </h2>
+        <p className="mb-2 text-[11px] text-app-muted/85">{t("teach.autoSaveHint")}</p>
+        <div className="space-y-2">
+          <label className="block text-xs text-app-muted/90" htmlFor={`syllabus-url-${sectionId}`}>
+            {t("teach.syllabusShareLink")}
+          </label>
+          <input
+            id={`syllabus-url-${sectionId}`}
+            className="input-glass w-full px-2 py-1.5 text-sm"
+            value={syllabusUrl}
+            onChange={(e) => setSyllabusUrl(e.target.value)}
+            placeholder="https://..."
+          />
+          <input
+            className="input-glass w-full px-2 py-1.5 text-sm sm:max-w-xs"
+            value={syllabusLabel}
+            onChange={(e) => setSyllabusLabel(e.target.value)}
+            placeholder={t("teach.syllabusLinkLabel")}
+            aria-label={t("teach.syllabusLinkLabel")}
+          />
+          {section.syllabusUrl && (
+            <a
+              href={section.syllabusUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex text-sm font-medium text-app-link hover:underline"
+            >
+              {section.syllabusLinkTitle || t("explore.syllabusLinkDefault")}
+            </a>
+          )}
+        </div>
+      </section>
 
       <section className="glass p-4">
         <h2 className="mb-2 font-medium text-app-fg/92">

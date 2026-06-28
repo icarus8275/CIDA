@@ -85,6 +85,8 @@ export async function POST(req: Request) {
             courseOfferingId: newOff.id,
             label: sec.label,
             sortOrder: sec.sortOrder,
+            syllabusUrl: sec.syllabusUrl,
+            syllabusLinkTitle: sec.syllabusLinkTitle,
           },
         });
         for (const ins of sec.instructors) {

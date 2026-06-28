@@ -24,6 +24,7 @@ import { CodesReadonlyGrouped } from "@/app/teach/section/[sectionId]/section-co
 
 type Selection =
   | { kind: "item"; course: ExploreCourse; item: ExploreCourse["items"][0] }
+  | { kind: "course"; course: ExploreCourse }
   | { kind: "code"; code: string; refs: CodeRef[] }
   | null;
 
@@ -32,17 +33,29 @@ const Section = ({
   icon,
   children,
   right,
+  onTitleClick,
 }: {
   title: string;
   icon: React.ReactNode;
   children: React.ReactNode;
   right?: React.ReactNode;
+  onTitleClick?: () => void;
 }) => (
   <div className="glass p-4">
     <div className="mb-3 flex items-center justify-between gap-3">
-      <div className="flex items-center gap-2 font-semibold text-app-fg">
+      <div className="flex min-w-0 items-center gap-2 font-semibold text-app-fg">
         {icon}
-        <span>{title}</span>
+        {onTitleClick ? (
+          <button
+            type="button"
+            onClick={onTitleClick}
+            className="min-w-0 truncate text-left hover:text-app-link hover:underline"
+          >
+            {title}
+          </button>
+        ) : (
+          <span className="min-w-0 truncate">{title}</span>
+        )}
       </div>
       {right}
     </div>
@@ -240,6 +253,11 @@ export function CourseCodeExplorer({
     setParams({ courseId: course.id, itemId: item.id, code: null });
   };
 
+  const showCourseDetails = (course: ExploreCourse) => {
+    setSelection({ kind: "course", course });
+    setParams({ courseId: course.id, itemId: null, code: null });
+  };
+
   const showCodeDetails = (code: string) => {
     const c = code.toUpperCase();
     setSelection({
@@ -247,7 +265,7 @@ export function CourseCodeExplorer({
       code: c,
       refs: codeIndex.get(c) || [],
     });
-    setParams({ code: c, itemId: null });
+    setParams({ code: c, itemId: null, courseId: null });
   };
 
   // Hydrate from URL
@@ -270,6 +288,13 @@ export function CourseCodeExplorer({
       if (course && item) {
         setSelection({ kind: "item", course, item });
       }
+      return;
+    }
+    if (cid) {
+      const course = initialData.find((c) => c.id === cid);
+      if (course) {
+        setSelection({ kind: "course", course });
+      }
     }
   }, [searchParams, initialData, codeIndex]);
 
@@ -281,6 +306,53 @@ export function CourseCodeExplorer({
     if (!selection) {
       return (
         <p className="text-sm text-app-muted/90">{t("explore.emptySelect")}</p>
+      );
+    }
+    if (selection.kind === "course") {
+      const { course } = selection;
+      return (
+        <div className="space-y-3">
+          <p className="text-sm text-app-muted/90">{t("explore.selectedCourse")}</p>
+          <p className="text-lg font-semibold text-app-fg">{course.pathLabel}</p>
+          <p className="text-sm font-medium text-app-muted">{course.name}</p>
+          <div>
+            <p className="mb-0.5 text-xs text-app-muted/85">
+              {t("explore.itemDetailInstructors")}
+            </p>
+            {(course.instructors?.length ?? 0) > 0 ? (
+              <ul className="list-inside list-disc text-sm text-app-fg/92">
+                {course.instructors!.map((i, idx) => (
+                  <li key={idx} className="marker:text-app-muted/85">
+                    {listUserLabel(i.name, i.email)}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-app-muted/85">
+                {t("explore.itemDetailNoInstructors")}
+              </p>
+            )}
+          </div>
+          <div>
+            <p className="mb-1 text-xs font-medium text-app-muted/85">
+              {t("explore.courseDetailSyllabus")}
+            </p>
+            {course.syllabusUrl ? (
+              <a
+                href={course.syllabusUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex text-sm font-medium text-app-link hover:underline"
+              >
+                {course.syllabusLinkTitle || t("explore.syllabusLinkDefault")}
+              </a>
+            ) : (
+              <p className="text-sm text-app-muted/85">
+                {t("explore.courseDetailNoSyllabus")}
+              </p>
+            )}
+          </div>
+        </div>
       );
     }
     if (selection.kind === "item") {
@@ -536,6 +608,7 @@ export function CourseCodeExplorer({
                                 key={course.id}
                                 title={course.pathLabel}
                                 icon={<BookOpen size={18} />}
+                                onTitleClick={() => showCourseDetails(course)}
                                 right={
                                   <button
                                     type="button"
