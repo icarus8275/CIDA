@@ -16,6 +16,7 @@ export type ExploreItem = {
   codes: ExploreCode[];
   oneDriveUrl: string | null;
   linkTitle: string | null;
+  onSiteDisplay: boolean;
   title: string | null;
 };
 
@@ -113,6 +114,7 @@ export const getExploreData = cache(
           })),
           oneDriveUrl: it.oneDriveUrl,
           linkTitle: it.linkTitle,
+          onSiteDisplay: it.onSiteDisplay,
           title: it.title,
         })),
       };

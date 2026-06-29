@@ -172,8 +172,21 @@ model Section {
   courseOffering CourseOffering      @relation(fields: [courseOfferingId], references: [id], onDelete: Cascade)
   courseItems    CourseItem[]
   instructors    SectionInstructor[]
+  sectionCodes   SectionCode[]
 
   @@index([courseOfferingId])
+}
+
+/// Standard CIDA codes selected for this section; items may only pick from this subset.
+model SectionCode {
+  id           String     @id @default(cuid())
+  sectionId    String
+  codeNumberId String
+  section      Section    @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  codeNumber   CodeNumber @relation(fields: [codeNumberId], references: [id], onDelete: Restrict)
+
+  @@unique([sectionId, codeNumberId])
+  @@index([codeNumberId])
 }
 
 model SectionInstructor {
@@ -213,6 +226,7 @@ model CodeNumber {
   updatedAt DateTime @updatedAt
 
   itemLinks CourseItemCode[]
+  sectionLinks SectionCode[]
 }
 
 model CourseItem {
@@ -226,6 +240,8 @@ model CourseItem {
   /// Pasted OneDrive (or any) share URL
   oneDriveUrl String?  @map("one_drive_url")
   linkTitle  String?  @map("link_title")
+  /// When true, Explore shows "On Site Display" instead of a file link
+  onSiteDisplay Boolean @default(false) @map("on_site_display")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 

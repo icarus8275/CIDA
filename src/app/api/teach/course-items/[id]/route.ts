@@ -11,6 +11,7 @@ const patchSchema = z.object({
   title: z.string().max(500).optional().nullable(),
   oneDriveUrl: z.string().max(2000).optional().nullable(),
   linkTitle: z.string().max(500).optional().nullable(),
+  onSiteDisplay: z.boolean().optional(),
 });
 
 function normalizeShareUrl(u: string | null | undefined): string | null {
@@ -75,6 +76,9 @@ export async function PATCH(
       title: body.title,
       ...(urlUpd !== undefined ? { oneDriveUrl: urlUpd } : {}),
       linkTitle: body.linkTitle,
+      ...(body.onSiteDisplay !== undefined
+        ? { onSiteDisplay: body.onSiteDisplay }
+        : {}),
     },
     include: { itemType: true, codes: { include: { codeNumber: true } } },
   });

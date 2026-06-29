@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { assertAssignableCodeNumberIds, CodeNumberAssignError } from "@/lib/code-number-assign";
+import { assertItemCodesWithinSection, CodeNumberAssignError } from "@/lib/code-number-assign";
 import { canEditSection } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
@@ -27,7 +27,7 @@ export async function PUT(
   const body = putSchema.parse(await req.json());
   const codeNumberIds = [...new Set(body.codeNumberIds)];
   try {
-    await assertAssignableCodeNumberIds(id, codeNumberIds);
+    await assertItemCodesWithinSection(it.sectionId, id, codeNumberIds);
   } catch (e) {
     if (e instanceof CodeNumberAssignError) {
       return NextResponse.json(

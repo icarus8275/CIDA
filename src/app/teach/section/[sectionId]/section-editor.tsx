@@ -14,6 +14,7 @@ type Item = {
   title: string | null;
   oneDriveUrl: string | null;
   linkTitle: string | null;
+  onSiteDisplay: boolean;
   itemType: { id: string; key: string; label: string };
   codes: CodeLink[];
 };
@@ -72,6 +73,7 @@ type SectionPayload = {
   label: string;
   syllabusUrl: string | null;
   syllabusLinkTitle: string | null;
+  sectionCodes: CodeLink[];
   courseOffering: {
     course: { id: string; name: string };
     term: {
@@ -103,6 +105,8 @@ export function SectionEditor({
   const [newFilter, setNewFilter] = useState("");
   const [syllabusUrl, setSyllabusUrl] = useState("");
   const [syllabusLabel, setSyllabusLabel] = useState("");
+  const [sectionCodeIds, setSectionCodeIds] = useState<string[]>([]);
+  const [sectionCodeFilter, setSectionCodeFilter] = useState("");
   const sectionRef = useRef(section);
   sectionRef.current = section;
 
@@ -117,7 +121,9 @@ export function SectionEditor({
       setErr(t("teach.errLoad"));
       return;
     }
-    setSection(await r.json());
+    const data = await r.json();
+    setSection(data);
+    setSectionCodeIds(data.sectionCodes.map((c: CodeLink) => c.codeNumberId));
   }, [sectionId, t]);
 
   const loadTypes = useCallback(async () => {
@@ -141,6 +147,36 @@ export function SectionEditor({
     setSyllabusUrl(section.syllabusUrl ?? "");
     setSyllabusLabel(section.syllabusLinkTitle ?? "");
   }, [section?.id]);
+
+  useEffect(() => {
+    if (!section) return;
+    const serverIds = [...section.sectionCodes.map((c) => c.codeNumberId)].sort();
+    const localIds = [...sectionCodeIds].sort();
+    if (serverIds.join("\0") === localIds.join("\0")) return;
+    const timer = setTimeout(() => {
+      const s = sectionRef.current;
+      if (!s) return;
+      const sIds = [...s.sectionCodes.map((c) => c.codeNumberId)].sort();
+      const lIds = [...sectionCodeIds].sort();
+      if (sIds.join("\0") === lIds.join("\0")) return;
+      void (async () => {
+        const r = await fetch(`/api/teach/section/${sectionId}/codes`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ codeNumberIds: sectionCodeIds }),
+        });
+        if (r.ok) {
+          const data = await r.json();
+          setSection(data);
+          setSectionCodeIds(data.sectionCodes.map((c: CodeLink) => c.codeNumberId));
+        } else {
+          alert(t("teach.codeSaveFail"));
+          await load();
+        }
+      })();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [sectionCodeIds, section, sectionId, load, t]);
 
   useEffect(() => {
     if (!section) return;
@@ -180,6 +216,16 @@ export function SectionEditor({
     }
     return groupItemsByType(section.courseItems, types);
   }, [section, types]);
+
+  const sectionCodeOptions = useMemo(
+    () => buildOptions(catalog, undefined),
+    [catalog]
+  );
+
+  const itemCodeOptions = useMemo(
+    () => buildOptions(catalog, undefined, sectionCodeIds),
+    [catalog, sectionCodeIds]
+  );
 
   if (err) {
     return <p className="text-sm text-app-danger">{err}</p>;
@@ -248,10 +294,30 @@ export function SectionEditor({
 
       <section className="glass p-4">
         <h2 className="mb-2 font-medium text-app-fg/92">
+          {t("teach.sectionCodesTitle")}
+        </h2>
+        <p className="mb-1 text-xs text-app-muted/85">{t("teach.sectionCodesHint")}</p>
+        <p className="mb-2 text-[11px] text-app-muted/85">{t("teach.autoSaveHint")}</p>
+        <CodePicker
+          t={t}
+          idPrefix="section-codes"
+          options={sectionCodeOptions}
+          valueIds={sectionCodeIds}
+          onChange={setSectionCodeIds}
+          filter={sectionCodeFilter}
+          onFilterChange={setSectionCodeFilter}
+        />
+      </section>
+
+      <section className="glass p-4">
+        <h2 className="mb-2 font-medium text-app-fg/92">
           {t("teach.addItem")}
         </h2>
         <p className="mb-1 text-xs text-app-muted/85">{t("teach.howManyHint")}</p>
         <p className="mb-1 text-xs text-app-muted/85">{t("teach.codeNumbersHint")}</p>
+        {sectionCodeIds.length === 0 && (
+          <p className="mb-1 text-xs text-amber-900/90">{t("teach.sectionCodesEmpty")}</p>
+        )}
         <p className="mb-2 text-[11px] text-app-muted/85">{t("teach.autoSaveHint")}</p>
         <form
           className="space-y-3"
@@ -336,12 +402,12 @@ export function SectionEditor({
           <CodePicker
             t={t}
             idPrefix="add-new"
-            options={buildOptions(catalog, undefined)}
+            options={itemCodeOptions}
             valueIds={newItemCodes}
             onChange={setNewItemCodes}
             filter={newFilter}
             onFilterChange={setNewFilter}
-            disabled={addBusy}
+            disabled={addBusy || sectionCodeIds.length === 0}
           />
         </form>
       </section>
@@ -350,6 +416,7 @@ export function SectionEditor({
         <h2 className="mb-2 font-medium text-app-fg/92">
           {t("teach.itemsCodes")}
         </h2>
+        <p className="mb-3 text-xs text-app-muted/85">{t("teach.copyItemHint")}</p>
         <div className="space-y-8">
           {itemsByType.map((group) => (
             <div key={group.typeId}>
@@ -361,11 +428,14 @@ export function SectionEditor({
               </h3>
               <ul className="space-y-3">
                 {group.items.map((it) => (
-                  <li key={it.id}>
+                  <li
+                    key={`${it.id}-${it.codes.map((c) => c.codeNumberId).sort().join(",")}`}
+                  >
                     <SectionItemRow
                       t={t}
                       it={it}
                       catalog={catalog}
+                      sectionCodeIds={sectionCodeIds}
                       onReload={load}
                     />
                   </li>

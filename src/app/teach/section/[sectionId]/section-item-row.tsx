@@ -15,6 +15,7 @@ export type SectionItem = {
   title: string | null;
   oneDriveUrl: string | null;
   linkTitle: string | null;
+  onSiteDisplay: boolean;
   itemType: { id: string; key: string; label: string };
   codes: CodeLink[];
 };
@@ -23,11 +24,13 @@ export function SectionItemRow({
   t,
   it,
   catalog,
+  sectionCodeIds,
   onReload,
 }: {
   t: (k: string) => string;
   it: SectionItem;
   catalog: CatalogRow[];
+  sectionCodeIds: string[];
   onReload: () => Promise<void>;
 }) {
   const itRef = useRef(it);
@@ -36,10 +39,12 @@ export function SectionItemRow({
   const [title, setTitle] = useState(() => it.title ?? "");
   const [url, setUrl] = useState(() => it.oneDriveUrl ?? "");
   const [linkLabel, setLinkLabel] = useState(() => it.linkTitle ?? "");
+  const [onSiteDisplay, setOnSiteDisplay] = useState(() => it.onSiteDisplay);
   const [codeIds, setCodeIds] = useState(() =>
     it.codes.map((c) => c.codeNumberId)
   );
   const [codeFilter, setCodeFilter] = useState("");
+  const [copyBusy, setCopyBusy] = useState(false);
 
   useEffect(() => {
     setTitle(it.title ?? "");
@@ -48,7 +53,24 @@ export function SectionItemRow({
   useEffect(() => {
     setUrl(it.oneDriveUrl ?? "");
     setLinkLabel(it.linkTitle ?? "");
-  }, [it.id, it.oneDriveUrl, it.linkTitle]);
+    setOnSiteDisplay(it.onSiteDisplay);
+  }, [it.id, it.oneDriveUrl, it.linkTitle, it.onSiteDisplay]);
+
+  useEffect(() => {
+    if (onSiteDisplay === it.onSiteDisplay) return;
+    const timer = setTimeout(() => {
+      if (onSiteDisplay === itRef.current.onSiteDisplay) return;
+      void (async () => {
+        const r = await fetch(`/api/teach/course-items/${itRef.current.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ onSiteDisplay }),
+        });
+        if (r.ok) await onReload();
+      })();
+    }, DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [onSiteDisplay, it.onSiteDisplay, it.id, onReload]);
 
   // Only replace local code selection when this row is a *different* item. Syncing
   // on every `it.codes` change overwrites with stale data while another save's
@@ -133,8 +155,8 @@ export function SectionItemRow({
   }, [codeIds, onReload, t, it.id]);
 
   const options = useMemo(
-    () => buildOptions(catalog, it.codes),
-    [catalog, it.codes]
+    () => buildOptions(catalog, it.codes, sectionCodeIds),
+    [catalog, it.codes, sectionCodeIds]
   );
 
   return (
@@ -157,39 +179,61 @@ export function SectionItemRow({
         />
       </div>
       <div className="mb-2 space-y-1">
+        <label className="flex items-center gap-2 text-xs text-app-muted/90">
+          <input
+            type="checkbox"
+            className="size-3.5 rounded border-app-border"
+            checked={onSiteDisplay}
+            onChange={(e) => setOnSiteDisplay(e.target.checked)}
+          />
+          {t("teach.onSiteDisplay")}
+        </label>
+        <p className="text-[11px] text-app-muted/85">{t("teach.onSiteDisplayHint")}</p>
+      </div>
+      <div className="mb-2 space-y-1">
         <label className="text-xs text-app-muted/90" htmlFor={`item-od-${it.id}`}>
           {t("teach.odShareLink")}
         </label>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
           <input
             id={`item-od-${it.id}`}
-            className="input-glass min-w-0 flex-1 px-2 py-1 text-sm"
+            className="input-glass min-w-0 flex-1 px-2 py-1 text-sm disabled:opacity-50"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://..."
+            disabled={onSiteDisplay}
           />
           <input
-            className="input-glass w-full px-2 py-1 text-sm sm:w-40"
+            className="input-glass w-full px-2 py-1 text-sm sm:w-40 disabled:opacity-50"
             value={linkLabel}
             onChange={(e) => setLinkLabel(e.target.value)}
             placeholder={t("teach.linkLabelOpt")}
             aria-label={t("teach.linkLabelOpt")}
+            disabled={onSiteDisplay}
           />
         </div>
-        {it.oneDriveUrl && (
-          <a
-            href={it.oneDriveUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="text-sm text-app-link hover:underline"
-          >
-            {it.linkTitle || t("teach.openFile")}
-          </a>
+        {onSiteDisplay ? (
+          <p className="text-sm font-medium text-app-fg/92">{t("teach.onSiteDisplay")}</p>
+        ) : (
+          it.oneDriveUrl && (
+            <a
+              href={it.oneDriveUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="text-sm text-app-link hover:underline"
+            >
+              {it.linkTitle || t("teach.openFile")}
+            </a>
+          )
         )}
       </div>
       <div className="mb-1 space-y-1">
         <p className="text-xs text-app-muted/85">{t("teach.codeCatalogPicks")}</p>
-        <p className="text-[11px] text-app-muted/85">{t("teach.autoSaveHint")}</p>
+        {sectionCodeIds.length === 0 ? (
+          <p className="text-xs text-amber-900/90">{t("teach.sectionCodesEmpty")}</p>
+        ) : (
+          <p className="text-[11px] text-app-muted/85">{t("teach.autoSaveHint")}</p>
+        )}
         <CodePicker
           t={t}
           idPrefix={`item-${it.id}`}
@@ -198,9 +242,32 @@ export function SectionItemRow({
           onChange={setCodeIds}
           filter={codeFilter}
           onFilterChange={setCodeFilter}
+          disabled={sectionCodeIds.length === 0}
         />
       </div>
-      <div className="mt-1">
+      <div className="mt-1 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          disabled={copyBusy}
+          className="text-xs text-app-link hover:underline disabled:opacity-50"
+          onClick={async () => {
+            setCopyBusy(true);
+            try {
+              const r = await fetch(`/api/teach/course-items/${it.id}/copy`, {
+                method: "POST",
+              });
+              if (!r.ok) {
+                alert(t("teach.copyItemFail"));
+                return;
+              }
+              await onReload();
+            } finally {
+              setCopyBusy(false);
+            }
+          }}
+        >
+          {copyBusy ? t("teach.loading") : t("teach.copyItem")}
+        </button>
         <button
           type="button"
           className="text-xs text-app-danger hover:underline"

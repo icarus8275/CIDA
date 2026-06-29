@@ -65,10 +65,16 @@ export function groupCodeOptionsByLeadingNumber(
 
 export function buildOptions(
   catalog: CatalogRow[],
-  itemCodes: CodeLink[] | undefined
+  itemCodes: CodeLink[] | undefined,
+  allowedIds?: readonly string[]
 ): Opt[] {
+  const allowed =
+    allowedIds === undefined ? null : new Set(allowedIds);
   const m = new Map<string, Opt>();
   for (const c of catalog) {
+    if (allowed && !allowed.has(c.id)) {
+      continue;
+    }
     m.set(c.id, {
       id: c.id,
       value: c.value,

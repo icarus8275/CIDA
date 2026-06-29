@@ -393,7 +393,11 @@ export function CourseCodeExplorer({
             <p className="mb-1 text-xs font-medium text-app-muted/85">
               {t("explore.itemDetailFile")}
             </p>
-            {item.oneDriveUrl ? (
+            {item.onSiteDisplay ? (
+              <p className="text-sm font-medium text-app-fg/92">
+                {t("teach.onSiteDisplay")}
+              </p>
+            ) : item.oneDriveUrl ? (
               <a
                 href={item.oneDriveUrl}
                 target="_blank"

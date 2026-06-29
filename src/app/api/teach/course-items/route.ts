@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { assertAssignableCodeNumberIds, CodeNumberAssignError } from "@/lib/code-number-assign";
+import { assertItemCodesWithinSection, CodeNumberAssignError } from "@/lib/code-number-assign";
 import { canEditSection } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
@@ -42,7 +42,11 @@ export async function POST(req: Request) {
   const url = normalizeShareUrl(body.oneDriveUrl);
   try {
     try {
-      await assertAssignableCodeNumberIds(null, body.codeNumberIds ?? []);
+      await assertItemCodesWithinSection(
+        body.sectionId,
+        null,
+        body.codeNumberIds ?? []
+      );
     } catch (e) {
       if (e instanceof CodeNumberAssignError) {
         return NextResponse.json(

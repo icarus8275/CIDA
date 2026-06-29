@@ -2,7 +2,10 @@ import { prisma } from "@/lib/prisma";
 
 export class CodeNumberAssignError extends Error {
   constructor(
-    public readonly errCode: "invalid_code_numbers" | "inactive_code_number"
+    public readonly errCode:
+      | "invalid_code_numbers"
+      | "inactive_code_number"
+      | "not_in_section_codes"
   ) {
     super(errCode);
     this.name = "CodeNumberAssignError";
@@ -41,5 +44,27 @@ export async function assertAssignableCodeNumberIds(
     if (r.isActive) continue;
     if (keepIfInactive.has(r.id)) continue;
     throw new CodeNumberAssignError("inactive_code_number");
+  }
+}
+
+/** Item codes must be a subset of the section's selected standard codes. */
+export async function assertItemCodesWithinSection(
+  sectionId: string,
+  courseItemId: string | null,
+  requestedIds: string[]
+): Promise<void> {
+  await assertAssignableCodeNumberIds(courseItemId, requestedIds);
+  const unique = [...new Set(requestedIds)];
+  if (unique.length === 0) return;
+
+  const sectionRows = await prisma.sectionCode.findMany({
+    where: { sectionId },
+    select: { codeNumberId: true },
+  });
+  const allowed = new Set(sectionRows.map((r) => r.codeNumberId));
+  for (const id of unique) {
+    if (!allowed.has(id)) {
+      throw new CodeNumberAssignError("not_in_section_codes");
+    }
   }
 }

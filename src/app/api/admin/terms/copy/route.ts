@@ -39,6 +39,7 @@ export async function POST(req: Request) {
                   orderBy: { sortOrder: "asc" },
                   include: { codes: true },
                 },
+                sectionCodes: true,
               },
             },
           },
@@ -94,6 +95,14 @@ export async function POST(req: Request) {
             data: { userId: ins.userId, sectionId: newSec.id },
           });
         }
+        for (const sc of sec.sectionCodes) {
+          await tx.sectionCode.create({
+            data: {
+              sectionId: newSec.id,
+              codeNumberId: sc.codeNumberId,
+            },
+          });
+        }
         for (const item of sec.courseItems) {
           const newItem = await tx.courseItem.create({
             data: {
@@ -104,6 +113,7 @@ export async function POST(req: Request) {
               sortOrder: item.sortOrder,
               oneDriveUrl: item.oneDriveUrl,
               linkTitle: item.linkTitle,
+              onSiteDisplay: item.onSiteDisplay,
             },
           });
           for (const link of item.codes) {

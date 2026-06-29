@@ -55,6 +55,10 @@ export async function GET(
           },
         },
       },
+      sectionCodes: {
+        orderBy: { codeNumber: { value: "asc" } },
+        include: { codeNumber: true },
+      },
     },
   });
   if (!section) {
@@ -114,6 +118,10 @@ export async function PATCH(
             include: { codeNumber: true },
           },
         },
+      },
+      sectionCodes: {
+        orderBy: { codeNumber: { value: "asc" } },
+        include: { codeNumber: true },
       },
     },
   });

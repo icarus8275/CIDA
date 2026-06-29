@@ -199,8 +199,20 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "teach.type": { en: "Type", ko: "유형" },
   "teach.codesPlaceholder": { en: "Codes (comma-separated)", ko: "코드(콤마로 구분)" },
   "teach.codeNumbersHint": {
-    en: "Select from the code catalog. Multiple allowed.",
-    ko: "관리자가 등록한 코드에서 선택하세요. 여러 개 지정할 수 있습니다.",
+    en: "Pick from this course’s standard codes (set above). Multiple allowed.",
+    ko: "위에서 고른 이 수업의 표준 코드 중에서 선택하세요. 여러 개 지정할 수 있습니다.",
+  },
+  "teach.sectionCodesTitle": {
+    en: "Course standard codes",
+    ko: "수업 표준 코드",
+  },
+  "teach.sectionCodesHint": {
+    en: "Choose every CIDA code this course covers. Assignments, projects, and other items can only pick from this list — set it once after the syllabus.",
+    ko: "이 수업에서 다루는 CIDA 코드를 모두 고르세요. 과제·프로젝트 등 각 항목은 여기서 고른 코드만 선택할 수 있습니다. 실라버스 입력 후 한 번 설정하세요.",
+  },
+  "teach.sectionCodesEmpty": {
+    en: "Select course standard codes above before assigning codes to items.",
+    ko: "항목에 코드를 붙이려면 먼저 위에서 수업 표준 코드를 선택하세요.",
   },
   "teach.codeFilter": { en: "Filter codes…", ko: "코드 필터…" },
   "teach.codeNoMatch": { en: "No codes match this filter.", ko: "필터에 맞는 코드가 없습니다." },
@@ -227,7 +239,7 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     en: "Save code selection",
     ko: "선택한 코드만 저장",
   },
-  "teach.codeCatalogPicks": { en: "Code catalog", ko: "코드 목록" },
+  "teach.codeCatalogPicks": { en: "Codes for this item", ko: "이 항목의 코드" },
   "teach.saveCodeSelectionHint": {
     en: "Toggle codes below, then save here (separate from the link button above).",
     ko: "아래에서 코드를 눌러 선택한 뒤 이 버튼으로만 저장합니다(위 링크 저장과 별도).",
@@ -243,6 +255,15 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "teach.createFolder": { en: "Create folder", ko: "폴더 만들기" },
   "teach.linkToItem": { en: "Link to this item", ko: "이 항목에 연결" },
   "teach.deleteItem": { en: "Delete item", ko: "항목 삭제" },
+  "teach.copyItem": { en: "Duplicate", ko: "복사" },
+  "teach.copyItemHint": {
+    en: "Duplicate copies title, file link, and code picks to a new item (next number for that type).",
+    ko: "복사는 제목·파일 링크·코드를 그대로 다음 번호의 새 항목으로 만듭니다.",
+  },
+  "teach.copyItemFail": {
+    en: "Could not duplicate this item. Try again.",
+    ko: "항목을 복사하지 못했습니다. 다시 시도하세요.",
+  },
   "teach.deleteConfirm": { en: "Delete this item?", ko: "이 항목을 삭제할까요?" },
   "teach.errForbidden": { en: "You do not have permission to edit this course.", ko: "이 과목을 편집할 권한이 없습니다." },
   "teach.errLoad": { en: "Failed to load course.", ko: "불러오기에 실패했습니다." },
@@ -587,6 +608,11 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "teach.itemTitleOpt": { en: "Title (optional)", ko: "제목(선택)" },
   "teach.customTitle": { en: "Custom title", ko: "사용자 지정 제목" },
   "teach.odShareLink": { en: "OneDrive share link", ko: "OneDrive 공유 링크" },
+  "teach.onSiteDisplay": { en: "On Site Display", ko: "On Site Display" },
+  "teach.onSiteDisplayHint": {
+    en: "Check when work is shown on site instead of a OneDrive file. Explore shows this label instead of a file link.",
+    ko: "파일 대신 현장 전시인 경우 선택하세요. Explore에서는 OneDrive 링크 대신 이 표시가 나옵니다.",
+  },
   "teach.syllabusShareLink": {
     en: "Syllabus share link (OneDrive or web)",
     ko: "강의계획서 공유 링크(OneDrive 등)",
