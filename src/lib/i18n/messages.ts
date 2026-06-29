@@ -139,7 +139,10 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   "explore.itemDetailType": { en: "Type", ko: "유형" },
   "explore.itemDetailCodes": { en: "Codes on this item", ko: "이 항목의 코드" },
-  "explore.itemDetailNoLink": { en: "No file link for this item.", ko: "이 항목에 연결된 파일 링크가 없습니다." },
+  "explore.itemDetailNoLink": {
+    en: "No file or on-site display registered for this item.",
+    ko: "등록된 파일 또는 On Site Display가 없습니다.",
+  },
   "explore.itemDetailFile": { en: "File / OneDrive", ko: "자료(OneDrive)" },
   // signin
   "signin.title": { en: "Sign in", ko: "로그인" },
@@ -199,20 +202,16 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "teach.type": { en: "Type", ko: "유형" },
   "teach.codesPlaceholder": { en: "Codes (comma-separated)", ko: "코드(콤마로 구분)" },
   "teach.codeNumbersHint": {
-    en: "Pick from this course’s standard codes (set above). You can choose multiple per item.",
-    ko: "위에서 고른 수업 표준 코드 중에서 선택하세요. 항목마다 여러 개 지정할 수 있습니다.",
+    en: "Pick from this course’s standard codes (set by admin under Admin → Courses). You can choose multiple per item.",
+    ko: "관리자가 Admin → Courses에서 설정한 이 과목의 표준 코드 중에서 선택하세요. 항목마다 여러 개 지정할 수 있습니다.",
   },
-  "teach.sectionCodesTitle": {
-    en: "Course standard codes",
-    ko: "수업 표준 코드",
+  "teach.courseCodesNotice": {
+    en: "Standard codes for this course are managed by an admin (Admin → Courses). You choose the matching codes on each item below.",
+    ko: "이 과목의 표준 코드는 관리자가 Admin → Courses에서 설정합니다. 아래 각 항목에서 해당 코드를 선택하세요.",
   },
-  "teach.sectionCodesHint": {
-    en: "Choose every CIDA code this course covers. Assignments, projects, and other items can only pick from this list — set it once after the syllabus.",
-    ko: "이 수업에서 다루는 CIDA 코드를 모두 고르세요. 과제·프로젝트 등 각 항목은 여기서 고른 코드만 선택할 수 있습니다. 실라버스 입력 후 한 번 설정하세요.",
-  },
-  "teach.sectionCodesEmpty": {
-    en: "Select course standard codes above before assigning codes to items.",
-    ko: "항목에 코드를 붙이려면 먼저 위에서 수업 표준 코드를 선택하세요.",
+  "teach.courseCodesEmpty": {
+    en: "No standard codes are set for this course yet. Ask an admin to add them under Admin → Courses.",
+    ko: "이 과목에 표준 코드가 아직 없습니다. 관리자에게 Admin → Courses에서 설정을 요청하세요.",
   },
   "teach.codeFilter": { en: "Filter codes…", ko: "코드 필터…" },
   "teach.codeNoMatch": { en: "No codes match this filter.", ko: "필터에 맞는 코드가 없습니다." },
@@ -235,8 +234,8 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     ko: "일괄 추가는 빈 항목만 만듭니다. 제목·파일 링크·On Site Display·코드는 아래 각 항목에서 설정하세요.",
   },
   "teach.itemsCodesHint": {
-    en: "Each item below has its own title, link, and code picks (from your course standard codes).",
-    ko: "아래 각 항목에서 제목·링크·코드(수업 표준 코드 중)를 따로 설정합니다.",
+    en: "Each item below has its own title, link, and code picks from the course standard codes.",
+    ko: "아래 각 항목에서 제목·링크·코드(과목 표준 코드 중)를 따로 설정합니다.",
   },
   "teach.itemsCodes": { en: "Items & codes", ko: "항목·코드" },
   "teach.closeLink": { en: "Close link panel", ko: "연결 패널 닫기" },
@@ -359,6 +358,19 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   "admin.linkAssign": { en: "Assign faculty to courses", ko: "교수·과목 배정" },
   "admin.coursesPageTitle": { en: "Courses", ko: "과목" },
+  "admin.coursesPageLead": {
+    en: "Add courses and set each course’s standard CIDA codes. Faculty pick from those codes on assignments, projects, exams, and quizzes in their sections.",
+    ko: "과목을 추가하고 과목별 표준 CIDA 코드를 설정하세요. 교수는 담당 섹션의 각 항목에서 이 코드 중에서 선택합니다.",
+  },
+  "admin.coursesStandardCodes": { en: "Standard codes", ko: "표준 코드" },
+  "admin.coursesStandardCodesHint": {
+    en: "Choose every code this course covers. Faculty can only assign these codes on items in any section of this course.",
+    ko: "이 과목에서 다루는 코드를 모두 고르세요. 교수는 이 과목 섹션의 항목에 이 코드만 지정할 수 있습니다.",
+  },
+  "admin.coursesCodesSaveFail": {
+    en: "Could not save course codes.",
+    ko: "과목 코드를 저장하지 못했습니다.",
+  },
   "admin.itemTypesPageTitle": { en: "Item types", ko: "항목 유형" },
   "admin.itemTypesPageBody": {
     en: "Define labels for top-level groups (Assignment, Project, etc.). In-use types are deactivated instead of deleted.",
@@ -618,8 +630,8 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "teach.odShareLink": { en: "OneDrive share link", ko: "OneDrive 공유 링크" },
   "teach.onSiteDisplay": { en: "On Site Display", ko: "On Site Display" },
   "teach.onSiteDisplayHint": {
-    en: "Check when work is shown on site instead of a OneDrive file. Explore shows this label instead of a file link.",
-    ko: "파일 대신 현장 전시인 경우 선택하세요. Explore에서는 OneDrive 링크 대신 이 표시가 나옵니다.",
+    en: "Check when work is also shown on site. You can still add a OneDrive link; Explore can show both.",
+    ko: "현장 전시인 경우 선택하세요. OneDrive 링크와 함께 둘 다 등록·표시할 수 있습니다.",
   },
   "teach.syllabusShareLink": {
     en: "Syllabus share link (OneDrive or web)",

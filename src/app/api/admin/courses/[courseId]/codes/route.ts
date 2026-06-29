@@ -3,53 +3,35 @@ import {
   assertAssignableCodeNumberIds,
   CodeNumberAssignError,
 } from "@/lib/code-number-assign";
-import { canEditSection } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { NextResponse } from "next/server";
 
 const putSchema = z.object({ codeNumberIds: z.array(z.string().min(1)) });
 
-const sectionInclude = {
-  courseOffering: {
-    include: {
-      course: true,
-      term: { include: { academicYear: true, termSeason: true } },
-    },
-  },
-  sectionCodes: {
+const courseInclude = {
+  courseCodes: {
     orderBy: { codeNumber: { value: "asc" as const } },
     include: { codeNumber: true },
-  },
-  courseItems: {
-    orderBy: [{ sortOrder: "asc" as const }, { number: "asc" as const }],
-    include: {
-      itemType: true,
-      codes: {
-        orderBy: { codeNumber: { value: "asc" as const } },
-        include: { codeNumber: true },
-      },
-    },
   },
 };
 
 export async function PUT(
   req: Request,
-  { params }: { params: Promise<{ sectionId: string }> }
+  { params }: { params: Promise<{ courseId: string }> }
 ) {
   const s = await auth();
-  if (!s?.user) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
-  const { sectionId } = await params;
-
-  if (s.user.role === "CIDA") {
+  if (!s?.user || s.user.role !== "ADMIN") {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
+  const { courseId } = await params;
 
-  const ok = await canEditSection(s.user.id, s.user.role, sectionId);
-  if (!ok) {
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  const exists = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: { id: true },
+  });
+  if (!exists) {
+    return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
   const body = putSchema.parse(await req.json());
@@ -73,49 +55,50 @@ export async function PUT(
   const allowed = new Set(codeNumberIds);
 
   await prisma.$transaction(async (tx) => {
-    await tx.sectionCode.deleteMany({
+    await tx.courseCode.deleteMany({
       where: {
-        sectionId,
-        ...(allowed.size
-          ? { codeNumberId: { notIn: [...allowed] } }
-          : {}),
+        courseId,
+        ...(allowed.size ? { codeNumberId: { notIn: [...allowed] } } : {}),
       },
     });
 
     if (allowed.size) {
-      const existing = await tx.sectionCode.findMany({
-        where: { sectionId },
+      const existing = await tx.courseCode.findMany({
+        where: { courseId },
         select: { codeNumberId: true },
       });
       const have = new Set(existing.map((r) => r.codeNumberId));
       const toAdd = [...allowed].filter((id) => !have.has(id));
       if (toAdd.length) {
-        await tx.sectionCode.createMany({
-          data: toAdd.map((codeNumberId) => ({ sectionId, codeNumberId })),
+        await tx.courseCode.createMany({
+          data: toAdd.map((codeNumberId) => ({ courseId, codeNumberId })),
         });
       }
     }
 
     if (allowed.size === 0) {
       await tx.courseItemCode.deleteMany({
-        where: { courseItem: { sectionId } },
+        where: {
+          courseItem: {
+            section: { courseOffering: { courseId } },
+          },
+        },
       });
     } else {
       await tx.courseItemCode.deleteMany({
         where: {
-          courseItem: { sectionId },
+          courseItem: {
+            section: { courseOffering: { courseId } },
+          },
           codeNumberId: { notIn: [...allowed] },
         },
       });
     }
   });
 
-  const section = await prisma.section.findUnique({
-    where: { id: sectionId },
-    include: sectionInclude,
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    include: courseInclude,
   });
-  if (!section) {
-    return NextResponse.json({ error: "not found" }, { status: 404 });
-  }
-  return NextResponse.json(section);
+  return NextResponse.json(course);
 }

@@ -5,7 +5,7 @@ export class CodeNumberAssignError extends Error {
     public readonly errCode:
       | "invalid_code_numbers"
       | "inactive_code_number"
-      | "not_in_section_codes"
+      | "not_in_course_codes"
   ) {
     super(errCode);
     this.name = "CodeNumberAssignError";
@@ -47,9 +47,9 @@ export async function assertAssignableCodeNumberIds(
   }
 }
 
-/** Item codes must be a subset of the section's selected standard codes. */
-export async function assertItemCodesWithinSection(
-  sectionId: string,
+/** Item codes must be a subset of the course's admin-selected standard codes. */
+export async function assertItemCodesWithinCourse(
+  courseId: string,
   courseItemId: string | null,
   requestedIds: string[]
 ): Promise<void> {
@@ -57,14 +57,36 @@ export async function assertItemCodesWithinSection(
   const unique = [...new Set(requestedIds)];
   if (unique.length === 0) return;
 
-  const sectionRows = await prisma.sectionCode.findMany({
-    where: { sectionId },
+  const courseRows = await prisma.courseCode.findMany({
+    where: { courseId },
     select: { codeNumberId: true },
   });
-  const allowed = new Set(sectionRows.map((r) => r.codeNumberId));
+  const allowed = new Set(courseRows.map((r) => r.codeNumberId));
   for (const id of unique) {
     if (!allowed.has(id)) {
-      throw new CodeNumberAssignError("not_in_section_codes");
+      throw new CodeNumberAssignError("not_in_course_codes");
     }
   }
+}
+
+export async function getCourseIdForSection(
+  sectionId: string
+): Promise<string | null> {
+  const section = await prisma.section.findUnique({
+    where: { id: sectionId },
+    select: { courseOffering: { select: { courseId: true } } },
+  });
+  return section?.courseOffering.courseId ?? null;
+}
+
+export async function assertItemCodesWithinSection(
+  sectionId: string,
+  courseItemId: string | null,
+  requestedIds: string[]
+): Promise<void> {
+  const courseId = await getCourseIdForSection(sectionId);
+  if (!courseId) {
+    throw new CodeNumberAssignError("not_in_course_codes");
+  }
+  await assertItemCodesWithinCourse(courseId, courseItemId, requestedIds);
 }

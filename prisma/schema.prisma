@@ -139,6 +139,18 @@ model Course {
   updatedAt DateTime @updatedAt
 
   offerings CourseOffering[]
+  courseCodes CourseCode[]
+}
+
+model CourseCode {
+  id           String     @id @default(cuid())
+  courseId     String
+  codeNumberId String
+  course       Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  codeNumber   CodeNumber @relation(fields: [codeNumberId], references: [id], onDelete: Restrict)
+
+  @@unique([courseId, codeNumberId])
+  @@index([codeNumberId])
 }
 
 model CourseOffering {
@@ -172,21 +184,8 @@ model Section {
   courseOffering CourseOffering      @relation(fields: [courseOfferingId], references: [id], onDelete: Cascade)
   courseItems    CourseItem[]
   instructors    SectionInstructor[]
-  sectionCodes   SectionCode[]
 
   @@index([courseOfferingId])
-}
-
-/// Standard CIDA codes selected for this section; items may only pick from this subset.
-model SectionCode {
-  id           String     @id @default(cuid())
-  sectionId    String
-  codeNumberId String
-  section      Section    @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  codeNumber   CodeNumber @relation(fields: [codeNumberId], references: [id], onDelete: Restrict)
-
-  @@unique([sectionId, codeNumberId])
-  @@index([codeNumberId])
 }
 
 model SectionInstructor {
@@ -226,7 +225,7 @@ model CodeNumber {
   updatedAt DateTime @updatedAt
 
   itemLinks CourseItemCode[]
-  sectionLinks SectionCode[]
+  courseLinks CourseCode[]
 }
 
 model CourseItem {

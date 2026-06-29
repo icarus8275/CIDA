@@ -41,7 +41,14 @@ export async function GET(
     include: {
       courseOffering: {
         include: {
-          course: true,
+          course: {
+            include: {
+              courseCodes: {
+                orderBy: { codeNumber: { value: "asc" } },
+                include: { codeNumber: true },
+              },
+            },
+          },
           term: { include: { academicYear: true, termSeason: true } },
         },
       },
@@ -54,10 +61,6 @@ export async function GET(
             include: { codeNumber: true },
           },
         },
-      },
-      sectionCodes: {
-        orderBy: { codeNumber: { value: "asc" } },
-        include: { codeNumber: true },
       },
     },
   });
@@ -105,7 +108,14 @@ export async function PATCH(
     include: {
       courseOffering: {
         include: {
-          course: true,
+          course: {
+            include: {
+              courseCodes: {
+                orderBy: { codeNumber: { value: "asc" } },
+                include: { codeNumber: true },
+              },
+            },
+          },
           term: { include: { academicYear: true, termSeason: true } },
         },
       },
@@ -118,10 +128,6 @@ export async function PATCH(
             include: { codeNumber: true },
           },
         },
-      },
-      sectionCodes: {
-        orderBy: { codeNumber: { value: "asc" } },
-        include: { codeNumber: true },
       },
     },
   });

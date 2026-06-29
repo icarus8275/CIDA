@@ -393,23 +393,28 @@ export function CourseCodeExplorer({
             <p className="mb-1 text-xs font-medium text-app-muted/85">
               {t("explore.itemDetailFile")}
             </p>
-            {item.onSiteDisplay ? (
-              <p className="text-sm font-medium text-app-fg/92">
-                {t("teach.onSiteDisplay")}
-              </p>
-            ) : item.oneDriveUrl ? (
-              <a
-                href={item.oneDriveUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex text-sm font-medium text-app-link hover:underline"
-              >
-                {item.linkTitle || t("explore.fileLinkDefault")}
-              </a>
-            ) : (
+            {!item.onSiteDisplay && !item.oneDriveUrl ? (
               <p className="text-sm text-app-muted/85">
                 {t("explore.itemDetailNoLink")}
               </p>
+            ) : (
+              <div className="space-y-1">
+                {item.onSiteDisplay && (
+                  <p className="text-sm font-medium text-app-fg/92">
+                    {t("teach.onSiteDisplay")}
+                  </p>
+                )}
+                {item.oneDriveUrl && (
+                  <a
+                    href={item.oneDriveUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex text-sm font-medium text-app-link hover:underline"
+                  >
+                    {item.linkTitle || t("explore.fileLinkDefault")}
+                  </a>
+                )}
+              </div>
             )}
           </div>
           <div>

@@ -39,7 +39,6 @@ export async function POST(req: Request) {
                   orderBy: { sortOrder: "asc" },
                   include: { codes: true },
                 },
-                sectionCodes: true,
               },
             },
           },
@@ -93,14 +92,6 @@ export async function POST(req: Request) {
         for (const ins of sec.instructors) {
           await tx.sectionInstructor.create({
             data: { userId: ins.userId, sectionId: newSec.id },
-          });
-        }
-        for (const sc of sec.sectionCodes) {
-          await tx.sectionCode.create({
-            data: {
-              sectionId: newSec.id,
-              codeNumberId: sc.codeNumberId,
-            },
           });
         }
         for (const item of sec.courseItems) {

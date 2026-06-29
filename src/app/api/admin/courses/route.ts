@@ -25,6 +25,12 @@ export async function GET() {
   }
   const list = await prisma.course.findMany({
     orderBy: { sortOrder: "asc" },
+    include: {
+      courseCodes: {
+        orderBy: { codeNumber: { value: "asc" } },
+        include: { codeNumber: true },
+      },
+    },
   });
   return NextResponse.json(list);
 }

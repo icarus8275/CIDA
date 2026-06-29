@@ -24,13 +24,13 @@ export function SectionItemRow({
   t,
   it,
   catalog,
-  sectionCodeIds,
+  courseCodeIds,
   onReload,
 }: {
   t: (k: string) => string;
   it: SectionItem;
   catalog: CatalogRow[];
-  sectionCodeIds: string[];
+  courseCodeIds: string[];
   onReload: () => Promise<void>;
 }) {
   const itRef = useRef(it);
@@ -155,8 +155,8 @@ export function SectionItemRow({
   }, [codeIds, onReload, t, it.id]);
 
   const options = useMemo(
-    () => buildOptions(catalog, it.codes, sectionCodeIds),
-    [catalog, it.codes, sectionCodeIds]
+    () => buildOptions(catalog, it.codes, courseCodeIds),
+    [catalog, it.codes, courseCodeIds]
   );
 
   return (
@@ -197,25 +197,26 @@ export function SectionItemRow({
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
           <input
             id={`item-od-${it.id}`}
-            className="input-glass min-w-0 flex-1 px-2 py-1 text-sm disabled:opacity-50"
+            className="input-glass min-w-0 flex-1 px-2 py-1 text-sm"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="https://..."
-            disabled={onSiteDisplay}
           />
           <input
-            className="input-glass w-full px-2 py-1 text-sm sm:w-40 disabled:opacity-50"
+            className="input-glass w-full px-2 py-1 text-sm sm:w-40"
             value={linkLabel}
             onChange={(e) => setLinkLabel(e.target.value)}
             placeholder={t("teach.linkLabelOpt")}
             aria-label={t("teach.linkLabelOpt")}
-            disabled={onSiteDisplay}
           />
         </div>
-        {onSiteDisplay ? (
-          <p className="text-sm font-medium text-app-fg/92">{t("teach.onSiteDisplay")}</p>
-        ) : (
-          it.oneDriveUrl && (
+        <div className="space-y-1">
+          {onSiteDisplay && (
+            <p className="text-sm font-medium text-app-fg/92">
+              {t("teach.onSiteDisplay")}
+            </p>
+          )}
+          {it.oneDriveUrl && (
             <a
               href={it.oneDriveUrl}
               target="_blank"
@@ -224,13 +225,13 @@ export function SectionItemRow({
             >
               {it.linkTitle || t("teach.openFile")}
             </a>
-          )
-        )}
+          )}
+        </div>
       </div>
       <div className="mb-1 space-y-1">
         <p className="text-xs text-app-muted/85">{t("teach.codeCatalogPicks")}</p>
-        {sectionCodeIds.length === 0 ? (
-          <p className="text-xs text-amber-900/90">{t("teach.sectionCodesEmpty")}</p>
+        {courseCodeIds.length === 0 ? (
+          <p className="text-xs text-amber-900/90">{t("teach.courseCodesEmpty")}</p>
         ) : (
           <>
             <p className="text-[11px] text-app-muted/85">{t("teach.codeNumbersHint")}</p>
@@ -245,7 +246,7 @@ export function SectionItemRow({
           onChange={setCodeIds}
           filter={codeFilter}
           onFilterChange={setCodeFilter}
-          disabled={sectionCodeIds.length === 0}
+          disabled={courseCodeIds.length === 0}
         />
       </div>
       <div className="mt-1 flex flex-wrap items-center gap-3">

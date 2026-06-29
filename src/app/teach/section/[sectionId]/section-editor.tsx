@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/components/locale/locale-provider";
 import { formatTermForDisplay } from "@/lib/term-display";
-import { CodePicker, buildOptions, type CatalogRow, type CodeLink } from "./section-codes-shared";
+import { type CatalogRow, type CodeLink } from "./section-codes-shared";
 import { SectionItemRow } from "./section-item-row";
 
 type Item = {
@@ -73,9 +73,12 @@ type SectionPayload = {
   label: string;
   syllabusUrl: string | null;
   syllabusLinkTitle: string | null;
-  sectionCodes: CodeLink[];
   courseOffering: {
-    course: { id: string; name: string };
+    course: {
+      id: string;
+      name: string;
+      courseCodes: CodeLink[];
+    };
     term: {
       academicYear: { label: string; startYear: number };
       termSeason: { key: string; label: string };
@@ -103,8 +106,6 @@ export function SectionEditor({
   const [addBusy, setAddBusy] = useState(false);
   const [syllabusUrl, setSyllabusUrl] = useState("");
   const [syllabusLabel, setSyllabusLabel] = useState("");
-  const [sectionCodeIds, setSectionCodeIds] = useState<string[]>([]);
-  const [sectionCodeFilter, setSectionCodeFilter] = useState("");
   const sectionRef = useRef(section);
   sectionRef.current = section;
 
@@ -121,7 +122,6 @@ export function SectionEditor({
     }
     const data = await r.json();
     setSection(data);
-    setSectionCodeIds(data.sectionCodes.map((c: CodeLink) => c.codeNumberId));
   }, [sectionId, t]);
 
   const loadTypes = useCallback(async () => {
@@ -145,36 +145,6 @@ export function SectionEditor({
     setSyllabusUrl(section.syllabusUrl ?? "");
     setSyllabusLabel(section.syllabusLinkTitle ?? "");
   }, [section?.id]);
-
-  useEffect(() => {
-    if (!section) return;
-    const serverIds = [...section.sectionCodes.map((c) => c.codeNumberId)].sort();
-    const localIds = [...sectionCodeIds].sort();
-    if (serverIds.join("\0") === localIds.join("\0")) return;
-    const timer = setTimeout(() => {
-      const s = sectionRef.current;
-      if (!s) return;
-      const sIds = [...s.sectionCodes.map((c) => c.codeNumberId)].sort();
-      const lIds = [...sectionCodeIds].sort();
-      if (sIds.join("\0") === lIds.join("\0")) return;
-      void (async () => {
-        const r = await fetch(`/api/teach/section/${sectionId}/codes`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ codeNumberIds: sectionCodeIds }),
-        });
-        if (r.ok) {
-          const data = await r.json();
-          setSection(data);
-          setSectionCodeIds(data.sectionCodes.map((c: CodeLink) => c.codeNumberId));
-        } else {
-          alert(t("teach.codeSaveFail"));
-          await load();
-        }
-      })();
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [sectionCodeIds, section, sectionId, load, t]);
 
   useEffect(() => {
     if (!section) return;
@@ -215,10 +185,10 @@ export function SectionEditor({
     return groupItemsByType(section.courseItems, types);
   }, [section, types]);
 
-  const sectionCodeOptions = useMemo(
-    () => buildOptions(catalog, undefined),
-    [catalog]
-  );
+  const courseCodeIds = useMemo(() => {
+    if (!section) return [];
+    return section.courseOffering.course.courseCodes.map((c) => c.codeNumberId);
+  }, [section]);
 
   if (err) {
     return <p className="text-sm text-app-danger">{err}</p>;
@@ -283,23 +253,6 @@ export function SectionEditor({
             </a>
           )}
         </div>
-      </section>
-
-      <section className="glass p-4">
-        <h2 className="mb-2 font-medium text-app-fg/92">
-          {t("teach.sectionCodesTitle")}
-        </h2>
-        <p className="mb-1 text-xs text-app-muted/85">{t("teach.sectionCodesHint")}</p>
-        <p className="mb-2 text-[11px] text-app-muted/85">{t("teach.autoSaveHint")}</p>
-        <CodePicker
-          t={t}
-          idPrefix="section-codes"
-          options={sectionCodeOptions}
-          valueIds={sectionCodeIds}
-          onChange={setSectionCodeIds}
-          filter={sectionCodeFilter}
-          onFilterChange={setSectionCodeFilter}
-        />
       </section>
 
       <section className="glass p-4">
@@ -392,6 +345,10 @@ export function SectionEditor({
           {t("teach.itemsCodes")}
         </h2>
         <p className="mb-1 text-xs text-app-muted/85">{t("teach.itemsCodesHint")}</p>
+        <p className="mb-1 text-xs text-app-muted/85">{t("teach.courseCodesNotice")}</p>
+        {courseCodeIds.length === 0 && (
+          <p className="mb-3 text-xs text-amber-900/90">{t("teach.courseCodesEmpty")}</p>
+        )}
         <p className="mb-3 text-xs text-app-muted/85">{t("teach.copyItemHint")}</p>
         <div className="space-y-8">
           {itemsByType.map((group) => (
@@ -411,7 +368,7 @@ export function SectionEditor({
                       t={t}
                       it={it}
                       catalog={catalog}
-                      sectionCodeIds={sectionCodeIds}
+                      courseCodeIds={courseCodeIds}
                       onReload={load}
                     />
                   </li>
