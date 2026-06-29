@@ -120,7 +120,7 @@ export default async function TeachHomePage() {
                   {sectionTitle(sec)}
                 </p>
                 <span className="mt-4 text-sm font-medium text-app-link">
-                  {t(locale, "teach.openSection")} ?
+                  {t(locale, "teach.editCourse")}
                 </span>
               </Link>
             </li>

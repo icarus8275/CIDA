@@ -232,7 +232,10 @@ export function SectionItemRow({
         {sectionCodeIds.length === 0 ? (
           <p className="text-xs text-amber-900/90">{t("teach.sectionCodesEmpty")}</p>
         ) : (
-          <p className="text-[11px] text-app-muted/85">{t("teach.autoSaveHint")}</p>
+          <>
+            <p className="text-[11px] text-app-muted/85">{t("teach.codeNumbersHint")}</p>
+            <p className="text-[11px] text-app-muted/85">{t("teach.autoSaveHint")}</p>
+          </>
         )}
         <CodePicker
           t={t}

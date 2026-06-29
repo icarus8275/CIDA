@@ -100,9 +100,7 @@ export function SectionEditor({
   const [addErr, setAddErr] = useState<string | null>(null);
   const [newItem, setNewItem] = useState({ typeId: "" });
   const [addCount, setAddCount] = useState(1);
-  const [newItemCodes, setNewItemCodes] = useState<string[]>([]);
   const [addBusy, setAddBusy] = useState(false);
-  const [newFilter, setNewFilter] = useState("");
   const [syllabusUrl, setSyllabusUrl] = useState("");
   const [syllabusLabel, setSyllabusLabel] = useState("");
   const [sectionCodeIds, setSectionCodeIds] = useState<string[]>([]);
@@ -222,11 +220,6 @@ export function SectionEditor({
     [catalog]
   );
 
-  const itemCodeOptions = useMemo(
-    () => buildOptions(catalog, undefined, sectionCodeIds),
-    [catalog, sectionCodeIds]
-  );
-
   if (err) {
     return <p className="text-sm text-app-danger">{err}</p>;
   }
@@ -314,11 +307,7 @@ export function SectionEditor({
           {t("teach.addItem")}
         </h2>
         <p className="mb-1 text-xs text-app-muted/85">{t("teach.howManyHint")}</p>
-        <p className="mb-1 text-xs text-app-muted/85">{t("teach.codeNumbersHint")}</p>
-        {sectionCodeIds.length === 0 && (
-          <p className="mb-1 text-xs text-amber-900/90">{t("teach.sectionCodesEmpty")}</p>
-        )}
-        <p className="mb-2 text-[11px] text-app-muted/85">{t("teach.autoSaveHint")}</p>
+        <p className="mb-2 text-xs text-app-muted/85">{t("teach.addItemHint")}</p>
         <form
           className="space-y-3"
           onSubmit={async (e) => {
@@ -326,7 +315,6 @@ export function SectionEditor({
             if (!newItem.typeId || addBusy) return;
             const n = Math.min(50, Math.max(1, Math.floor(addCount) || 1));
             const start = nextNumberForType(section.courseItems, newItem.typeId);
-            const codesToAttach = n === 1 ? newItemCodes : [];
             setAddBusy(true);
             setAddErr(null);
             try {
@@ -338,7 +326,6 @@ export function SectionEditor({
                     sectionId,
                     itemTypeId: newItem.typeId,
                     number: start + i,
-                    codeNumberIds: i === 0 ? codesToAttach : [],
                   }),
                 });
                 if (!r.ok) {
@@ -349,8 +336,6 @@ export function SectionEditor({
               }
               setNewItem({ typeId: newItem.typeId });
               setAddCount(1);
-              setNewItemCodes([]);
-              setNewFilter("");
               await load();
             } finally {
               setAddBusy(false);
@@ -399,16 +384,6 @@ export function SectionEditor({
               {addBusy ? t("teach.loading") : t("teach.add")}
             </button>
           </div>
-          <CodePicker
-            t={t}
-            idPrefix="add-new"
-            options={itemCodeOptions}
-            valueIds={newItemCodes}
-            onChange={setNewItemCodes}
-            filter={newFilter}
-            onFilterChange={setNewFilter}
-            disabled={addBusy || sectionCodeIds.length === 0}
-          />
         </form>
       </section>
 
@@ -416,6 +391,7 @@ export function SectionEditor({
         <h2 className="mb-2 font-medium text-app-fg/92">
           {t("teach.itemsCodes")}
         </h2>
+        <p className="mb-1 text-xs text-app-muted/85">{t("teach.itemsCodesHint")}</p>
         <p className="mb-3 text-xs text-app-muted/85">{t("teach.copyItemHint")}</p>
         <div className="space-y-8">
           {itemsByType.map((group) => (

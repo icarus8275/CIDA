@@ -84,12 +84,12 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   "teach.sectionsTitle": { en: "Your sections", ko: "내가 담당하는 섹션" },
   "teach.sectionsLead": {
-    en: "Open a section to edit items, code numbers, and file links. Cards are listed by course and term.",
-    ko: "섹션을 열어 항목·코드·파일 링크를 편집하세요. 과목·학기 순으로 보입니다.",
+    en: "Use Edit course on a card to set the syllabus, standard codes, items, and file links. Listed by course and term.",
+    ko: "카드의「과목 편집」으로 강의계획서·표준 코드·항목·파일 링크를 관리하세요. 과목·학기 순으로 보입니다.",
   },
   "teach.sectionBadge": { en: "Section", ko: "섹션" },
   "teach.termLabel": { en: "Term", ko: "학기" },
-  "teach.openSection": { en: "Open section", ko: "섹션 열기" },
+  "teach.editCourse": { en: "Edit course", ko: "과목 편집" },
   // explore
   "explore.loading": { en: "Loading…", ko: "불러오는 중…" },
   "explore.navTitle": { en: "Explore", ko: "탐색" },
@@ -199,8 +199,8 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "teach.type": { en: "Type", ko: "유형" },
   "teach.codesPlaceholder": { en: "Codes (comma-separated)", ko: "코드(콤마로 구분)" },
   "teach.codeNumbersHint": {
-    en: "Pick from this course’s standard codes (set above). Multiple allowed.",
-    ko: "위에서 고른 이 수업의 표준 코드 중에서 선택하세요. 여러 개 지정할 수 있습니다.",
+    en: "Pick from this course’s standard codes (set above). You can choose multiple per item.",
+    ko: "위에서 고른 수업 표준 코드 중에서 선택하세요. 항목마다 여러 개 지정할 수 있습니다.",
   },
   "teach.sectionCodesTitle": {
     en: "Course standard codes",
@@ -227,8 +227,16 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "teach.add": { en: "Add", ko: "추가" },
   "teach.howMany": { en: "How many", ko: "개수" },
   "teach.howManyHint": {
-    en: "Applies to every item type (assignment, quiz, exam, project, …). New items are numbered after the current highest for the selected type (e.g. no items yet and count 6 → 1–6). Up to 50 at once. Codes you pick below apply only when count is 1.",
-    ko: "과제·퀴즈·시험·프로젝트 등 선택한 항목 유형마다 따로 적용됩니다. 해당 유형에서 기존 최대 번호 다음부터 이어집니다(없을 때 6 → 1~6). 한 번에 최대 50개. 아래에서 고른 코드는 개수 1일 때만 새 항목에 붙습니다.",
+    en: "Applies to every item type (assignment, quiz, exam, project, …). New items are numbered after the current highest for the selected type (e.g. no items yet and count 6 → 1–6). Up to 50 at once.",
+    ko: "과제·퀴즈·시험·프로젝트 등 선택한 항목 유형마다 따로 적용됩니다. 해당 유형에서 기존 최대 번호 다음부터 이어집니다(없을 때 6 → 1~6). 한 번에 최대 50개.",
+  },
+  "teach.addItemHint": {
+    en: "Bulk add creates blank items only. Set title, file link, On Site Display, and codes on each item in the list below.",
+    ko: "일괄 추가는 빈 항목만 만듭니다. 제목·파일 링크·On Site Display·코드는 아래 각 항목에서 설정하세요.",
+  },
+  "teach.itemsCodesHint": {
+    en: "Each item below has its own title, link, and code picks (from your course standard codes).",
+    ko: "아래 각 항목에서 제목·링크·코드(수업 표준 코드 중)를 따로 설정합니다.",
   },
   "teach.itemsCodes": { en: "Items & codes", ko: "항목·코드" },
   "teach.closeLink": { en: "Close link panel", ko: "연결 패널 닫기" },
