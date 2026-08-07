@@ -1,15 +1,18 @@
 import { auth } from "@/auth";
+import { sendTempPasswordEmail } from "@/lib/mail";
 import { hashPassword } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
+import { generateTempPassword } from "@/lib/temp-password";
 import type { UserRole } from "@/generated/prisma/enums";
 import { z } from "zod";
 import { NextResponse } from "next/server";
 
 const createSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8).max(200),
   name: z.string().max(200).optional(),
   role: z.enum(["ADMIN", "PROFESSOR", "CIDA"]),
+  /** If true, email the temp password to the user (requires SMTP). Default true. */
+  sendEmail: z.boolean().optional(),
 });
 
 const patchSchema = z
@@ -22,9 +25,10 @@ const patchSchema = z
     message: "role or name required",
   });
 
-const patchPasswordSchema = z.object({
+const resetPasswordSchema = z.object({
   id: z.string().min(1),
-  password: z.string().min(8).max(200),
+  action: z.literal("resetTempPassword"),
+  sendEmail: z.boolean().optional(),
 });
 
 export async function GET() {
@@ -34,7 +38,13 @@ export async function GET() {
   }
   const list = await prisma.user.findMany({
     orderBy: { email: "asc" },
-    select: { id: true, email: true, name: true, role: true },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      tempPassword: true,
+    },
   });
   return NextResponse.json(list);
 }
@@ -50,18 +60,40 @@ export async function POST(req: Request) {
   if (existing) {
     return NextResponse.json({ error: "email taken" }, { status: 409 });
   }
-  const passwordHash = await hashPassword(body.password);
+
+  const tempPassword = generateTempPassword(8);
+  const passwordHash = await hashPassword(tempPassword);
   const u = await prisma.user.create({
     data: {
       email,
       name: body.name,
       role: body.role as UserRole,
       passwordHash,
+      tempPassword,
       emailVerified: new Date(),
     },
-    select: { id: true, email: true, name: true, role: true },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      tempPassword: true,
+    },
   });
-  return NextResponse.json(u);
+
+  let emailSent = false;
+  let emailError: string | undefined;
+  if (body.sendEmail !== false) {
+    const mail = await sendTempPasswordEmail({
+      to: email,
+      tempPassword,
+      reason: "created",
+    });
+    emailSent = mail.ok;
+    if (!mail.ok) emailError = mail.error;
+  }
+
+  return NextResponse.json({ ...u, emailSent, emailError });
 }
 
 export async function PATCH(req: Request) {
@@ -70,15 +102,42 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const raw = await req.json();
-  if (raw.password !== undefined) {
-    const body = patchPasswordSchema.parse(raw);
-    const passwordHash = await hashPassword(body.password);
+
+  if (raw.action === "resetTempPassword") {
+    const body = resetPasswordSchema.parse(raw);
+    const user = await prisma.user.findUnique({
+      where: { id: body.id },
+      select: { id: true, email: true },
+    });
+    if (!user?.email) {
+      return NextResponse.json({ error: "not found" }, { status: 404 });
+    }
+    const tempPassword = generateTempPassword(8);
+    const passwordHash = await hashPassword(tempPassword);
     await prisma.user.update({
       where: { id: body.id },
-      data: { passwordHash },
+      data: { passwordHash, tempPassword },
     });
-    return NextResponse.json({ ok: true });
+
+    let emailSent = false;
+    let emailError: string | undefined;
+    if (body.sendEmail !== false) {
+      const mail = await sendTempPasswordEmail({
+        to: user.email,
+        tempPassword,
+        reason: "reset",
+      });
+      emailSent = mail.ok;
+      if (!mail.ok) emailError = mail.error;
+    }
+    return NextResponse.json({
+      ok: true,
+      tempPassword,
+      emailSent,
+      emailError,
+    });
   }
+
   const body = patchSchema.parse(raw);
   const data: { role?: UserRole; name?: string | null } = {};
   if (body.role !== undefined) {

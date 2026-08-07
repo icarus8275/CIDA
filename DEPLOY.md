@@ -82,6 +82,11 @@ AUTH_URL=https://cida.jakeson.net
 ```env
 BOOTSTRAP_ADMIN_EMAILS=your@email.edu
 NEXT_PUBLIC_I18N_ENGLISH_ONLY=true
+SMTP_HOST=smtp.hostinger.com
+SMTP_PORT=465
+SMTP_USER=professor@jakeson.net
+SMTP_PASS=메일함비밀번호
+SMTP_FROM=professor@jakeson.net
 ```
 
 | Name | 필수 | 설명 |
@@ -89,6 +94,18 @@ NEXT_PUBLIC_I18N_ENGLISH_ONLY=true
 | `DATABASE_URL` | **필수** | Neon 연결 문자열 (`sslmode=require` 포함) |
 | `AUTH_SECRET` | **필수** | `openssl rand -base64 32` |
 | `AUTH_URL` | **필수** | `https://cida.jakeson.net` (끝 `/` 없음) |
+| `SMTP_PASS` | 메일 기능용 **필수** | `professor@jakeson.net` 메일함 비밀번호 (Git에 올리지 말 것) |
+| `SMTP_USER` / `SMTP_HOST` / `SMTP_PORT` / `SMTP_FROM` | 선택 | 기본값은 Hostinger SMTP + professor@jakeson.net |
+
+### 이메일 비밀번호를 안전하게 전달하는 방법
+
+채팅·Git·커밋에 **비밀번호를 쓰지 마세요.** 아래 중 하나를 쓰세요.
+
+1. **권장:** Hostinger 앱 → **Environment Variables**에 `SMTP_PASS=...` 직접 입력 후 재배포  
+2. 로컬 개발: `.env`에만 `SMTP_PASS=...` (이미 `.gitignore`에 `.env*` 있음)  
+3. Admin → **Email test** 페이지에서 테스트 발송으로 확인  
+
+IMAP(`imap.hostinger.com:993`)은 이 앱에서 쓰지 않습니다. **발신만 SMTP**를 사용합니다.
 
 **금지:** `AUTH_URL`에 `http://0.0.0.0:3000` 같은 바인드 주소를 넣지 마세요.
 

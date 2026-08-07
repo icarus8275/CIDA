@@ -8,6 +8,7 @@ type UserRow = {
   email: string | null;
   name: string | null;
   role: "ADMIN" | "PROFESSOR" | "CIDA";
+  tempPassword: string | null;
 };
 
 const CreateUserForm = memo(function CreateUserForm({
@@ -17,15 +18,28 @@ const CreateUserForm = memo(function CreateUserForm({
 }) {
   const { t } = useI18n();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState<"PROFESSOR" | "ADMIN" | "CIDA">("PROFESSOR");
   const [err, setErr] = useState<string | null>(null);
+  const [createdTemp, setCreatedTemp] = useState<string | null>(null);
+  const [emailNote, setEmailNote] = useState<string | null>(null);
   const [formKey, setFormKey] = useState(0);
+  const [busy, setBusy] = useState(false);
 
   return (
     <div>
       {err && <p className="mb-2 text-sm text-app-danger">{err}</p>}
+      {createdTemp && (
+        <div className="mb-3 rounded-lg border border-app-link/30 bg-app-link/10 p-3 text-sm">
+          <p className="font-medium text-app-fg">{t("admin.usersTempCreated")}</p>
+          <p className="mt-1 font-mono text-base tracking-wide text-app-fg">
+            {createdTemp}
+          </p>
+          {emailNote && (
+            <p className="mt-1 text-xs text-app-muted/90">{emailNote}</p>
+          )}
+        </div>
+      )}
       <form
         key={formKey}
         className="glass max-w-md space-y-2 p-4"
@@ -33,27 +47,46 @@ const CreateUserForm = memo(function CreateUserForm({
         onSubmit={async (e) => {
           e.preventDefault();
           setErr(null);
-          const r = await fetch("/api/admin/users", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: email.trim(),
-              password,
-              name: name.trim() || undefined,
-              role,
-            }),
-          });
-          if (!r.ok) {
-            const j = await r.json().catch(() => ({}));
-            setErr((j as { error?: string }).error || t("admin.usersCreateFail"));
-            return;
+          setCreatedTemp(null);
+          setEmailNote(null);
+          setBusy(true);
+          try {
+            const r = await fetch("/api/admin/users", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: email.trim(),
+                name: name.trim() || undefined,
+                role,
+                sendEmail: true,
+              }),
+            });
+            const j = (await r.json().catch(() => ({}))) as {
+              error?: string;
+              tempPassword?: string | null;
+              emailSent?: boolean;
+              emailError?: string;
+            };
+            if (!r.ok) {
+              setErr(j.error || t("admin.usersCreateFail"));
+              return;
+            }
+            setCreatedTemp(j.tempPassword ?? null);
+            if (j.emailSent) {
+              setEmailNote(t("admin.usersEmailSentOk"));
+            } else if (j.emailError) {
+              setEmailNote(
+                `${t("admin.usersEmailSentFail")}: ${j.emailError}`
+              );
+            }
+            setEmail("");
+            setName("");
+            setRole("PROFESSOR");
+            setFormKey((k) => k + 1);
+            onUserCreated();
+          } finally {
+            setBusy(false);
           }
-          setEmail("");
-          setPassword("");
-          setName("");
-          setRole("PROFESSOR");
-          setFormKey((k) => k + 1);
-          onUserCreated();
         }}
       >
         <h2 className="text-sm font-semibold text-app-fg">
@@ -67,17 +100,6 @@ const CreateUserForm = memo(function CreateUserForm({
           placeholder={t("admin.usersEmailPh")}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          className="input-glass w-full px-2 py-1.5"
-          type="password"
-          name="new-user-password"
-          autoComplete="new-password"
-          placeholder={t("admin.usersPasswordPh")}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          minLength={8}
           required
         />
         <input
@@ -99,8 +121,12 @@ const CreateUserForm = memo(function CreateUserForm({
           <option value="ADMIN">{t("admin.usersRoleOptAdmin")}</option>
           <option value="CIDA">{t("admin.usersRoleOptCida")}</option>
         </select>
-        <button type="submit" className="btn-glass-primary w-full py-2 text-sm">
-          {t("admin.usersCreate")}
+        <button
+          type="submit"
+          disabled={busy}
+          className="btn-glass-primary w-full py-2 text-sm disabled:opacity-50"
+        >
+          {busy ? t("teach.loading") : t("admin.usersCreate")}
         </button>
       </form>
     </div>
@@ -163,6 +189,7 @@ function EditableUserName({
 export function AdminUsersForm() {
   const { t } = useI18n();
   const [list, setList] = useState<UserRow[]>([]);
+  const [resetBusyId, setResetBusyId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const r = await fetch("/api/admin/users", { cache: "no-store" });
@@ -182,8 +209,9 @@ export function AdminUsersForm() {
   return (
     <div className="space-y-6">
       <CreateUserForm onUserCreated={onUserCreated} />
+      <p className="text-xs text-app-muted/85">{t("admin.usersTempHint")}</p>
       <div className="overflow-x-auto rounded-2xl border border-app-border/80 bg-app-card/75 shadow-sm">
-        <table className="w-full min-w-[44rem] border-collapse text-left text-sm">
+        <table className="w-full min-w-[52rem] border-collapse text-left text-sm">
           <thead>
             <tr className="border-b border-app-border/80 bg-app-primary/[0.06]">
               <th
@@ -206,7 +234,13 @@ export function AdminUsersForm() {
               </th>
               <th
                 scope="col"
-                className="w-24 px-3 py-2.5 text-right text-xs font-semibold uppercase tracking-wide text-app-muted/90"
+                className="px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-app-muted/90"
+              >
+                {t("admin.usersTableColTempPw")}
+              </th>
+              <th
+                scope="col"
+                className="w-40 px-3 py-2.5 text-right text-xs font-semibold uppercase tracking-wide text-app-muted/90"
               >
                 {t("admin.usersTableColActions")}
               </th>
@@ -259,21 +293,76 @@ export function AdminUsersForm() {
                     <option value="CIDA">{t("admin.usersRoleOptCida")}</option>
                   </select>
                 </td>
+                <td className="align-middle px-3 py-2.5">
+                  {u.tempPassword ? (
+                    <code className="rounded bg-app-card px-1.5 py-0.5 font-mono text-xs text-app-fg">
+                      {u.tempPassword}
+                    </code>
+                  ) : (
+                    <span className="text-xs text-app-muted/80">
+                      {t("admin.usersTempCleared")}
+                    </span>
+                  )}
+                </td>
                 <td className="whitespace-nowrap px-3 py-2.5 text-right align-middle">
-                  <button
-                    type="button"
-                    className="text-sm text-app-danger hover:underline"
-                    onClick={async () => {
-                      if (!confirm(t("admin.usersDeleteConfirm"))) return;
-                      await fetch(
-                        `/api/admin/users?id=${encodeURIComponent(u.id)}`,
-                        { method: "DELETE" }
-                      );
-                      await load();
-                    }}
-                  >
-                    {t("admin.usersDelete")}
-                  </button>
+                  <div className="flex flex-col items-end gap-1">
+                    <button
+                      type="button"
+                      disabled={resetBusyId === u.id}
+                      className="text-sm text-app-link hover:underline disabled:opacity-50"
+                      onClick={async () => {
+                        if (!confirm(t("admin.usersResetConfirm"))) return;
+                        setResetBusyId(u.id);
+                        try {
+                          const r = await fetch("/api/admin/users", {
+                            method: "PATCH",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              id: u.id,
+                              action: "resetTempPassword",
+                              sendEmail: true,
+                            }),
+                          });
+                          const j = (await r.json().catch(() => ({}))) as {
+                            tempPassword?: string;
+                            emailSent?: boolean;
+                            emailError?: string;
+                          };
+                          if (!r.ok) {
+                            alert(t("admin.usersResetFail"));
+                            return;
+                          }
+                          const mailNote = j.emailSent
+                            ? t("admin.usersEmailSentOk")
+                            : `${t("admin.usersEmailSentFail")}${j.emailError ? `: ${j.emailError}` : ""}`;
+                          alert(
+                            `${t("admin.usersTempCreated")}\n${j.tempPassword ?? ""}\n\n${mailNote}`
+                          );
+                          await load();
+                        } finally {
+                          setResetBusyId(null);
+                        }
+                      }}
+                    >
+                      {resetBusyId === u.id
+                        ? t("teach.loading")
+                        : t("admin.usersResetTemp")}
+                    </button>
+                    <button
+                      type="button"
+                      className="text-sm text-app-danger hover:underline"
+                      onClick={async () => {
+                        if (!confirm(t("admin.usersDeleteConfirm"))) return;
+                        await fetch(
+                          `/api/admin/users?id=${encodeURIComponent(u.id)}`,
+                          { method: "DELETE" }
+                        );
+                        await load();
+                      }}
+                    >
+                      {t("admin.usersDelete")}
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

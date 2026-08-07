@@ -1,6 +1,7 @@
 "use client";
 
 import { signIn, getSession } from "next-auth/react";
+import Link from "next/link";
 import { useState } from "react";
 import { useI18n } from "@/components/locale/locale-provider";
 
@@ -63,6 +64,14 @@ export function SignInForm({ callbackUrl }: { callbackUrl?: string }) {
       <button type="submit" className="btn-glass-primary w-full py-2.5 text-sm">
         {t("signin.title")}
       </button>
+      <p className="text-center text-sm">
+        <Link
+          href="/auth/forgot-password"
+          className="text-app-link hover:underline"
+        >
+          {t("signin.forgotPassword")}
+        </Link>
+      </p>
     </form>
   );
 }

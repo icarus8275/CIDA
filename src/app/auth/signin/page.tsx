@@ -4,7 +4,6 @@ import { t } from "@/lib/i18n/messages";
 import { getServerLocale } from "@/lib/i18n/server";
 import { redirect } from "next/navigation";
 import { SignInForm } from "./sign-in-form";
-import { LogIn } from "lucide-react";
 import Link from "next/link";
 
 export default async function SignInPage({
@@ -25,41 +24,34 @@ export default async function SignInPage({
     redirect(sp.callbackUrl || "/teach");
   }
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-6xl px-4 py-10 sm:py-12">
-      <div className="grid min-h-[min(80vh,44rem)] grid-cols-1 grid-rows-1 gap-8 lg:grid-cols-2 lg:gap-10 lg:items-stretch">
-        <div className="hidden h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl border border-app-border/80 glass lg:flex">
-          <div className="relative min-h-48 flex-1">
-            <Image
-              src="/landing-hero-cida.png"
-              alt=""
-              fill
-              className="object-cover object-center"
-              sizes="(max-width: 1024px) 0, 50vw"
-              priority
-            />
-          </div>
-          <div className="border-t border-app-border/60 p-6">
-            <p className="text-sm font-medium uppercase tracking-wide text-app-bsu-cardinal">
+    <div className="mx-auto min-h-dvh w-full max-w-5xl px-4 py-10 sm:py-12">
+      <div className="grid min-h-[min(72vh,40rem)] grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8 lg:items-stretch">
+        <div className="relative hidden min-h-[20rem] overflow-hidden rounded-2xl border border-app-border/80 lg:block">
+          <Image
+            src="/landing-hero-cida.png"
+            alt=""
+            fill
+            className="object-cover object-center"
+            sizes="(max-width: 1024px) 0, 50vw"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1c2430]/85 via-[#1c2430]/35 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 p-6">
+            <p className="text-xs font-semibold uppercase tracking-wide text-white/90">
               {t(locale, "home.landingKicker")}
             </p>
-            <p className="mt-2 text-balance text-lg font-semibold text-app-fg">
+            <p className="mt-1 text-lg font-semibold text-white">
               {t(locale, "home.landingTitle")}
             </p>
-            <p className="mt-2 text-pretty text-sm leading-relaxed text-app-muted/95">
+            <p className="mt-2 text-sm leading-relaxed text-white/85">
               {t(locale, "home.landingLead")}
             </p>
-            <Link
-              href="/"
-              className="mt-4 inline-flex text-sm font-medium text-app-link hover:underline"
-            >
-              ← {t(locale, "home.backToWelcome")}
-            </Link>
           </div>
         </div>
 
-        <div className="flex h-full min-h-0 flex-col">
-          <div className="glass mb-4 overflow-hidden rounded-2xl lg:mb-0 lg:hidden">
-            <div className="relative aspect-[21/9] w-full min-h-32">
+        <div className="flex flex-col justify-center">
+          <div className="relative mb-4 overflow-hidden rounded-2xl border border-app-border/80 lg:hidden">
+            <div className="relative aspect-[21/9] min-h-28 w-full">
               <Image
                 src="/landing-hero-cida.png"
                 alt=""
@@ -70,25 +62,17 @@ export default async function SignInPage({
               />
             </div>
           </div>
-          <div className="glass flex h-full min-h-0 flex-1 flex-col rounded-2xl p-6 sm:p-8">
-            <div className="flex w-full min-w-0 flex-1 flex-col justify-center">
-              <div className="mb-2 flex items-center gap-2 text-app-link">
-                <LogIn className="h-5 w-5" />
-                <span className="text-sm font-medium uppercase tracking-wide">
-                  {t(locale, "signin.title")}
-                </span>
-              </div>
-              <h1 className="text-2xl font-bold text-app-fg">
-                {t(locale, "signin.title")}
-              </h1>
-              <p className="mt-2 text-sm text-app-muted/90">
-                {t(locale, "signin.hint")}
-              </p>
-              <div className="mt-6">
-                <SignInForm callbackUrl={sp.callbackUrl} />
-              </div>
+          <div className="glass rounded-2xl p-6 sm:p-8">
+            <h1 className="text-2xl font-bold text-app-fg">
+              {t(locale, "signin.title")}
+            </h1>
+            <p className="mt-1.5 text-sm text-app-muted/90">
+              {t(locale, "signin.hint")}
+            </p>
+            <div className="mt-6">
+              <SignInForm callbackUrl={sp.callbackUrl} />
             </div>
-            <p className="mt-6 shrink-0 text-center text-sm text-app-muted/85 lg:mt-4">
+            <p className="mt-6 text-center text-sm">
               <Link href="/" className="text-app-link hover:underline">
                 ← {t(locale, "home.backToWelcome")}
               </Link>

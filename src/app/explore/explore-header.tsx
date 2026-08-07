@@ -21,46 +21,52 @@ export function ExploreHeader({
   const showAdmin = role === "ADMIN";
 
   return (
-    <header className="glass-nav sticky top-0 z-30 border-b border-app-border/70">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3">
-        <span className="font-semibold text-app-fg">
-          {t("explore.navTitle")}
-        </span>
-        {who && (
-          <span
-            className="max-w-[min(20rem,40vw)] truncate text-sm text-app-muted/90"
-            title={who}
-          >
-            {who}
+    <header className="glass-nav sticky top-0 z-30">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2.5">
+        <div className="flex min-w-0 items-baseline gap-2">
+          <span className="font-semibold text-app-fg">
+            {t("explore.navTitle")}
           </span>
-        )}
-        <nav className="ml-0 flex flex-wrap items-center gap-2 text-sm sm:ml-2">
+          {who && (
+            <span
+              className="hidden max-w-[14rem] truncate text-xs text-app-muted/85 sm:inline"
+              title={who}
+            >
+              {who}
+            </span>
+          )}
+        </div>
+        <nav className="flex flex-wrap items-center gap-0.5 text-sm">
           {showTeach && (
-            <Link href="/teach" className="link-app-muted">
+            <Link href="/teach" className="link-app-muted px-2 py-1">
               {t("teach.myCourses")}
             </Link>
           )}
           {showAdmin && (
-            <Link href="/admin" className="link-app-muted">
+            <Link href="/admin" className="link-app-muted px-2 py-1">
               {t("teach.admin")}
             </Link>
           )}
           <span
-            className="link-app cursor-default"
+            className="rounded-md bg-app-primary/10 px-2 py-1 font-medium text-app-primary"
             aria-current="page"
-            title={t("teach.explore")}
           >
             {t("teach.explore")}
           </span>
         </nav>
-        <form className="ml-auto flex shrink-0" action={signOutToHome}>
-          <button
-            type="submit"
-            className="text-sm text-app-muted hover:text-app-fg hover:underline"
-          >
-            {t("teach.signOut")}
-          </button>
-        </form>
+        <div className="ml-auto flex items-center gap-2 text-sm">
+          <Link href="/account/password" className="link-app-muted">
+            {t("account.changePasswordNav")}
+          </Link>
+          <form action={signOutToHome}>
+            <button
+              type="submit"
+              className="text-app-muted hover:text-app-fg hover:underline"
+            >
+              {t("teach.signOut")}
+            </button>
+          </form>
+        </div>
       </div>
     </header>
   );

@@ -23,8 +23,10 @@ model User {
   email         String?   @unique
   emailVerified DateTime? @map("email_verified")
   image         String?
-  /// Argon2/bcrypt hash; set only for password login
+  /// bcrypt hash; set only for password login
   passwordHash  String?   @map("password_hash")
+  /// Plain temporary password for admin view only; cleared when user sets their own
+  tempPassword  String?   @map("temp_password")
   role          UserRole  @default(PROFESSOR)
 
   accounts       Account[]
