@@ -1,125 +1,190 @@
-# Vercel + Neon + GitHub로 CIDA 배포하기
+# cida.jakeson.net — Hostinger + GitHub 배포 (Vercel 없음)
 
-이 앱은 **Next.js 16(App Router) + Prisma 7 + PostgreSQL**입니다. **이메일·비밀번호 로그인(Credentials)** 만 사용하며, Microsoft Entra / OneDrive Graph 연동은 사용하지 않습니다. **Git → Vercel 자동 빌드**가 맞고, WordPress처럼 FTP로 `public`만 올리는 방식은 맞지 않습니다.
+QR Link(`qr.stylestationery.com`)와 같은 방식입니다.
 
----
+| 구분 | 이 프로젝트 |
+|------|-------------|
+| 앱 호스팅 | **Hostinger Cloud** — Deploy Web App / Node.js |
+| 소스 | **GitHub** → Hostinger 자동 빌드 |
+| DB | **Neon PostgreSQL** (권장). Hostinger MySQL은 사용하지 않음 |
+| 도메인 | **cida.jakeson.net** (`jakeson.net` 서브도메인) |
 
-## 1. 준비물
-
-| 항목 | 용도 |
-|------|------|
-| **GitHub** (또는 GitLab 등) | 소스 저장·Vercel 연동 |
-| **Vercel** | Next.js 빌드·호스팅 |
-| **Neon** (또는 Supabase/Railway 등) | PostgreSQL (`DATABASE_URL`) |
-
-`.env`는 **저장소에 넣지 않고**, Vercel **Environment Variables**에만 넣습니다.
+> CIDA는 Prisma **`postgresql`** 전용입니다. QR Link처럼 Hostinger MySQL에 넣으려면 스키마 전면 이전이 필요하므로, DB는 Neon을 유지하고 **앱만 Hostinger**에 올리는 구성을 권장합니다.
 
 ---
 
-## 2. Neon에서 `DATABASE_URL` 만들기
+## 전체 흐름
 
-1. [Neon](https://neon.tech)에서 프로젝트 생성 → **PostgreSQL**.
-2. **Connection string** 전체를 복사합니다. (`?sslmode=require` 등 포함)
-3. 이 값을 Vercel의 **`DATABASE_URL`** 그대로 넣습니다.
+```text
+1) GitHub에 push (이미 origin: icarus8275/CIDA 라면 push만)
+2) Hostinger → Add website → Deploy Web App / Node.js
+3) GitHub 연결 후 빌드 설정
+4) 환경변수: DATABASE_URL(Neon) + AUTH_SECRET + AUTH_URL
+5) Deploy
+6) 도메인 cida.jakeson.net 연결 + DNS
+7) (필요 시) 시드 / course codes 시드
+8) 로그인 테스트
+```
 
 ---
 
-## 3. GitHub에 푸시
+## 1단계 — GitHub
 
-```bash
+저장소가 이미 있으면:
+
+```powershell
+cd "D:\5. App Dev\CIDA"
 git add -A
-git commit -m "설명 메시지"
+git commit -m "Hostinger deploy for cida.jakeson.net"
 git push origin main
 ```
 
-최초라면 원격 저장소를 만든 뒤 `git remote add origin ...` 로 연결합니다.
+중요: **`.env` / Neon URL 텍스트 파일은 올리지 마세요.**
 
 ---
 
-## 4. Vercel 프로젝트 연결
+## 2단계 — Hostinger에 Web App 만들기
 
-1. [Vercel](https://vercel.com) → **Add New** → **Project** → GitHub 저장소 **Import**.
-2. **Framework**: Next.js (자동).
-3. **Build Command**: 저장소의 `package.json`에 맞게 **`npm run build`** (이미 `prisma migrate deploy && next build` 로 되어 있음).
-4. 아래 **환경 변수**를 **Production**(필요하면 Preview에도) 추가한 뒤 **Deploy**.
+1. hPanel → **Websites**
+2. **+ Add website**
+3. **Deploy Web App** (또는 **Node.js** / **Node.js Apps**)
+4. **Import Git repository** → GitHub 권한 → `CIDA` 저장소, 브랜치 `main`
 
----
+### 빌드 설정
 
-## 5. Vercel 환경 변수 (필수·선택)
+| 항목 | 값 |
+|------|-----|
+| Framework | Next.js |
+| Node.js | **20** 이상 (engines: `>=20.9.0`) |
+| Install | `npm ci` 또는 `npm install` |
+| Build | `npm run build` |
+| Start | `npm run start` (필요 시 `npm run start -- -p $PORT`) |
+| Root directory | `.` |
 
-배포 후 브라우저에 열리는 주소가 예를 들어 `https://cida-three.vercel.app` 이라면, **`AUTH_URL`** 은 그 주소와 **완전히 같아야** 합니다(끝에 `/` 없음). Vercel 프로젝트 URL이 바뀌면(예: `*.vercel.app` 변경) **Vercel → Settings → Environment Variables** 의 `AUTH_URL` 도 함께 바꾸고 **재배포**하세요. 로그아웃 후 열리는 루트 URL도 `AUTH_URL` 을 따릅니다(코드는 `src/lib/auth-actions.ts` 참고).
-
-| Name | 필수 | 설명 / 예시 |
-|------|------|-------------|
-| `DATABASE_URL` | **필수** | Neon이 준 PostgreSQL 연결 문자열 전체 |
-| `AUTH_SECRET` | **필수** | `openssl rand -base64 32` 등으로 만든 긴 임의 문자열(세션 암호화) |
-| `AUTH_URL` | **필수** | 프로덕션 사이트 URL, 예: `https://본인프로젝트.vercel.app` (슬래시 없음) |
-| `BOOTSTRAP_ADMIN_EMAILS` | 선택 | 쉼표로 구분한 이메일. **이미 DB에 있는 사용자**가 로그인하면 `ADMIN` 역할로 올림(초기 관리자용) |
-| `NEXT_PUBLIC_SHOW_LOCALE_SWITCHER` | 선택 | **`false`** 이면 화면 우측 상단 **EN/한** 전환을 숨김. 안 넣으면 기본으로 스위처 표시 |
-| `NEXT_PUBLIC_I18N_ENGLISH_ONLY` | 선택 | **`true`** 이면 **한국어 UI를 쓰지 않음**: 쿠키와 관계없이 **항상 영문**만, 전환기도 숨김(배포 한 번으로 영어 전용). 별칭: `NEXT_PUBLIC_ENGLISH_ONLY` |
-| `AUTH_DEBUG` | 선택 | `true` 로 두면 Auth.js 디버그(문제 조사용, 운영에서는 보통 끔) |
-
-**더 이상 필요 없음(이전 Entra/OAuth 버전용):**  
-`AUTH_MICROSOFT_ENTRA_ID_*`, `OAUTH_ENCRYPTION_KEY`, Microsoft **Redirect URI** 등.
-
-### `jakeson.net/cida` 로 보내고 싶을 때 (선택)
-
-원하는 동작에 따라 아래 중 하나를 씁니다.
-
-1. **짧은 주소만 쓰고, 실제 앱은 Vercel 그대로 두기 (가장 단순)**  
-   `jakeson.net` 을 **원래 쓰는 호스팅**(WordPress, Cloudflare, Netlify DNS, Nginx 등)에서 **리다이렉트**만 설정합니다.  
-   - 예: `https://jakeson.net/cida` → `https://cida-three.vercel.app` (301/302)  
-   - 하위 경로도 보내려면 `jakeson.net/cida/*` → `https://cida-three.vercel.app/*` 규칙을 추가합니다.  
-   이 경우 **이 저장소 코드 변경은 필요 없고**, `AUTH_URL` 은 **실제 로그인·세션이 돌아가는 URL** (`https://cida-three.vercel.app`) 로 두는 것이 일반적입니다. 사용자가 항상 `jakeson.net` 으로만 들어오게 하려면, 리다이렉트 후 브라우저 주소창이 Vercel로 바뀌는 것을 감수하거나, 아래 2번을 검토합니다.
-
-2. **브라우저 주소가 항상 `jakeson.net` 이었으면 한다**  
-   - **서브도메인**이 가장 단순합니다: 예) `cida.jakeson.net` 을 Vercel 프로젝트 **Custom Domains** 에 추가하고, DNS에 `CNAME` 으로 `cida.jakeson.net` → Vercel 안내값. 그다음 **`AUTH_URL=https://cida.jakeson.net`** (끝 `/` 없음). 앱 코드 수정은 보통 불필요합니다.  
-   - **정확히 `jakeson.net/cida` 경로**에 앱을 두려면 Next.js에서 `basePath: '/cida'` 도메인·프록시 설정이 필요해 **구성이 커집니다**. 대부분은 1번 리다이렉트 또는 `cida.jakeson.net` 을 권장합니다.
+`package.json`의 `start`는 `next start -H 0.0.0.0` 입니다.  
+Hostinger가 넣는 `PORT` 환경 변수를 Next가 사용합니다. 안 되면 Start를  
+`npm run start -- -p $PORT` 로 바꾸세요.
 
 ---
 
-## 6. 첫 배포 직후: DB 마이그레이션과 시드
+## 3단계 — 환경 변수 (배포 전)
 
-- Vercel 빌드 시 **`npm run build`** 안에서 `prisma migrate deploy`가 실행되므로, **스키마는 배포와 함께 DB에 반영**됩니다.
-- **예시 데이터 + 시드 관리자 계정**을 넣으려면, **로컬 PC**에서 Neon의 `DATABASE_URL`을 사용해 한 번 실행합니다(운영 DB에 쓰이므로 주의).
+Hostinger 앱 → **Environment Variables**:
 
-```bash
-# 로컬 .env 에 DATABASE_URL 만 Neon 프로덕션 URL로 맞춘 뒤
-npx prisma migrate deploy
-npx tsx prisma/seed.ts
+```env
+DATABASE_URL=postgresql://...neon.tech/.../neondb?sslmode=require
+AUTH_SECRET=여기에_긴_랜덤문자열
+AUTH_URL=https://cida.jakeson.net
 ```
 
-시드는 `prisma/seed.ts`와 `.env`의 `AUTH_DEV_EMAIL` / `AUTH_DEV_PASSWORD`(또는 `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD`)를 참고합니다. 시드에 없는 비밀번호로는 로그인할 수 없으므로, **Admin → Users**에서 추가 계정을 만들거나 시드 이메일로 로그인합니다.
+선택:
 
-**시드 없이** 가려면 Vercel 배포 후 **SQL/Prisma Studio**로 직접 `users` 행을 넣거나, 나중에 구현한 **관리자 API**만으로는 첫 관리자를 만들 수 없으므로, **최소 한 번은 시드 또는 `BOOTSTRAP_ADMIN_EMAILS` + 수동으로 DB에 비밀번호 해시 넣기** 중 하나가 필요합니다. 가장 단순한 방법은 위 **시드**입니다.
+```env
+BOOTSTRAP_ADMIN_EMAILS=your@email.edu
+NEXT_PUBLIC_I18N_ENGLISH_ONLY=true
+```
+
+| Name | 필수 | 설명 |
+|------|------|------|
+| `DATABASE_URL` | **필수** | Neon 연결 문자열 (`sslmode=require` 포함) |
+| `AUTH_SECRET` | **필수** | `openssl rand -base64 32` |
+| `AUTH_URL` | **필수** | `https://cida.jakeson.net` (끝 `/` 없음) |
+
+**금지:** `AUTH_URL`에 `http://0.0.0.0:3000` 같은 바인드 주소를 넣지 마세요.
+
+`AUTH_SECRET` 생성 (PowerShell):
+
+```powershell
+[Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }) -as [byte[]])
+```
+
+### Neon `DATABASE_URL`
+
+1. [Neon](https://neon.tech) 프로젝트 → Connection string 복사  
+2. Hostinger 환경 변수에 그대로 넣기  
+3. 빌드 시 `prisma migrate deploy`가 Neon에 마이그레이션을 적용합니다 (앱이 Neon으로 아웃바운드 가능해야 함 — 일반 Cloud에서 가능)
+
+로컬 `.env`의 Neon URL을 그대로 써도 됩니다. **Git에는 넣지 마세요.**
 
 ---
 
-## 7. 로그인·역할 흐름
+## 4단계 — Deploy
 
-- **공개 가입 없음.** 로그인은 **관리자가 만든 이메일·비밀번호**만 사용합니다.
-- **`/admin/users`**에서 계정 생성·역할(`ADMIN` / `PROFESSOR` / `CIDA`) 지정.
-- **CIDA**: `/explore`에서 개설된 모든 수업의 항목·코드 트리를 한눈에.
-- **교수**: 배정된 섹션에서 `/teach` → 항목·코드·OneDrive **공유 링크 URL** 편집.
+1. **Deploy**  
+2. 빌드 로그에서 `prisma migrate deploy` / `next build` 성공 확인  
+3. Hostinger 임시 도메인(`*.hostingersite.com` 등)으로 일단 접속 확인
+
+임시 도메인으로만 테스트할 때는 잠깐 `AUTH_URL`을 그 URL로 맞춘 뒤, 커스텀 도메인 연결 후 다시 `https://cida.jakeson.net`으로 바꾸고 **재배포**하세요.
 
 ---
 
-## 8. 자주 나는 문제
+## 5단계 — 도메인 `cida.jakeson.net`
+
+1. Hostinger Web App → **Domains** → `cida.jakeson.net` 추가  
+2. DNS (`jakeson.net`이 Hostinger에 있으면 보통 자동; 외부면):
+
+| 타입 | 이름 | 값 |
+|------|------|-----|
+| **A** 또는 **CNAME** | `cida` | Hostinger가 안내하는 IP / 타깃 |
+
+3. SSL(HTTPS) 발급 대기  
+4. `AUTH_URL=https://cida.jakeson.net` 확인 후 재배포/재시작
+
+---
+
+## 6단계 — 시드 (선택)
+
+마이그레이션은 빌드에 포함됩니다. **관리자·샘플 데이터·과목 표준 코드**는 별도입니다.
+
+로컬에서 Neon(프로덕션) URL로:
+
+```powershell
+cd "D:\5. App Dev\CIDA"
+# .env 의 DATABASE_URL 이 프로덕션 Neon인지 확인
+npx prisma migrate deploy
+npm run db:seed
+npm run db:seed-course-codes
+```
+
+Hostinger SSH/터미널이 있으면 앱 디렉터리에서 동일 명령을 실행해도 됩니다.
+
+이미 Vercel+Neon으로 쓰던 DB를 그대로 쓰면 **시드를 다시 돌릴 필요 없이** 앱만 Hostinger로 옮기면 됩니다.
+
+---
+
+## GitHub 푸시 후 자동되는 것 / 안 되는 것
+
+| 무엇이 | 자동? |
+|--------|--------|
+| Next.js 코드 | ✅ push → Hostinger 재배포 |
+| Prisma 마이그레이션 | ✅ `npm run build` 안의 `migrate deploy` (env에 `DATABASE_URL` 있을 때) |
+| 관리자 시드 / course codes 시드 | ❌ `db:seed` / `db:seed-course-codes` 직접 실행 |
+| Admin에서 입력한 데이터 | DB(Neon)에 있음 — 푸시와 무관 |
+
+---
+
+## 오픈 전 체크
+
+- [ ] https://cida.jakeson.net 접속·자물쇠  
+- [ ] `/auth/signin` 로그인  
+- [ ] Admin / Teach / Explore  
+- [ ] `AUTH_URL`이 `https://cida.jakeson.net`과 일치  
+- [ ] (선택) 예전 `cida-three.vercel.app` 사용 중지 또는 새 URL로 리다이렉트
+
+---
+
+## 자주 막히는 곳
 
 | 증상 | 확인 |
 |------|------|
-| 빌드에서 `prisma migrate deploy` 실패 | `DATABASE_URL`이 맞는지, Neon이 외부 접속·SSL 허용인지 |
-| 로그인 후 이상 동작 / 세션 없음 | `AUTH_SECRET` 설정 여부, `AUTH_URL`이 **실제 오픈한 URL**과 동일한지 |
-| 시드한 관리자로 로그인 불가 | 시드에 사용한 이메일·비밀번호와 일치하는지, 시드를 **프로덕션 DB**에 대고 돌렸는지 |
+| 빌드 실패 (Prisma) | `DATABASE_URL` Neon 유효·Hostinger에서 Neon 접속 가능 여부 |
+| 로그인/세션 이상 | `AUTH_SECRET`, `AUTH_URL=https://cida.jakeson.net` |
+| 포트/502 | Start가 `0.0.0.0` + `$PORT` 인지 |
+| GitHub repo 안 보임 | Hostinger GitHub App 권한에 `CIDA` 포함 |
 
 ---
 
-## 9. 요약 체크리스트
+## (참고) Vercel은?
 
-1. Neon에서 `DATABASE_URL` 복사 → Vercel에 등록  
-2. `AUTH_SECRET`, `AUTH_URL`(Vercel 도메인, 끝 `/` 없음) 등록  
-3. GitHub에 push → Vercel 연결 → Deploy  
-4. (선택) 로컬에서 Neon URL로 `prisma/seed.ts` 실행해 관리자·샘플 데이터  
-5. 브라우저에서 배포 URL 열기 → `/auth/signin` 으로 로그인 테스트  
-
-이후 **스케줄·과목·사용자**는 앱 안 **Admin** 메뉴에서 설정하면 됩니다.
+더 이상 필수가 아닙니다. 이 문서는 **Hostinger + Neon + cida.jakeson.net** 경로입니다.  
+기존 Vercel 프로젝트는 Hostinger 전환 후 삭제하거나 꺼 두면 됩니다.
