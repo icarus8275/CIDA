@@ -1,6 +1,8 @@
 export type Locale = "en" | "ko";
 
 export const LOCALE_COOKIE = "cida-locale";
+/** Site default. Korean is used only after the visitor explicitly chooses it. */
+export const DEFAULT_LOCALE: Locale = "en";
 
 /**
  * When true (build-time `NEXT_PUBLIC_I18N_ENGLISH_ONLY=true`), the app is English-only:
@@ -17,13 +19,13 @@ export function isEnglishOnlyI18n(): boolean {
 }
 
 export function parseLocale(v: string | undefined | null): Locale {
-  return v === "ko" ? "ko" : "en";
+  return v === "ko" ? "ko" : DEFAULT_LOCALE;
 }
 
-/** Effective UI locale: English-only mode always returns `en` (ignores cookie). */
+/** Effective UI locale: English unless the visitor saved Korean (or English-only mode). */
 export function resolveLocale(v: string | undefined | null): Locale {
   if (isEnglishOnlyI18n()) {
-    return "en";
+    return DEFAULT_LOCALE;
   }
   return parseLocale(v);
 }

@@ -8,10 +8,10 @@ const SHOW =
   process.env.NEXT_PUBLIC_SHOW_LOCALE_SWITCHER !== "false";
 
 export function LocaleSwitcher() {
+  const { locale, setLocale, t } = useI18n();
   if (!SHOW || isEnglishOnlyI18n()) {
     return null;
   }
-  const { locale, setLocale, t } = useI18n();
   return (
     <div
       className="fixed right-3 top-3 z-50 flex items-center gap-1 rounded-xl border border-app-border/80 bg-app-card/75 px-2 py-1 text-sm text-app-fg/92 shadow-lg backdrop-blur-xl"
@@ -27,7 +27,7 @@ export function LocaleSwitcher() {
             : "text-app-muted/90 hover:bg-app-card/75 hover:text-app-fg"
         }`}
       >
-        {t("locale.en")}
+        EN
       </button>
       <span className="text-app-border">|</span>
       <button
@@ -39,7 +39,7 @@ export function LocaleSwitcher() {
             : "text-app-muted/90 hover:bg-app-card/75 hover:text-app-fg"
         }`}
       >
-        {t("locale.ko")}
+        KO
       </button>
     </div>
   );

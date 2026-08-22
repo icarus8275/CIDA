@@ -804,6 +804,7 @@ export function t(locale: Locale, key: string): string {
   if (!row) {
     return key;
   }
-  const loc = isEnglishOnlyI18n() ? "en" : locale;
+  const loc =
+    !isEnglishOnlyI18n() && locale === "ko" ? "ko" : "en";
   return row[loc] ?? row.en;
 }

@@ -9,7 +9,12 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
-import { isEnglishOnlyI18n, LOCALE_COOKIE, type Locale } from "@/lib/i18n/types";
+import {
+  DEFAULT_LOCALE,
+  isEnglishOnlyI18n,
+  LOCALE_COOKIE,
+  type Locale,
+} from "@/lib/i18n/types";
 import { t } from "@/lib/i18n/messages";
 
 type Ctx = {
@@ -31,8 +36,18 @@ export function LocaleProvider({
   const router = useRouter();
 
   useEffect(() => {
-    setLoc(isEnglishOnlyI18n() ? "en" : initialLocale);
+    setLoc(isEnglishOnlyI18n() ? DEFAULT_LOCALE : initialLocale);
   }, [initialLocale]);
+
+  useEffect(() => {
+    if (isEnglishOnlyI18n()) return;
+    const has = document.cookie
+      .split(";")
+      .some((c) => c.trim().startsWith(`${LOCALE_COOKIE}=`));
+    if (!has) {
+      document.cookie = `${LOCALE_COOKIE}=${DEFAULT_LOCALE};path=/;max-age=31536000;SameSite=Lax`;
+    }
+  }, []);
 
   const setLocale = useCallback(
     (l: Locale) => {
