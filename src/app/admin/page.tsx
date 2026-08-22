@@ -6,8 +6,10 @@ import {
   Hash,
   ListTree,
   Mail,
+  ScrollText,
   UserCircle,
   Users,
+  DatabaseBackup,
 } from "lucide-react";
 import { t } from "@/lib/i18n/messages";
 import { getServerLocale } from "@/lib/i18n/server";
@@ -67,6 +69,18 @@ export default async function AdminPage() {
       title: t(locale, "admin.emailTestTitle"),
       desc: t(locale, "admin.homeCardEmailTestDesc"),
       icon: <Mail className="h-5 w-5" strokeWidth={1.75} />,
+    },
+    {
+      href: "/admin/backups",
+      title: t(locale, "admin.backupsTitle"),
+      desc: t(locale, "admin.homeCardBackupsDesc"),
+      icon: <DatabaseBackup className="h-5 w-5" strokeWidth={1.75} />,
+    },
+    {
+      href: "/admin/logs",
+      title: t(locale, "admin.logsTitle"),
+      desc: t(locale, "admin.homeCardLogsDesc"),
+      icon: <ScrollText className="h-5 w-5" strokeWidth={1.75} />,
     },
   ];
 

@@ -1,6 +1,12 @@
 import { auth } from "@/auth";
+import { logActivity } from "@/lib/activity-log";
 import { canEditSection } from "@/lib/guards";
+import { describeSectionPath } from "@/lib/item-labels";
 import { prisma } from "@/lib/prisma";
+import {
+  loadCourseItemsForSection,
+  shareStateForSection,
+} from "@/lib/section-share";
 import { z } from "zod";
 import { NextResponse } from "next/server";
 
@@ -52,22 +58,25 @@ export async function GET(
           term: { include: { academicYear: true, termSeason: true } },
         },
       },
-      courseItems: {
-        orderBy: [{ sortOrder: "asc" }, { number: "asc" }],
-        include: {
-          itemType: true,
-          codes: {
-            orderBy: { codeNumber: { value: "asc" } },
-            include: { codeNumber: true },
-          },
-        },
-      },
     },
   });
   if (!section) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
-  return NextResponse.json(section);
+  const [courseItems, share] = await Promise.all([
+    loadCourseItemsForSection({
+      sectionId,
+      courseOfferingId: section.courseOfferingId,
+      userId: s.user.id,
+      role: s.user.role,
+    }),
+    shareStateForSection({
+      sectionId,
+      userId: s.user.id,
+      role: s.user.role,
+    }),
+  ]);
+  return NextResponse.json({ ...section, courseItems, share });
 }
 
 export async function PATCH(
@@ -119,17 +128,28 @@ export async function PATCH(
           term: { include: { academicYear: true, termSeason: true } },
         },
       },
-      courseItems: {
-        orderBy: [{ sortOrder: "asc" }, { number: "asc" }],
-        include: {
-          itemType: true,
-          codes: {
-            orderBy: { codeNumber: { value: "asc" } },
-            include: { codeNumber: true },
-          },
-        },
-      },
     },
   });
-  return NextResponse.json(section);
+  const [courseItems, share] = await Promise.all([
+    loadCourseItemsForSection({
+      sectionId,
+      courseOfferingId: section.courseOfferingId,
+      userId: s.user.id,
+      role: s.user.role,
+    }),
+    shareStateForSection({
+      sectionId,
+      userId: s.user.id,
+      role: s.user.role,
+    }),
+  ]);
+  const path = await describeSectionPath(sectionId);
+  if (path) {
+    await logActivity(
+      s.user,
+      `${s.user.name || s.user.email} updated the syllabus for ${path}`,
+      `${s.user.name || s.user.email} 님이 ${path} 강의계획서를 수정했습니다`
+    );
+  }
+  return NextResponse.json({ ...section, courseItems, share });
 }

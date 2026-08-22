@@ -5,7 +5,10 @@ import Link from "next/link";
 import { useI18n } from "@/components/locale/locale-provider";
 import { formatTermForDisplay } from "@/lib/term-display";
 import { type CatalogRow, type CodeLink } from "./section-codes-shared";
-import { SectionItemRow } from "./section-item-row";
+import {
+  SectionItemRow,
+  type SectionItemRowHandle,
+} from "./section-item-row";
 
 type Item = {
   id: string;
@@ -85,6 +88,17 @@ type SectionPayload = {
     };
   };
   courseItems: Item[];
+  share?: {
+    courseOfferingId: string;
+    active: boolean;
+    isMember: boolean;
+    canRequest: boolean;
+    poolSectionLabel: string | null;
+    members: { id: string; label: string }[];
+    otherFaculty: { id: string; label: string }[];
+    pendingOutgoing: { id: string; targetLabel: string }[];
+    pendingIncoming: { id: string; requesterLabel: string }[];
+  } | null;
 };
 
 export function SectionEditor({
@@ -106,8 +120,16 @@ export function SectionEditor({
   const [addBusy, setAddBusy] = useState(false);
   const [syllabusUrl, setSyllabusUrl] = useState("");
   const [syllabusLabel, setSyllabusLabel] = useState("");
+  const [savedMsg, setSavedMsg] = useState(false);
+  const [shareBusy, setShareBusy] = useState(false);
+  const itemRefs = useRef(new Map<string, SectionItemRowHandle>());
   const sectionRef = useRef(section);
   sectionRef.current = section;
+
+  const flashSaved = useCallback(() => {
+    setSavedMsg(true);
+    window.setTimeout(() => setSavedMsg(false), 2500);
+  }, []);
 
   const load = useCallback(async () => {
     setErr(null);
@@ -198,9 +220,41 @@ export function SectionEditor({
   }
 
   const path = `${formatTermForDisplay(section.courseOffering.term)} · ${section.courseOffering.course.name} · ${section.label}`;
+  const share = section.share;
+
+  async function saveSyllabus() {
+    const r = await fetch(`/api/teach/section/${sectionId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        syllabusUrl: syllabusUrl.trim() === "" ? null : syllabusUrl.trim(),
+        syllabusLinkTitle:
+          syllabusLabel.trim() === "" ? null : syllabusLabel.trim(),
+      }),
+    });
+    if (r.ok) {
+      setSection(await r.json());
+      flashSaved();
+    }
+  }
+
+  async function saveGroup(ids: string[]) {
+    const results = await Promise.all(
+      ids.map((id) => itemRefs.current.get(id)?.save() ?? Promise.resolve(true))
+    );
+    if (results.every(Boolean)) flashSaved();
+  }
 
   return (
     <div className="space-y-8">
+      {savedMsg && (
+        <div
+          role="status"
+          className="rounded-lg border border-emerald-300/80 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-900"
+        >
+          {t("teach.savedToast")}
+        </div>
+      )}
       <div>
         {surrogate && (
           <p className="mb-2 text-sm text-amber-900/90">
@@ -218,6 +272,137 @@ export function SectionEditor({
           {surrogate ? t("admin.facultyBackToList") : t("teach.backList")}
         </Link>
       </div>
+
+      {share && (
+        <section className="glass p-4">
+          <h2 className="mb-2 font-medium text-app-fg/92">{t("share.title")}</h2>
+          <p className="mb-3 text-xs text-app-muted/85">{t("share.lead")}</p>
+          {share.active && (
+            <p className="mb-2 text-sm text-app-fg">
+              {t("share.activeWith")}{" "}
+              {share.members.map((m) => m.label).join(", ")}
+            </p>
+          )}
+          {share.pendingOutgoing.length > 0 && (
+            <p className="mb-2 text-sm text-app-muted/90">
+              {t("share.waitingOn")}{" "}
+              {share.pendingOutgoing.map((p) => p.targetLabel).join(", ")}
+            </p>
+          )}
+          {share.pendingIncoming.length > 0 && (
+            <div className="mb-3 space-y-2">
+              {share.pendingIncoming.map((p) => (
+                <div
+                  key={p.id}
+                  className="flex flex-wrap items-center gap-2 text-sm"
+                >
+                  <span>
+                    {t("share.incomingFrom").replace("__NAME__", p.requesterLabel)}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={shareBusy}
+                    className="btn-glass-primary px-2 py-1 text-xs disabled:opacity-50"
+                    onClick={async () => {
+                      setShareBusy(true);
+                      try {
+                        await fetch("/api/teach/share/respond", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ requestId: p.id, accept: true }),
+                        });
+                        await load();
+                      } finally {
+                        setShareBusy(false);
+                      }
+                    }}
+                  >
+                    {t("share.accept")}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={shareBusy}
+                    className="btn-glass px-2 py-1 text-xs disabled:opacity-50"
+                    onClick={async () => {
+                      setShareBusy(true);
+                      try {
+                        await fetch("/api/teach/share/respond", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ requestId: p.id, accept: false }),
+                        });
+                        await load();
+                      } finally {
+                        setShareBusy(false);
+                      }
+                    }}
+                  >
+                    {t("share.decline")}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            {share.canRequest && !share.active && (
+              <button
+                type="button"
+                disabled={shareBusy || share.otherFaculty.length === 0}
+                className="btn-glass-primary px-3 py-1.5 text-sm disabled:opacity-50"
+                onClick={async () => {
+                  if (!confirm(t("share.requestConfirm"))) return;
+                  setShareBusy(true);
+                  try {
+                    const r = await fetch("/api/teach/share/request", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ sectionId }),
+                    });
+                    if (!r.ok) {
+                      alert(t("share.requestFail"));
+                      return;
+                    }
+                    await load();
+                  } finally {
+                    setShareBusy(false);
+                  }
+                }}
+              >
+                {t("share.request")}
+              </button>
+            )}
+            {share.active && (
+              <button
+                type="button"
+                disabled={shareBusy}
+                className="btn-glass px-3 py-1.5 text-sm text-app-danger disabled:opacity-50"
+                onClick={async () => {
+                  if (!confirm(t("share.leaveConfirm"))) return;
+                  setShareBusy(true);
+                  try {
+                    const r = await fetch("/api/teach/share/leave", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        courseOfferingId: share.courseOfferingId,
+                      }),
+                    });
+                    if (!r.ok) {
+                      alert(t("share.leaveFail"));
+                      return;
+                    }
+                    await load();
+                  } finally {
+                    setShareBusy(false);
+                  }
+                }}
+              >
+                {t("share.leave")}
+              </button>
+            )}
+          </div>
+        </section>
+      )}
 
       <section className="glass p-4">
         <h2 className="mb-2 font-medium text-app-fg/92">
@@ -252,6 +437,13 @@ export function SectionEditor({
               {section.syllabusLinkTitle || t("explore.syllabusLinkDefault")}
             </a>
           )}
+          <button
+            type="button"
+            className="btn-glass-primary px-3 py-1.5 text-sm"
+            onClick={() => void saveSyllabus()}
+          >
+            {t("teach.save")}
+          </button>
         </div>
       </section>
 
@@ -353,23 +545,39 @@ export function SectionEditor({
         <div className="space-y-8">
           {itemsByType.map((group) => (
             <div key={group.typeId}>
-              <h3 className="mb-2 border-b border-app-border/70 pb-1.5 text-sm font-semibold tracking-wide text-app-primary">
-                {group.label}
-                <span className="ml-2 font-normal text-app-muted/90">
-                  ({group.items.length})
-                </span>
-              </h3>
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-app-border/70 pb-1.5">
+                <h3 className="text-sm font-semibold tracking-wide text-app-primary">
+                  {group.label}
+                  <span className="ml-2 font-normal text-app-muted/90">
+                    ({group.items.length})
+                  </span>
+                </h3>
+                <button
+                  type="button"
+                  className="btn-glass-primary px-3 py-1 text-xs"
+                  onClick={() =>
+                    void saveGroup(group.items.map((it) => it.id))
+                  }
+                >
+                  {t("teach.saveSection")}
+                </button>
+              </div>
               <ul className="space-y-3">
                 {group.items.map((it) => (
                   <li
                     key={`${it.id}-${it.codes.map((c) => c.codeNumberId).sort().join(",")}`}
                   >
                     <SectionItemRow
+                      ref={(el) => {
+                        if (el) itemRefs.current.set(it.id, el);
+                        else itemRefs.current.delete(it.id);
+                      }}
                       t={t}
                       it={it}
                       catalog={catalog}
                       courseCodeIds={courseCodeIds}
                       onReload={load}
+                      onSaved={flashSaved}
                     />
                   </li>
                 ))}

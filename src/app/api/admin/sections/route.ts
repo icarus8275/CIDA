@@ -100,6 +100,8 @@ export async function DELETE(req: Request) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id" }, { status: 400 });
+  const { reassignPoolIfDeleted } = await import("@/lib/section-share");
+  await reassignPoolIfDeleted(id);
   await prisma.section.delete({ where: { id } });
   revalidatePath("/teach");
   revalidatePath("/teach", "layout");

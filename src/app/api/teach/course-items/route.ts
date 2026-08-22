@@ -1,7 +1,10 @@
 import { auth } from "@/auth";
+import { logActivity } from "@/lib/activity-log";
 import { assertItemCodesWithinSection, CodeNumberAssignError } from "@/lib/code-number-assign";
 import { canEditSection } from "@/lib/guards";
+import { describeSectionPath } from "@/lib/item-labels";
 import { prisma } from "@/lib/prisma";
+import { resolveWriteSectionId } from "@/lib/section-share";
 import { z } from "zod";
 import { NextResponse } from "next/server";
 
@@ -39,11 +42,16 @@ export async function POST(req: Request) {
   if (!ok) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
+  const writeSectionId = await resolveWriteSectionId(
+    body.sectionId,
+    s.user.id,
+    s.user.role
+  );
   const url = normalizeShareUrl(body.oneDriveUrl);
   try {
     try {
       await assertItemCodesWithinSection(
-        body.sectionId,
+        writeSectionId,
         null,
         body.codeNumberIds ?? []
       );
@@ -58,7 +66,7 @@ export async function POST(req: Request) {
     }
     const item = await prisma.courseItem.create({
       data: {
-        sectionId: body.sectionId,
+        sectionId: writeSectionId,
         itemTypeId: body.itemTypeId,
         number: body.number,
         title: body.title,
@@ -76,6 +84,12 @@ export async function POST(req: Request) {
         codes: { include: { codeNumber: true } },
       },
     });
+    const path = await describeSectionPath(writeSectionId);
+    await logActivity(
+      s.user,
+      `${s.user.name || s.user.email} added ${item.itemType.label} ${item.number}${path ? ` in ${path}` : ""}`,
+      `${s.user.name || s.user.email} 님이 ${path ? `${path}에 ` : ""}${item.itemType.label} ${item.number}을(를) 추가했습니다`
+    );
     return NextResponse.json(item);
   } catch (e) {
     return NextResponse.json(

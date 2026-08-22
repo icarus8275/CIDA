@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useI18n } from "@/components/locale/locale-provider";
+import { InboxNavLink } from "@/components/inbox-nav-link";
 import { signOutToHome } from "@/lib/auth-actions";
 import { accountLabel } from "@/lib/user-display";
 import type { UserRole } from "@/generated/prisma/enums";
@@ -53,6 +54,7 @@ export function ExploreHeader({
           >
             {t("teach.explore")}
           </span>
+          <InboxNavLink />
         </nav>
         <div className="ml-auto flex items-center gap-2 text-sm">
           <Link href="/account/password" className="link-app-muted">

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/components/locale/locale-provider";
+import { InboxNavLink } from "@/components/inbox-nav-link";
 import { signOutToHome } from "@/lib/auth-actions";
 import { accountLabel } from "@/lib/user-display";
 
@@ -55,6 +56,7 @@ export function TeachHeader({
           <Link href="/explore" className="link-app-muted px-2 py-1">
             {t("teach.explore")}
           </Link>
+          <InboxNavLink />
         </nav>
         <div className="ml-auto flex items-center gap-2 text-sm">
           <Link href="/account/password" className="link-app-muted">

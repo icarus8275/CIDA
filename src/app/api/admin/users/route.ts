@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { logActivity } from "@/lib/activity-log";
 import { sendTempPasswordEmail } from "@/lib/mail";
 import { hashPassword } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
@@ -93,6 +94,12 @@ export async function POST(req: Request) {
     if (!mail.ok) emailError = mail.error;
   }
 
+  await logActivity(
+    s.user,
+    `${s.user.name || s.user.email} created account ${email} (${body.role})`,
+    `${s.user.name || s.user.email} 님이 계정 ${email} (${body.role})을(를) 만들었습니다`
+  );
+
   return NextResponse.json({ ...u, emailSent, emailError });
 }
 
@@ -130,6 +137,11 @@ export async function PATCH(req: Request) {
       emailSent = mail.ok;
       if (!mail.ok) emailError = mail.error;
     }
+    await logActivity(
+      s.user,
+      `${s.user.name || s.user.email} issued a new temporary password for ${user.email}`,
+      `${s.user.name || s.user.email} 님이 ${user.email}의 임시 비밀번호를 다시 만들었습니다`
+    );
     return NextResponse.json({
       ok: true,
       tempPassword,
@@ -151,6 +163,11 @@ export async function PATCH(req: Request) {
     where: { id: body.id },
     data,
   });
+  await logActivity(
+    s.user,
+    `${s.user.name || s.user.email} updated a user account`,
+    `${s.user.name || s.user.email} 님이 사용자 계정을 수정했습니다`
+  );
   return NextResponse.json({ ok: true });
 }
 
@@ -168,5 +185,10 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "cannot delete self" }, { status: 400 });
   }
   await prisma.user.delete({ where: { id } });
+  await logActivity(
+    s.user,
+    `${s.user.name || s.user.email} deleted a user account`,
+    `${s.user.name || s.user.email} 님이 사용자 계정을 삭제했습니다`
+  );
   return NextResponse.json({ ok: true });
 }

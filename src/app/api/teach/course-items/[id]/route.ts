@@ -1,5 +1,7 @@
 import { auth } from "@/auth";
+import { logActivity } from "@/lib/activity-log";
 import { canEditSection } from "@/lib/guards";
+import { describeCourseItem } from "@/lib/item-labels";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { NextResponse } from "next/server";
@@ -82,6 +84,14 @@ export async function PATCH(
     },
     include: { itemType: true, codes: { include: { codeNumber: true } } },
   });
+  const desc = await describeCourseItem(id);
+  if (desc) {
+    await logActivity(
+      s.user,
+      `${s.user.name || s.user.email} updated ${desc.itemLabel} in ${desc.path}`,
+      `${s.user.name || s.user.email} 님이 ${desc.path}의 ${desc.itemLabel}을(를) 수정했습니다`
+    );
+  }
   return NextResponse.json(updated);
 }
 
@@ -102,6 +112,14 @@ export async function DELETE(
   if (!ok) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
+  const desc = await describeCourseItem(id);
   await prisma.courseItem.delete({ where: { id } });
+  if (desc) {
+    await logActivity(
+      s.user,
+      `${s.user.name || s.user.email} deleted ${desc.itemLabel} in ${desc.path}`,
+      `${s.user.name || s.user.email} 님이 ${desc.path}의 ${desc.itemLabel}을(를) 삭제했습니다`
+    );
+  }
   return NextResponse.json({ ok: true });
 }

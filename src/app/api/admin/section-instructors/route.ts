@@ -63,6 +63,14 @@ export async function POST(req: Request) {
       data: { userId: body.userId, sectionId: body.sectionId },
     });
     revalidateTeach();
+    const { logActivity } = await import("@/lib/activity-log");
+    const { describeSectionPath } = await import("@/lib/item-labels");
+    const path = await describeSectionPath(body.sectionId);
+    await logActivity(
+      s.user,
+      `${s.user.name || s.user.email} assigned faculty to ${path ?? "a section"}`,
+      `${s.user.name || s.user.email} 님이 ${path ?? "섹션"}에 교수를 배정했습니다`
+    );
     return NextResponse.json(row);
   } catch {
     return NextResponse.json({ error: "exists" }, { status: 409 });

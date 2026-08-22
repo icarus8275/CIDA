@@ -44,5 +44,17 @@ export async function canEditSection(
   const row = await prisma.sectionInstructor.findUnique({
     where: { userId_sectionId: { userId, sectionId } },
   });
-  return !!row;
+  if (row) return true;
+  const section = await prisma.section.findUnique({
+    where: { id: sectionId },
+    select: { courseOfferingId: true },
+  });
+  if (!section) return false;
+  const member = await prisma.courseShareMember.findFirst({
+    where: {
+      userId,
+      shareGroup: { courseOfferingId: section.courseOfferingId },
+    },
+  });
+  return !!member;
 }

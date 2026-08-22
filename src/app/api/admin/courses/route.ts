@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { logActivity } from "@/lib/activity-log";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { NextResponse } from "next/server";
@@ -52,6 +53,11 @@ export async function POST(req: Request) {
       });
       created.push(c);
     }
+    await logActivity(
+      s.user,
+      `${s.user.name || s.user.email} added ${created.length} course(s)`,
+      `${s.user.name || s.user.email} 님이 과목 ${created.length}개를 추가했습니다`
+    );
     return NextResponse.json({ created });
   }
   const body = createSchema.parse(json);
@@ -62,6 +68,11 @@ export async function POST(req: Request) {
       sortOrder: body.sortOrder ?? (max._max.sortOrder ?? 0) + 1,
     },
   });
+  await logActivity(
+    s.user,
+    `${s.user.name || s.user.email} added course ${c.name}`,
+    `${s.user.name || s.user.email} 님이 과목 ${c.name}을(를) 추가했습니다`
+  );
   return NextResponse.json(c);
 }
 

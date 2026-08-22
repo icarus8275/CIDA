@@ -34,6 +34,11 @@ model User {
   authenticators Authenticator[]
 
   sectionInstructors SectionInstructor[]
+  activityLogs       ActivityLog[]
+  notifications      Notification[]
+  shareMemberships   CourseShareMember[]
+  shareRequestsSent  CourseShareRequest[] @relation("ShareRequester")
+  shareRequestsReceived CourseShareRequest[] @relation("ShareTarget")
 
   @@map("users")
 }
@@ -166,6 +171,8 @@ model CourseOffering {
   course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
   term     Term   @relation(fields: [termId], references: [id], onDelete: Cascade)
   sections Section[]
+  shareGroups   CourseShareGroup[]
+  shareRequests CourseShareRequest[]
 
   @@unique([courseId, termId])
   @@index([termId])
@@ -186,6 +193,7 @@ model Section {
   courseOffering CourseOffering      @relation(fields: [courseOfferingId], references: [id], onDelete: Cascade)
   courseItems    CourseItem[]
   instructors    SectionInstructor[]
+  poolForShares  CourseShareGroup[]
 
   @@index([courseOfferingId])
 }
@@ -263,4 +271,115 @@ model CourseItemCode {
 
   @@unique([courseItemId, codeNumberId])
   @@index([codeNumberId])
+}
+
+// -------- Backups, activity logs, notifications, section sharing ----------
+
+enum BackupTrigger {
+  SCHEDULED
+  MANUAL
+}
+
+/// JSON snapshot of academic data (terms, courses, faculty, items). Kept ~7 days.
+model DataBackup {
+  id        String        @id @default(cuid())
+  createdAt DateTime      @default(now())
+  trigger   BackupTrigger
+  itemCount Int           @default(0)
+  payload   Json
+
+  @@index([createdAt])
+}
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actorName  String
+  actorEmail String?
+  summaryEn  String
+  summaryKo  String
+  createdAt  DateTime @default(now())
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([actorId])
+}
+
+enum NotificationKind {
+  SHARE_REQUEST
+  SHARE_ACCEPTED
+  SHARE_DECLINED
+  SHARE_ENDED
+  SYSTEM
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  kind      NotificationKind
+  titleEn   String
+  titleKo   String
+  bodyEn    String
+  bodyKo    String
+  href      String?
+  payload   Json?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+enum ShareRequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+}
+
+model CourseShareGroup {
+  id               String   @id @default(cuid())
+  courseOfferingId String
+  poolSectionId    String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  courseOffering CourseOffering      @relation(fields: [courseOfferingId], references: [id], onDelete: Cascade)
+  poolSection    Section             @relation(fields: [poolSectionId], references: [id], onDelete: Restrict)
+  members        CourseShareMember[]
+  requests       CourseShareRequest[]
+
+  @@index([courseOfferingId])
+  @@index([poolSectionId])
+}
+
+model CourseShareMember {
+  shareGroupId String
+  userId       String
+  joinedAt     DateTime @default(now())
+  shareGroup   CourseShareGroup @relation(fields: [shareGroupId], references: [id], onDelete: Cascade)
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([shareGroupId, userId])
+  @@index([userId])
+}
+
+model CourseShareRequest {
+  id               String             @id @default(cuid())
+  courseOfferingId String
+  shareGroupId     String?
+  requesterUserId  String
+  targetUserId     String
+  status           ShareRequestStatus @default(PENDING)
+  createdAt        DateTime           @default(now())
+  respondedAt      DateTime?
+
+  courseOffering CourseOffering    @relation(fields: [courseOfferingId], references: [id], onDelete: Cascade)
+  shareGroup     CourseShareGroup? @relation(fields: [shareGroupId], references: [id], onDelete: SetNull)
+  requester      User              @relation("ShareRequester", fields: [requesterUserId], references: [id], onDelete: Cascade)
+  target         User              @relation("ShareTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+
+  @@index([courseOfferingId])
+  @@index([targetUserId, status])
+  @@index([requesterUserId])
 }

@@ -80,6 +80,16 @@ export async function POST(
         codes: { include: { codeNumber: true } },
       },
     });
+    const { logActivity } = await import("@/lib/activity-log");
+    const { describeCourseItem } = await import("@/lib/item-labels");
+    const desc = await describeCourseItem(item.id);
+    if (desc) {
+      await logActivity(
+        s.user,
+        `${s.user.name || s.user.email} duplicated ${desc.itemLabel} in ${desc.path}`,
+        `${s.user.name || s.user.email} 님이 ${desc.path}의 ${desc.itemLabel}을(를) 복사했습니다`
+      );
+    }
     return NextResponse.json(item);
   } catch (e) {
     return NextResponse.json(

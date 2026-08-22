@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/components/locale/locale-provider";
+import { InboxNavLink } from "@/components/inbox-nav-link";
 import { signOutToHome } from "@/lib/auth-actions";
 import { accountLabel } from "@/lib/user-display";
 
@@ -66,6 +67,9 @@ export function AdminHeader({
           <NavLink href="/admin/code-numbers">{t("admin.codeNumbers")}</NavLink>
           <NavLink href="/admin/item-types">{t("admin.itemTypes")}</NavLink>
           <NavLink href="/admin/email-test">{t("admin.emailTestNav")}</NavLink>
+          <NavLink href="/admin/backups">{t("admin.backupsNav")}</NavLink>
+          <NavLink href="/admin/logs">{t("admin.logsNav")}</NavLink>
+          <InboxNavLink />
         </nav>
         <div className="ml-auto flex flex-wrap items-center gap-2 text-sm">
           <Link href="/teach" className="link-app-muted">

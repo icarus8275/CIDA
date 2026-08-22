@@ -1,6 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { OnSiteBadge } from "@/components/on-site-badge";
 import { CodePicker, buildOptions, type CatalogRow, type CodeLink } from "./section-codes-shared";
 
 const DEBOUNCE_MS = 500;
@@ -20,19 +28,24 @@ export type SectionItem = {
   codes: CodeLink[];
 };
 
-export function SectionItemRow({
-  t,
-  it,
-  catalog,
-  courseCodeIds,
-  onReload,
-}: {
-  t: (k: string) => string;
-  it: SectionItem;
-  catalog: CatalogRow[];
-  courseCodeIds: string[];
-  onReload: () => Promise<void>;
-}) {
+export type SectionItemRowHandle = {
+  save: () => Promise<boolean>;
+};
+
+export const SectionItemRow = forwardRef<
+  SectionItemRowHandle,
+  {
+    t: (k: string) => string;
+    it: SectionItem;
+    catalog: CatalogRow[];
+    courseCodeIds: string[];
+    onReload: () => Promise<void>;
+    onSaved?: () => void;
+  }
+>(function SectionItemRow(
+  { t, it, catalog, courseCodeIds, onReload, onSaved },
+  ref
+) {
   const itRef = useRef(it);
   itRef.current = it;
 
@@ -45,6 +58,8 @@ export function SectionItemRow({
   );
   const [codeFilter, setCodeFilter] = useState("");
   const [copyBusy, setCopyBusy] = useState(false);
+  const [saveBusy, setSaveBusy] = useState(false);
+  const skipAutosave = useRef(false);
 
   useEffect(() => {
     setTitle(it.title ?? "");
@@ -57,46 +72,74 @@ export function SectionItemRow({
   }, [it.id, it.oneDriveUrl, it.linkTitle, it.onSiteDisplay]);
 
   useEffect(() => {
-    if (onSiteDisplay === it.onSiteDisplay) return;
-    const timer = setTimeout(() => {
-      if (onSiteDisplay === itRef.current.onSiteDisplay) return;
-      void (async () => {
-        const r = await fetch(`/api/teach/course-items/${itRef.current.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ onSiteDisplay }),
-        });
-        if (r.ok) await onReload();
-      })();
-    }, DEBOUNCE_MS);
-    return () => clearTimeout(timer);
-  }, [onSiteDisplay, it.onSiteDisplay, it.id, onReload]);
-
-  // Only replace local code selection when this row is a *different* item. Syncing
-  // on every `it.codes` change overwrites with stale data while another save's
-  // debounced PUT (or a title/link reload) is still in flight — rapid multi-clicks
-  // on codes then "lose" picks. After our own code save + reload, local already matches.
-  useEffect(() => {
     setCodeIds(it.codes.map((c) => c.codeNumberId));
   }, [it.id]);
 
+  async function persist(opts?: { silent?: boolean }): Promise<boolean> {
+    const u = itRef.current;
+    const [metaR, codesR] = await Promise.all([
+      fetch(`/api/teach/course-items/${u.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: title.trim() === "" ? null : title,
+          oneDriveUrl: url.trim() === "" ? null : url.trim(),
+          linkTitle: linkLabel.trim() === "" ? null : linkLabel.trim(),
+          onSiteDisplay,
+        }),
+      }),
+      fetch(`/api/teach/course-items/${u.id}/codes`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ codeNumberIds: codeIds }),
+      }),
+    ]);
+    if (!metaR.ok || !codesR.ok) {
+      if (!opts?.silent) alert(t("teach.codeSaveFail"));
+      await onReload();
+      return false;
+    }
+    skipAutosave.current = true;
+    await onReload();
+    if (!opts?.silent) onSaved?.();
+    return true;
+  }
+
+  useImperativeHandle(ref, () => ({
+    save: () => persist(),
+  }));
+
   useEffect(() => {
+    if (skipAutosave.current) {
+      skipAutosave.current = false;
+      return;
+    }
+    if (onSiteDisplay === it.onSiteDisplay) return;
+    const timer = setTimeout(() => {
+      if (onSiteDisplay === itRef.current.onSiteDisplay) return;
+      void persist({ silent: true });
+    }, DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [onSiteDisplay, it.onSiteDisplay, it.id]);
+
+  useEffect(() => {
+    if (skipAutosave.current) {
+      skipAutosave.current = false;
+      return;
+    }
     if (title === (it.title ?? "")) return;
     const timer = setTimeout(() => {
       if (title === (itRef.current.title ?? "")) return;
-      void (async () => {
-        const r = await fetch(`/api/teach/course-items/${itRef.current.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ title: title.trim() === "" ? null : title }),
-        });
-        if (r.ok) await onReload();
-      })();
+      void persist({ silent: true });
     }, DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [title, it.title, it.id, onReload]);
+  }, [title, it.title, it.id]);
 
   useEffect(() => {
+    if (skipAutosave.current) {
+      skipAutosave.current = false;
+      return;
+    }
     if (
       url === (it.oneDriveUrl ?? "") &&
       linkLabel === (it.linkTitle ?? "")
@@ -110,23 +153,16 @@ export function SectionItemRow({
       ) {
         return;
       }
-      void (async () => {
-        const u = itRef.current;
-        const r = await fetch(`/api/teach/course-items/${u.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            oneDriveUrl: url.trim() === "" ? null : url.trim(),
-            linkTitle: linkLabel.trim() === "" ? null : linkLabel.trim(),
-          }),
-        });
-        if (r.ok) await onReload();
-      })();
+      void persist({ silent: true });
     }, DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [url, linkLabel, it.oneDriveUrl, it.linkTitle, it.id, onReload]);
+  }, [url, linkLabel, it.oneDriveUrl, it.linkTitle, it.id]);
 
   useEffect(() => {
+    if (skipAutosave.current) {
+      skipAutosave.current = false;
+      return;
+    }
     const server = sortIdsKey(itRef.current.codes.map((c) => c.codeNumberId));
     const local = sortIdsKey(codeIds);
     if (server === local) return;
@@ -136,23 +172,10 @@ export function SectionItemRow({
       );
       const l2 = sortIdsKey(codeIds);
       if (s2 === l2) return;
-      void (async () => {
-        const u = itRef.current;
-        const r = await fetch(`/api/teach/course-items/${u.id}/codes`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ codeNumberIds: codeIds }),
-        });
-        if (r.ok) {
-          await onReload();
-        } else {
-          alert(t("teach.codeSaveFail"));
-          await onReload();
-        }
-      })();
+      void persist({ silent: true });
     }, DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [codeIds, onReload, t, it.id]);
+  }, [codeIds, it.id]);
 
   const options = useMemo(
     () => buildOptions(catalog, it.codes, courseCodeIds),
@@ -211,11 +234,7 @@ export function SectionItemRow({
           />
         </div>
         <div className="space-y-1">
-          {onSiteDisplay && (
-            <p className="text-sm font-medium text-app-fg/92">
-              {t("teach.onSiteDisplay")}
-            </p>
-          )}
+          {onSiteDisplay && <OnSiteBadge label={t("teach.onSiteDisplay")} size="sm" />}
           {it.oneDriveUrl && (
             <a
               href={it.oneDriveUrl}
@@ -249,7 +268,22 @@ export function SectionItemRow({
           disabled={courseCodeIds.length === 0}
         />
       </div>
-      <div className="mt-1 flex flex-wrap items-center gap-3">
+      <div className="mt-2 flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          disabled={saveBusy}
+          className="btn-glass-primary px-3 py-1 text-xs disabled:opacity-50"
+          onClick={async () => {
+            setSaveBusy(true);
+            try {
+              await persist();
+            } finally {
+              setSaveBusy(false);
+            }
+          }}
+        >
+          {saveBusy ? t("teach.loading") : t("teach.save")}
+        </button>
         <button
           type="button"
           disabled={copyBusy}
@@ -288,4 +322,4 @@ export function SectionItemRow({
       </div>
     </li>
   );
-}
+});

@@ -107,6 +107,8 @@ SMTP_FROM=professor@jakeson.net
 
 IMAP(`imap.hostinger.com:993`)은 이 앱에서 쓰지 않습니다. **발신만 SMTP**를 사용합니다.
 
+학사 데이터 백업은 서버가 켜져 있으면 **3시간마다** 자동 저장되고 약 일주일분 스냅샷을 유지합니다. Admin → Backups에서 수동 저장·복원할 수 있습니다. 공유 요청 알림도 SMTP로 발송됩니다.
+
 **금지:** `AUTH_URL`에 `http://0.0.0.0:3000` 같은 바인드 주소를 넣지 마세요.
 
 `AUTH_SECRET` 생성 (PowerShell):

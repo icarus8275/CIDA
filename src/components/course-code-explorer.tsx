@@ -20,6 +20,7 @@ import type { ExploreCourse } from "@/lib/explore-data";
 import { buildCodeIndex, type CodeRef } from "@/lib/build-code-index";
 import { listUserLabel } from "@/lib/user-display";
 import { useI18n } from "@/components/locale/locale-provider";
+import { OnSiteBadge } from "@/components/on-site-badge";
 import { CodesReadonlyGrouped } from "@/app/teach/section/[sectionId]/section-codes-shared";
 
 type Selection =
@@ -400,9 +401,7 @@ export function CourseCodeExplorer({
             ) : (
               <div className="space-y-1">
                 {item.onSiteDisplay && (
-                  <p className="text-sm font-medium text-app-fg/92">
-                    {t("teach.onSiteDisplay")}
-                  </p>
+                  <OnSiteBadge label={t("teach.onSiteDisplay")} />
                 )}
                 {item.oneDriveUrl && (
                   <a
@@ -683,8 +682,16 @@ export function CourseCodeExplorer({
                                                   className="rounded-lg border border-app-border/70 bg-app-card/55 p-2 text-left outline-none ring-app-link/30 transition hover:border-app-border/90 hover:bg-app-card/75 focus-visible:ring-2"
                                                 >
                                                   <div className="flex min-w-0 flex-col gap-1.5">
-                                                    <span className="font-medium text-app-fg">
-                                                      {labelOf(it)}
+                                                    <span className="flex flex-wrap items-center gap-2">
+                                                      <span className="font-medium text-app-fg">
+                                                        {labelOf(it)}
+                                                      </span>
+                                                      {it.onSiteDisplay && (
+                                                        <OnSiteBadge
+                                                          label={t("teach.onSiteDisplay")}
+                                                          size="sm"
+                                                        />
+                                                      )}
                                                     </span>
                                                     {it.codes.length > 0 && (
                                                       <div

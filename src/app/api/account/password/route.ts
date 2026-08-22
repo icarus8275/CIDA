@@ -48,5 +48,12 @@ export async function PATCH(req: Request) {
     },
   });
 
+  const { logActivity } = await import("@/lib/activity-log");
+  await logActivity(
+    s.user,
+    `${s.user.name || s.user.email} changed their password`,
+    `${s.user.name || s.user.email} 님이 비밀번호를 변경했습니다`
+  );
+
   return NextResponse.json({ ok: true });
 }

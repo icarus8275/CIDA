@@ -1,6 +1,8 @@
 import { auth } from "@/auth";
+import { logActivity } from "@/lib/activity-log";
 import { assertItemCodesWithinSection, CodeNumberAssignError } from "@/lib/code-number-assign";
 import { canEditSection } from "@/lib/guards";
+import { describeCourseItem } from "@/lib/item-labels";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { NextResponse } from "next/server";
@@ -54,5 +56,13 @@ export async function PUT(
     where: { id },
     include: { codes: { include: { codeNumber: true } } },
   });
+  const desc = await describeCourseItem(id);
+  if (desc) {
+    await logActivity(
+      s.user,
+      `${s.user.name || s.user.email} updated CIDA codes on ${desc.itemLabel} in ${desc.path}`,
+      `${s.user.name || s.user.email} 님이 ${desc.path}의 ${desc.itemLabel} CIDA 코드를 수정했습니다`
+    );
+  }
   return NextResponse.json(row);
 }

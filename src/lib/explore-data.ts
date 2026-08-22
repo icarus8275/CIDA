@@ -33,6 +33,7 @@ export type ExploreCourse = {
   syllabusUrl: string | null;
   syllabusLinkTitle: string | null;
   items: ExploreItem[];
+  shared: boolean;
 };
 
 export type ExploreDataPayload = {
@@ -47,7 +48,7 @@ export type ExploreDataPayload = {
  */
 export const getExploreData = cache(
   async (): Promise<ExploreDataPayload> => {
-    const [sections, allCodeRows] = await Promise.all([
+    const [sections, allCodeRows, shareGroups] = await Promise.all([
       prisma.section.findMany({
       orderBy: { sortOrder: "asc" },
       include: {
@@ -76,6 +77,9 @@ export const getExploreData = cache(
         where: { isActive: true },
         select: { value: true, label: true },
       }),
+      prisma.courseShareGroup.findMany({
+        include: { members: { select: { userId: true } } },
+      }),
     ]);
 
     const codeLabels: Record<string, string | null> = {};
@@ -83,12 +87,51 @@ export const getExploreData = cache(
       codeLabels[cn.value.trim().toUpperCase()] = cn.label;
     }
 
+    const sectionById = new Map(sections.map((sec) => [sec.id, sec]));
+    const shareByOffering = new Map<
+      string,
+      { poolSectionId: string; memberIds: Set<string> }
+    >();
+    for (const g of shareGroups) {
+      if (g.members.length < 2) continue;
+      shareByOffering.set(g.courseOfferingId, {
+        poolSectionId: g.poolSectionId,
+        memberIds: new Set(g.members.map((m) => m.userId)),
+      });
+    }
+
+    const mapItems = (courseItems: (typeof sections)[number]["courseItems"]) =>
+      courseItems.map((it) => ({
+        id: it.id,
+        itemTypeId: it.itemTypeId,
+        typeLabel: it.itemType.label,
+        typeKey: it.itemType.key,
+        number: it.number,
+        codes: it.codes.map((x) => ({
+          value: x.codeNumber.value,
+          label: x.codeNumber.label,
+        })),
+        oneDriveUrl: it.oneDriveUrl,
+        linkTitle: it.linkTitle,
+        onSiteDisplay: it.onSiteDisplay,
+        title: it.title,
+      }));
+
     const rows = sections.map((sec) => {
       const term = sec.courseOffering.term;
       const c = sec.courseOffering.course.name;
       const pathLabel = `${formatTermForDisplay(term)} · ${c} · Sec ${sec.label}`;
       const y = term.academicYear.startYear ?? 0;
       const termSort = y * 10_000 + term.sortOrder;
+      const share = shareByOffering.get(sec.courseOfferingId);
+      const sectionHasMember = !!share && (
+        sec.id === share.poolSectionId ||
+        sec.instructors.some((ins) => share.memberIds.has(ins.userId))
+      );
+      const itemSource =
+        sectionHasMember && share
+          ? sectionById.get(share.poolSectionId) ?? sec
+          : sec;
       return {
         id: sec.id,
         name: `${c} — ${sec.label}`,
@@ -102,21 +145,8 @@ export const getExploreData = cache(
         })),
         syllabusUrl: sec.syllabusUrl,
         syllabusLinkTitle: sec.syllabusLinkTitle,
-        items: sec.courseItems.map((it) => ({
-          id: it.id,
-          itemTypeId: it.itemTypeId,
-          typeLabel: it.itemType.label,
-          typeKey: it.itemType.key,
-          number: it.number,
-          codes: it.codes.map((x) => ({
-            value: x.codeNumber.value,
-            label: x.codeNumber.label,
-          })),
-          oneDriveUrl: it.oneDriveUrl,
-          linkTitle: it.linkTitle,
-          onSiteDisplay: it.onSiteDisplay,
-          title: it.title,
-        })),
+        items: mapItems(itemSource.courseItems),
+        shared: sectionHasMember,
       };
     });
     rows.sort((a, b) => {
