@@ -37,6 +37,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const user = await prisma.user.findUnique({
           where: { email },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            image: true,
+            passwordHash: true,
+            role: true,
+          },
         });
         if (!user?.passwordHash) return null;
 
@@ -48,6 +56,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: user.email,
           name: user.name,
           image: user.image,
+          role: user.role,
         };
       },
     }),
@@ -75,15 +84,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user, trigger, session: triggerSession }) {
       if (user) {
         token.sub = user.id;
+        token.id = user.id;
         if (user.email) token.email = user.email;
         if (user.name) token.name = user.name;
         if (user.image) token.picture = user.image;
-        const u = await prisma.user.findUnique({
-          where: { id: user.id },
-          select: { id: true, role: true },
-        });
-        token.id = u?.id ?? user.id;
-        token.role = (u?.role as UserRole) ?? "PROFESSOR";
+        token.role = user.role ?? "PROFESSOR";
       }
       if (
         trigger === "update" &&

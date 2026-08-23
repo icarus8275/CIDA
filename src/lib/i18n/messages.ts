@@ -145,6 +145,7 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "signin.devPassword": { en: "Password", ko: "비밀번호" },
   "signin.devButton": { en: "Dev sign in", ko: "개발용 로그인" },
   "signin.devFail": { en: "Sign in failed. Check email and password.", ko: "로그인에 실패했습니다. 이메일과 비밀번호를 확인하세요." },
+  "signin.busy": { en: "Signing in…", ko: "로그인 중…" },
   "signin.forgotPassword": { en: "Forgot password?", ko: "비밀번호를 잊으셨나요?" },
   "forgot.title": { en: "Reset password", ko: "비밀번호 재설정" },
   "forgot.lead": {
