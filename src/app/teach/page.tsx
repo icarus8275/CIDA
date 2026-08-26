@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { formatTermForDisplay, termChronology } from "@/lib/term-display";
 import { t } from "@/lib/i18n/messages";
 import { getServerLocale } from "@/lib/i18n/server";
-import { itemStructureFingerprint } from "@/lib/copy-matching-items";
 import {
   loadCourseItemsForSection,
   resolveWriteSectionId,
@@ -57,14 +56,13 @@ export default async function TeachHomePage() {
         const term = sec.courseOffering.term;
         return {
           id: sec.id,
-          courseId: sec.courseOffering.course.id,
           courseName: sec.courseOffering.course.name,
           sectionLabel: sec.label,
           termId: term.id,
           termLabel: formatTermForDisplay(term),
           termRank: termChronology(term),
-          fingerprint: itemStructureFingerprint(items),
           writeSectionId,
+          hasContent: items.length > 0 || Boolean(sec.syllabusUrl),
         };
       })
     )

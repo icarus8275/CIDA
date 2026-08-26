@@ -1,13 +1,13 @@
 import { auth } from "@/auth";
 import {
-  CopyMatchingItemsError,
-  copyMatchingAssessments,
-} from "@/lib/copy-matching-items";
+  CopyCourseContentsError,
+  copyCourseContents,
+} from "@/lib/copy-course-contents";
 import { z } from "zod";
 import { NextResponse } from "next/server";
 
 const bodySchema = z.object({
-  sourceSectionId: z.string().min(1),
+  targetSectionId: z.string().min(1),
 });
 
 export async function POST(
@@ -26,19 +26,19 @@ export async function POST(
   const body = bodySchema.parse(await req.json());
 
   try {
-    const result = await copyMatchingAssessments({
+    const result = await copyCourseContents({
       actor: {
         id: s.user.id,
         role: s.user.role,
         name: s.user.name,
         email: s.user.email,
       },
-      sourceSectionId: body.sourceSectionId,
-      targetSectionId: sectionId,
+      sourceSectionId: sectionId,
+      targetSectionId: body.targetSectionId,
     });
     return NextResponse.json({ ok: true, ...result });
   } catch (e) {
-    if (e instanceof CopyMatchingItemsError) {
+    if (e instanceof CopyCourseContentsError) {
       const status =
         e.code === "forbidden"
           ? 403

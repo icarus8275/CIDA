@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/components/locale/locale-provider";
 import { formatTermForDisplay } from "@/lib/term-display";
+import { CopyToModal, type CopyCourseOption } from "@/app/teach/copy-to-modal";
 import { type CatalogRow, type CodeLink } from "./section-codes-shared";
 import {
   SectionItemRow,
@@ -122,6 +123,9 @@ export function SectionEditor({
   const [syllabusLabel, setSyllabusLabel] = useState("");
   const [savedMsg, setSavedMsg] = useState(false);
   const [shareBusy, setShareBusy] = useState(false);
+  const [copyOpen, setCopyOpen] = useState(false);
+  const [copyTargets, setCopyTargets] = useState<CopyCourseOption[]>([]);
+  const [clearBusy, setClearBusy] = useState(false);
   const itemRefs = useRef(new Map<string, SectionItemRowHandle>());
   const sectionRef = useRef(section);
   sectionRef.current = section;
@@ -245,6 +249,56 @@ export function SectionEditor({
     if (results.every(Boolean)) flashSaved();
   }
 
+  async function openCopyTo() {
+    const r = await fetch("/api/teach/my-sections", { cache: "no-store" });
+    if (!r.ok) return;
+    const rows = (await r.json()) as {
+      id: string;
+      label: string;
+      courseOffering: {
+        course: { name: string };
+        term: {
+          academicYear: { label: string; startYear: number };
+          termSeason: { key: string; label: string };
+        };
+      };
+    }[];
+    setCopyTargets(
+      rows
+        .filter((row) => row.id !== sectionId)
+        .map((row) => ({
+          id: row.id,
+          label: `${formatTermForDisplay(row.courseOffering.term)} · ${row.courseOffering.course.name} · ${row.label}`,
+        }))
+    );
+    setCopyOpen(true);
+  }
+
+  async function clearItems(itemTypeId?: string, typeLabel?: string) {
+    const ok = window.confirm(
+      itemTypeId
+        ? t("teach.deleteAllTypeConfirm").replace("__TYPE__", typeLabel || "")
+        : t("teach.deleteAllConfirm")
+    );
+    if (!ok) return;
+    setClearBusy(true);
+    try {
+      const r = await fetch(`/api/teach/section/${sectionId}/clear-items`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(itemTypeId ? { itemTypeId } : {}),
+      });
+      if (!r.ok) {
+        setAddErr(t("teach.deleteAllFail"));
+        return;
+      }
+      await load();
+      flashSaved();
+    } finally {
+      setClearBusy(false);
+    }
+  }
+
   return (
     <div className="space-y-8">
       {savedMsg && (
@@ -271,6 +325,25 @@ export function SectionEditor({
         >
           {surrogate ? t("admin.facultyBackToList") : t("teach.backList")}
         </Link>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button
+            type="button"
+            className="btn-glass px-3 py-1.5 text-sm"
+            onClick={() => void openCopyTo()}
+          >
+            {t("teach.copyTo")}
+          </button>
+          {section.courseItems.length > 0 && (
+            <button
+              type="button"
+              className="btn-glass px-3 py-1.5 text-sm text-app-danger disabled:opacity-50"
+              disabled={clearBusy}
+              onClick={() => void clearItems()}
+            >
+              {t("teach.deleteAllItems")}
+            </button>
+          )}
+        </div>
       </div>
 
       {share && (
@@ -552,15 +625,25 @@ export function SectionEditor({
                     ({group.items.length})
                   </span>
                 </h3>
-                <button
-                  type="button"
-                  className="btn-glass-primary px-3 py-1 text-xs"
-                  onClick={() =>
-                    void saveGroup(group.items.map((it) => it.id))
-                  }
-                >
-                  {t("teach.saveSection")}
-                </button>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    className="btn-glass px-3 py-1 text-xs text-app-danger disabled:opacity-50"
+                    disabled={clearBusy}
+                    onClick={() => void clearItems(group.typeId, group.label)}
+                  >
+                    {t("teach.deleteAllType")}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-glass-primary px-3 py-1 text-xs"
+                    onClick={() =>
+                      void saveGroup(group.items.map((it) => it.id))
+                    }
+                  >
+                    {t("teach.saveSection")}
+                  </button>
+                </div>
               </div>
               <ul className="space-y-3">
                 {group.items.map((it) => (
@@ -586,6 +669,15 @@ export function SectionEditor({
           ))}
         </div>
       </section>
+      {copyOpen && (
+        <CopyToModal
+          sourceId={sectionId}
+          sourceLabel={path}
+          targets={copyTargets}
+          onClose={() => setCopyOpen(false)}
+          onDone={() => flashSaved()}
+        />
+      )}
     </div>
   );
 }
