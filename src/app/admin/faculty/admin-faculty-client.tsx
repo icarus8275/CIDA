@@ -141,7 +141,7 @@ export function AdminFacultyClient() {
         sectionId={sectionId}
         surrogate={
           faculty
-            ? { facultyLabel, backHref: backToPickerHref }
+            ? { facultyLabel, backHref: backToPickerHref, facultyUserId: userId }
             : { facultyLabel: "—", backHref: backToPickerHref }
         }
       />

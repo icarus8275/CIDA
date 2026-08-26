@@ -28,22 +28,6 @@ export async function GET() {
   if (!s?.user) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
-  if (s.user.role === "ADMIN") {
-    const all = await prisma.section.findMany({
-      orderBy: { sortOrder: "asc" },
-      include: {
-        courseOffering: {
-          include: {
-            course: true,
-            term: {
-              include: { academicYear: true, termSeason: true },
-            },
-          },
-        },
-      },
-    });
-    return NextResponse.json(all.sort(byTermThenCourse));
-  }
   if (s.user.role === "CIDA") {
     return NextResponse.json([]);
   }

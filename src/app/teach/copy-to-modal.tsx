@@ -30,7 +30,7 @@ export function CopyToModal({
   useEffect(() => {
     setTargetId(targets[0]?.id ?? "");
     setErr(null);
-  }, [sourceId]);
+  }, [sourceId, targets]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

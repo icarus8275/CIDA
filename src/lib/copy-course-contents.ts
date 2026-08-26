@@ -7,6 +7,7 @@ import {
   loadCourseItemsForSection,
   resolveWriteSectionId,
 } from "@/lib/section-share";
+import { formatTermForDisplay, termChronology } from "@/lib/term-display";
 
 export type CopyCourseContentsErrorCode =
   | "not_found"
@@ -36,6 +37,99 @@ async function allowedCodeIdsForSection(sectionId: string): Promise<Set<string>>
     select: { codeNumberId: true },
   });
   return new Set(rows.map((r) => r.codeNumberId));
+}
+
+const copyTargetInclude = {
+  courseOffering: {
+    include: {
+      course: true,
+      term: {
+        include: { academicYear: true, termSeason: true },
+      },
+    },
+  },
+} as const;
+
+export type CopyTargetSection = {
+  id: string;
+  label: string;
+};
+
+/** Assigned sections, plus other faculty sections on offerings this user actively shares. */
+export async function listCopyTargetSections(opts: {
+  userId: string;
+  fromSectionId: string;
+}): Promise<CopyTargetSection[]> {
+  const assigned = await prisma.section.findMany({
+    where: { instructors: { some: { userId: opts.userId } } },
+    include: copyTargetInclude,
+  });
+
+  const memberships = await prisma.courseShareMember.findMany({
+    where: { userId: opts.userId },
+    select: {
+      shareGroup: {
+        select: {
+          courseOfferingId: true,
+          members: { select: { userId: true } },
+        },
+      },
+    },
+  });
+
+  const active = memberships.filter((m) => m.shareGroup.members.length >= 2);
+  const offeringIds = [...new Set(active.map((m) => m.shareGroup.courseOfferingId))];
+  const memberIds = [...new Set(active.flatMap((m) => m.shareGroup.members.map((x) => x.userId)))];
+
+  const sharedSections =
+    offeringIds.length && memberIds.length
+      ? await prisma.section.findMany({
+          where: {
+            courseOfferingId: { in: offeringIds },
+            instructors: { some: { userId: { in: memberIds } } },
+          },
+          include: copyTargetInclude,
+        })
+      : [];
+
+  const byId = new Map(assigned.map((s) => [s.id, s]));
+  for (const s of sharedSections) byId.set(s.id, s);
+  byId.delete(opts.fromSectionId);
+
+  const sourceWrite = await resolveWriteSectionId(
+    opts.fromSectionId,
+    opts.userId,
+    "PROFESSOR"
+  );
+
+  const rows: {
+    id: string;
+    label: string;
+    rank: number;
+    name: string;
+    section: string;
+  }[] = [];
+  for (const sec of byId.values()) {
+    const writeId = await resolveWriteSectionId(sec.id, opts.userId, "PROFESSOR");
+    if (writeId === sourceWrite) continue;
+    const term = sec.courseOffering.term;
+    rows.push({
+      id: sec.id,
+      label: `${formatTermForDisplay(term)} · ${sec.courseOffering.course.name} · ${sec.label}`,
+      rank: termChronology(term),
+      name: sec.courseOffering.course.name,
+      section: sec.label,
+    });
+  }
+
+  rows.sort((a, b) => {
+    if (b.rank !== a.rank) return b.rank - a.rank;
+    const byName = a.name.localeCompare(b.name);
+    if (byName) return byName;
+    return a.section.localeCompare(b.section, undefined, { numeric: true });
+  });
+
+  return rows.map(({ id, label }) => ({ id, label }));
 }
 
 /** Replace the target section's items (type, title, codes) with a copy of the source. Does not copy file or syllabus links, and does not change faculty assignments. */

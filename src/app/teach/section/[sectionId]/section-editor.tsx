@@ -108,7 +108,7 @@ export function SectionEditor({
 }: {
   sectionId: string;
   /** Admin: 편집 대상 교수와 관리자 화면으로의 복귀 링크 */
-  surrogate?: { facultyLabel: string; backHref: string } | null;
+  surrogate?: { facultyLabel: string; backHref: string; facultyUserId?: string } | null;
 }) {
   const { t } = useI18n();
   const [section, setSection] = useState<SectionPayload | null>(null);
@@ -250,27 +250,14 @@ export function SectionEditor({
   }
 
   async function openCopyTo() {
-    const r = await fetch("/api/teach/my-sections", { cache: "no-store" });
+    const params = new URLSearchParams({ fromSectionId: sectionId });
+    if (surrogate?.facultyUserId) {
+      params.set("forUserId", surrogate.facultyUserId);
+    }
+    const r = await fetch(`/api/teach/copy-targets?${params}`, { cache: "no-store" });
     if (!r.ok) return;
-    const rows = (await r.json()) as {
-      id: string;
-      label: string;
-      courseOffering: {
-        course: { name: string };
-        term: {
-          academicYear: { label: string; startYear: number };
-          termSeason: { key: string; label: string };
-        };
-      };
-    }[];
-    setCopyTargets(
-      rows
-        .filter((row) => row.id !== sectionId)
-        .map((row) => ({
-          id: row.id,
-          label: `${formatTermForDisplay(row.courseOffering.term)} · ${row.courseOffering.course.name} · ${row.label}`,
-        }))
-    );
+    const rows = (await r.json()) as { id: string; label: string }[];
+    setCopyTargets(rows);
     setCopyOpen(true);
   }
 

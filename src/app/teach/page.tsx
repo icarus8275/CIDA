@@ -5,7 +5,6 @@ import { t } from "@/lib/i18n/messages";
 import { getServerLocale } from "@/lib/i18n/server";
 import {
   loadCourseItemsForSection,
-  resolveWriteSectionId,
 } from "@/lib/section-share";
 import { BookOpen } from "lucide-react";
 import {
@@ -44,15 +43,12 @@ export default async function TeachHomePage() {
   const courses: MyCourseCard[] = (
     await Promise.all(
       sections.map(async (sec) => {
-        const [items, writeSectionId] = await Promise.all([
-          loadCourseItemsForSection({
-            sectionId: sec.id,
-            courseOfferingId: sec.courseOfferingId,
-            userId: s.user.id,
-            role: s.user.role,
-          }),
-          resolveWriteSectionId(sec.id, s.user.id, s.user.role),
-        ]);
+        const items = await loadCourseItemsForSection({
+          sectionId: sec.id,
+          courseOfferingId: sec.courseOfferingId,
+          userId: s.user.id,
+          role: s.user.role,
+        });
         const term = sec.courseOffering.term;
         return {
           id: sec.id,
@@ -61,7 +57,6 @@ export default async function TeachHomePage() {
           termId: term.id,
           termLabel: formatTermForDisplay(term),
           termRank: termChronology(term),
-          writeSectionId,
           hasContent: items.length > 0,
         };
       })
