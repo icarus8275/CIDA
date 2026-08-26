@@ -38,7 +38,7 @@ async function allowedCodeIdsForSection(sectionId: string): Promise<Set<string>>
   return new Set(rows.map((r) => r.codeNumberId));
 }
 
-/** Replace the target section's items (and syllabus) with a copy of the source. Does not change faculty assignments. */
+/** Replace the target section's items (type, title, codes) with a copy of the source. Does not copy file or syllabus links, and does not change faculty assignments. */
 export async function copyCourseContents(opts: {
   actor: Actor;
   sourceSectionId: string;
@@ -62,8 +62,6 @@ export async function copyCourseContents(opts: {
       select: {
         id: true,
         courseOfferingId: true,
-        syllabusUrl: true,
-        syllabusLinkTitle: true,
       },
     }),
     prisma.section.findUnique({
@@ -106,8 +104,6 @@ export async function copyCourseContents(opts: {
           number: item.number,
           title: item.title,
           sortOrder: item.sortOrder,
-          oneDriveUrl: item.oneDriveUrl,
-          linkTitle: item.linkTitle,
           onSiteDisplay: item.onSiteDisplay,
           codes: codeNumberIds.length
             ? {
@@ -117,13 +113,6 @@ export async function copyCourseContents(opts: {
         },
       });
     }
-    await tx.section.update({
-      where: { id: opts.targetSectionId },
-      data: {
-        syllabusUrl: sourceSection.syllabusUrl,
-        syllabusLinkTitle: sourceSection.syllabusLinkTitle,
-      },
-    });
   });
 
   const who = actorLabel(opts.actor);

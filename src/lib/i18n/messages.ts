@@ -129,7 +129,7 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     en: "No file or on-site display registered for this item.",
     ko: "등록된 파일 또는 On Site Display가 없습니다.",
   },
-  "explore.itemDetailFile": { en: "File / OneDrive", ko: "자료(OneDrive)" },
+  "explore.itemDetailFile": { en: "Cloud Folder (Box) Link", ko: "Cloud Folder (Box) Link" },
   // signin
   "signin.title": { en: "Sign in", ko: "로그인" },
   "signin.hint": {
@@ -256,7 +256,7 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   "teach.itemsCodes": { en: "Items & codes", ko: "항목·코드" },
   "teach.closeLink": { en: "Close link panel", ko: "연결 패널 닫기" },
-  "teach.openLink": { en: "Link from OneDrive", ko: "OneDrive에서 연결" },
+  "teach.openLink": { en: "Cloud Folder (Box) Link", ko: "Cloud Folder (Box) Link" },
   "teach.saveCodes": { en: "Save codes", ko: "코드 저장" },
   "teach.saveLink": { en: "Save link", ko: "링크 저장" },
   "teach.saveCodeSelection": {
@@ -274,7 +274,7 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   "teach.save": { en: "Save", ko: "저장" },
   "teach.unlink": { en: "Unlink", ko: "연결 끊기" },
-  "teach.odRoot": { en: "OneDrive root", ko: "OneDrive 루트" },
+  "teach.odRoot": { en: "Cloud Folder (Box) Link", ko: "Cloud Folder (Box) Link" },
   "teach.newFolderName": { en: "New folder name", ko: "새 폴더 이름" },
   "teach.createFolder": { en: "Create folder", ko: "폴더 만들기" },
   "teach.linkToItem": { en: "Link to this item", ko: "이 항목에 연결" },
@@ -294,8 +294,8 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     ko: "이 수업 복사",
   },
   "teach.copyToLead": {
-    en: "This replaces the destination course's items and syllabus with a copy of this course. Faculty assignments are not changed. Codes that are not on the destination course are skipped.",
-    ko: "대상 수업의 항목과 실라버스를 이 수업 내용으로 바꿉니다. 교수 배정은 그대로입니다. 대상 과목 표준 코드에 없는 코드는 건너뜁니다.",
+    en: "This replaces the destination course's assignments, quizzes, exams, projects, and CIDA codes. File and syllabus links are not copied. Faculty assignments are not changed. Codes that are not on the destination course are skipped.",
+    ko: "대상 수업의 과제·퀴즈·시험·프로젝트와 CIDA 코드를 이 수업 내용으로 바꿉니다. 파일·실라버스 링크는 복사하지 않습니다. 교수 배정은 그대로입니다. 대상 과목 표준 코드에 없는 코드는 건너뜁니다.",
   },
   "teach.copyToSource": { en: "From", ko: "복사할 수업" },
   "teach.copyToTarget": { en: "Copy to", ko: "붙여넣을 수업" },
@@ -337,8 +337,8 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   "teach.loading": { en: "Loading…", ko: "로딩 중…" },
   "teach.odApiFail": {
-    en: "OneDrive API failed. Sign in with your school Microsoft (Entra) account.",
-    ko: "OneDrive API에 실패했습니다. 학교 Microsoft(Entra) 계정으로 로그인했는지 확인하세요.",
+    en: "Could not open the Cloud Folder (Box) Link. Check the pasted URL.",
+    ko: "Cloud Folder (Box) Link를 열 수 없습니다. 붙여넣은 URL을 확인하세요.",
   },
   // admin layout
   "admin.navTitle": { en: "Admin", ko: "관리" },
@@ -738,15 +738,15 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "admin.profPageLink": { en: "Open Schedule", ko: "학기/배정 열기" },
   "teach.itemTitleOpt": { en: "Title (optional)", ko: "제목(선택)" },
   "teach.customTitle": { en: "Custom title", ko: "사용자 지정 제목" },
-  "teach.odShareLink": { en: "OneDrive share link", ko: "OneDrive 공유 링크" },
+  "teach.odShareLink": { en: "Cloud Folder (Box) Link", ko: "Cloud Folder (Box) Link" },
   "teach.onSiteDisplay": { en: "On Site Display", ko: "On Site Display" },
   "teach.onSiteDisplayHint": {
-    en: "Check when work is also shown on site. You can still add a OneDrive link; Explore can show both.",
-    ko: "현장 전시인 경우 선택하세요. OneDrive 링크와 함께 둘 다 등록·표시할 수 있습니다.",
+    en: "Check when work is also shown on site. You can still add a Cloud Folder (Box) Link; Explore can show both.",
+    ko: "현장 전시인 경우 선택하세요. Cloud Folder (Box) Link와 함께 둘 다 등록·표시할 수 있습니다.",
   },
   "teach.syllabusShareLink": {
-    en: "Syllabus share link (OneDrive or web)",
-    ko: "강의계획서 공유 링크(OneDrive 등)",
+    en: "Syllabus Cloud Folder (Box) Link",
+    ko: "강의계획서 Cloud Folder (Box) Link",
   },
   "teach.syllabusLinkLabel": {
     en: "Syllabus link label (optional)",
@@ -754,7 +754,7 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   "teach.linkLabelOpt": { en: "Link label (optional)", ko: "링크 이름(선택)" },
   "teach.openFile": { en: "Open file", ko: "파일 열기" },
-  "explore.fileLinkDefault": { en: "OneDrive / file link", ko: "OneDrive·파일 링크" },
+  "explore.fileLinkDefault": { en: "Cloud Folder (Box) Link", ko: "Cloud Folder (Box) Link" },
   "locale.en": { en: "EN", ko: "EN" },
   "locale.ko": { en: "KO", ko: "한" },
   "locale.label": { en: "Language", ko: "언어" },

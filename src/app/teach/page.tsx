@@ -62,7 +62,7 @@ export default async function TeachHomePage() {
           termLabel: formatTermForDisplay(term),
           termRank: termChronology(term),
           writeSectionId,
-          hasContent: items.length > 0 || Boolean(sec.syllabusUrl),
+          hasContent: items.length > 0,
         };
       })
     )
