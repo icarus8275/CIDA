@@ -26,3 +26,23 @@ export function formatTermForDisplay(t: {
 
   return `${t.academicYear.label} · ${t.termSeason.label}`;
 }
+
+/** Higher = later in the calendar (Spring 2026 < Summer 2026 < Fall 2026). */
+export function termChronology(t: {
+  academicYear: { startYear?: number | null };
+  termSeason: { key: string };
+  sortOrder?: number;
+}): number {
+  const y = Number(t.academicYear.startYear);
+  if (Number.isNaN(y)) {
+    return t.sortOrder ?? 0;
+  }
+  const k = t.termSeason.key.toLowerCase();
+  let season = 0;
+  if (k === "spring" || k.startsWith("spring")) season = 1;
+  else if (k === "summer" || k.startsWith("summer")) season = 2;
+  else if (k === "fall" || k.startsWith("fall")) season = 3;
+  else if (typeof t.sortOrder === "number") season = t.sortOrder + 1;
+  const calendarYear = season === 3 ? y : y + 1;
+  return calendarYear * 10 + season;
+}

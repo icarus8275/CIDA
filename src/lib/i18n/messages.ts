@@ -66,8 +66,8 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   "teach.sectionsTitle": { en: "Your sections", ko: "담당 섹션" },
   "teach.sectionsLead": {
-    en: "Open a course to edit the syllabus, items, and codes.",
-    ko: "과목을 열어 실라버스·항목·코드를 편집하세요.",
+    en: "Courses are grouped by term, newest first. Open a course to edit the syllabus, items, and codes.",
+    ko: "수업은 학기별로 묶여 최근 학기부터 보입니다. 과목을 열어 실라버스·항목·코드를 편집하세요.",
   },
   "teach.noCoursesHint": {
     en: "When an admin assigns you to a section, it will appear here.",
@@ -287,6 +287,32 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "teach.copyItemFail": {
     en: "Could not duplicate this item. Try again.",
     ko: "항목을 복사하지 못했습니다. 다시 시도하세요.",
+  },
+  "teach.copyFrom": { en: "Copy from another course", ko: "다른 수업에서 복사" },
+  "teach.copyFromTitle": {
+    en: "Copy assignments, quizzes, and exams",
+    ko: "과제·퀴즈·시험 복사",
+  },
+  "teach.copyFromLead": {
+    en: "Only your assigned courses with the same assignment, quiz, and exam list can be used. Existing items are updated in place — nothing is added or removed, and faculty assignments stay the same.",
+    ko: "담당 수업 중 과제·퀴즈·시험 목록이 같은 수업만 선택할 수 있습니다. 기존 항목만 덮어쓰며 추가·삭제하지 않고, 교수 배정은 그대로입니다.",
+  },
+  "teach.copyFromTarget": { en: "Into", ko: "대상" },
+  "teach.copyFromSource": { en: "Copy from", ko: "복사할 수업" },
+  "teach.copyFromRun": { en: "Copy items", ko: "복사" },
+  "teach.copyFromCancel": { en: "Cancel", ko: "취소" },
+  "teach.copyFromClose": { en: "Close", ko: "닫기" },
+  "teach.copyFromDone": {
+    en: "Copied assignments, quizzes, and exams.",
+    ko: "과제·퀴즈·시험을 복사했습니다.",
+  },
+  "teach.copyFromFail": {
+    en: "Could not copy. Try again.",
+    ko: "복사하지 못했습니다. 다시 시도하세요.",
+  },
+  "teach.copyFromMismatch": {
+    en: "Those courses no longer have the same assignment, quiz, and exam list.",
+    ko: "두 수업의 과제·퀴즈·시험 목록이 더 이상 같지 않습니다.",
   },
   "teach.deleteConfirm": { en: "Delete this item?", ko: "이 항목을 삭제할까요?" },
   "teach.errForbidden": { en: "You do not have permission to edit this course.", ko: "이 과목을 편집할 권한이 없습니다." },
