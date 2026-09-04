@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import { OnSiteBadge } from "@/components/on-site-badge";
+import { LiveLinkHealthDot } from "@/components/link-health-dot";
 import { CodePicker, buildOptions, type CatalogRow, type CodeLink } from "./section-codes-shared";
 
 const DEBOUNCE_MS = 500;
@@ -217,14 +218,17 @@ export const SectionItemRow = forwardRef<
         <label className="text-xs text-app-muted/90" htmlFor={`item-od-${it.id}`}>
           {t("teach.odShareLink")}
         </label>
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <input
-            id={`item-od-${it.id}`}
-            className="input-glass min-w-0 flex-1 px-2 py-1 text-sm"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://..."
-          />
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <input
+              id={`item-od-${it.id}`}
+              className="input-glass min-w-0 flex-1 px-2 py-1 text-sm"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="https://..."
+            />
+            <LiveLinkHealthDot url={url} />
+          </div>
           <input
             className="input-glass w-full px-2 py-1 text-sm sm:w-40"
             value={linkLabel}

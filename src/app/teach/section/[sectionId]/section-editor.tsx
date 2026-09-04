@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useI18n } from "@/components/locale/locale-provider";
 import { formatTermForDisplay } from "@/lib/term-display";
 import { CopyToModal, type CopyCourseOption } from "@/app/teach/copy-to-modal";
+import { LiveLinkHealthDot } from "@/components/link-health-dot";
 import { type CatalogRow, type CodeLink } from "./section-codes-shared";
 import {
   SectionItemRow,
@@ -473,13 +474,16 @@ export function SectionEditor({
           <label className="block text-xs text-app-muted/90" htmlFor={`syllabus-url-${sectionId}`}>
             {t("teach.syllabusShareLink")}
           </label>
-          <input
-            id={`syllabus-url-${sectionId}`}
-            className="input-glass w-full px-2 py-1.5 text-sm"
-            value={syllabusUrl}
-            onChange={(e) => setSyllabusUrl(e.target.value)}
-            placeholder="https://..."
-          />
+          <div className="flex items-center gap-2">
+            <input
+              id={`syllabus-url-${sectionId}`}
+              className="input-glass min-w-0 flex-1 px-2 py-1.5 text-sm"
+              value={syllabusUrl}
+              onChange={(e) => setSyllabusUrl(e.target.value)}
+              placeholder="https://..."
+            />
+            <LiveLinkHealthDot url={syllabusUrl} />
+          </div>
           <input
             className="input-glass w-full px-2 py-1.5 text-sm sm:max-w-xs"
             value={syllabusLabel}

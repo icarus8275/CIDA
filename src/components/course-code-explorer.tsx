@@ -21,6 +21,11 @@ import { buildCodeIndex, type CodeRef } from "@/lib/build-code-index";
 import { listUserLabel } from "@/lib/user-display";
 import { useI18n } from "@/components/locale/locale-provider";
 import { OnSiteBadge } from "@/components/on-site-badge";
+import {
+  LinkHealthDot,
+  useLinkHealthMap,
+  type LinkHealthStatus,
+} from "@/components/link-health-dot";
 import { CodesReadonlyGrouped } from "@/app/teach/section/[sectionId]/section-codes-shared";
 
 type Selection =
@@ -34,12 +39,14 @@ const Section = ({
   icon,
   children,
   right,
+  badge,
   onTitleClick,
 }: {
   title: string;
   icon: React.ReactNode;
   children: React.ReactNode;
   right?: React.ReactNode;
+  badge?: React.ReactNode;
   onTitleClick?: () => void;
 }) => (
   <div className="glass p-4">
@@ -57,12 +64,39 @@ const Section = ({
         ) : (
           <span className="min-w-0 truncate">{title}</span>
         )}
+        {badge}
       </div>
       {right}
     </div>
     {children}
   </div>
 );
+
+function courseLinkUrls(course: ExploreCourse): string[] {
+  const urls: string[] = [];
+  if (course.syllabusUrl?.trim()) urls.push(course.syllabusUrl.trim());
+  for (const it of course.items) {
+    if (it.oneDriveUrl?.trim()) urls.push(it.oneDriveUrl.trim());
+  }
+  return urls;
+}
+
+function worstLinkStatus(
+  urls: string[],
+  map: Record<string, LinkHealthStatus>
+): LinkHealthStatus | null {
+  let sawUnknown = false;
+  let sawOk = false;
+  for (const raw of urls) {
+    const s = map[raw.trim()];
+    if (s === "dead") return "dead";
+    if (s === "unknown") sawUnknown = true;
+    if (s === "ok") sawOk = true;
+  }
+  if (sawUnknown) return "unknown";
+  if (sawOk) return "ok";
+  return null;
+}
 
 const Row = ({
   left,
@@ -142,6 +176,13 @@ export function CourseCodeExplorer({
   const [tab, setTab] = useState<Tab>("tree");
   const [selection, setSelection] = useState<Selection>(null);
   const { t } = useI18n();
+
+  const allLinkUrls = useMemo(() => {
+    const urls: string[] = [];
+    for (const c of initialData) urls.push(...courseLinkUrls(c));
+    return urls;
+  }, [initialData]);
+  const { map: linkHealth } = useLinkHealthMap(allLinkUrls);
 
   const codeIndex = useMemo(
     () => buildCodeIndex(initialData),
@@ -339,14 +380,17 @@ export function CourseCodeExplorer({
               {t("explore.courseDetailSyllabus")}
             </p>
             {course.syllabusUrl ? (
-              <a
-                href={course.syllabusUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex text-sm font-medium text-app-link hover:underline"
-              >
-                {course.syllabusLinkTitle || t("explore.syllabusLinkDefault")}
-              </a>
+              <span className="inline-flex items-center gap-2">
+                <a
+                  href={course.syllabusUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex text-sm font-medium text-app-link hover:underline"
+                >
+                  {course.syllabusLinkTitle || t("explore.syllabusLinkDefault")}
+                </a>
+                <LinkHealthDot status={linkHealth[course.syllabusUrl.trim()] ?? "checking"} />
+              </span>
             ) : (
               <p className="text-sm text-app-muted/85">
                 {t("explore.courseDetailNoSyllabus")}
@@ -404,14 +448,17 @@ export function CourseCodeExplorer({
                   <OnSiteBadge label={t("teach.onSiteDisplay")} />
                 )}
                 {item.oneDriveUrl && (
-                  <a
-                    href={item.oneDriveUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex text-sm font-medium text-app-link hover:underline"
-                  >
-                    {item.linkTitle || t("explore.fileLinkDefault")}
-                  </a>
+                  <span className="inline-flex items-center gap-2">
+                    <a
+                      href={item.oneDriveUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex text-sm font-medium text-app-link hover:underline"
+                    >
+                      {item.linkTitle || t("explore.fileLinkDefault")}
+                    </a>
+                    <LinkHealthDot status={linkHealth[item.oneDriveUrl.trim()] ?? "checking"} />
+                  </span>
                 )}
               </div>
             )}
@@ -611,11 +658,20 @@ export function CourseCodeExplorer({
                             const isCourseOpen = open[kCourse(course)] ?? true;
                             const groups = groupByType(course.items);
                             const groupKeys = Object.keys(groups).sort();
+                            const courseStatus = worstLinkStatus(
+                              courseLinkUrls(course),
+                              linkHealth
+                            );
                             return (
                               <Section
                                 key={course.id}
                                 title={course.pathLabel}
                                 icon={<BookOpen size={18} />}
+                                badge={
+                                  courseStatus === "dead" ? (
+                                    <LinkHealthDot status="dead" />
+                                  ) : null
+                                }
                                 onTitleClick={() => showCourseDetails(course)}
                                 right={
                                   <button
@@ -636,6 +692,25 @@ export function CourseCodeExplorer({
                               >
                                 {isCourseOpen && (
                                   <div className="divide-y divide-app-border/70">
+                                    {course.syllabusUrl && (
+                                      <div className="py-2">
+                                        <button
+                                          type="button"
+                                          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-app-card/55"
+                                          onClick={() => showCourseDetails(course)}
+                                        >
+                                          <span className="font-medium text-app-fg/92">
+                                            {t("explore.treeSyllabus")}
+                                          </span>
+                                          <LinkHealthDot
+                                            status={
+                                              linkHealth[course.syllabusUrl.trim()] ??
+                                              "checking"
+                                            }
+                                          />
+                                        </button>
+                                      </div>
+                                    )}
                                     {groupKeys.map((g) => {
                                       const isGroupOpen =
                                         open[kGroup(course, g)] ?? true;
@@ -686,6 +761,14 @@ export function CourseCodeExplorer({
                                                       <span className="font-medium text-app-fg">
                                                         {labelOf(it)}
                                                       </span>
+                                                      {it.oneDriveUrl ? (
+                                                        <LinkHealthDot
+                                                          status={
+                                                            linkHealth[it.oneDriveUrl.trim()] ??
+                                                            "checking"
+                                                          }
+                                                        />
+                                                      ) : null}
                                                       {it.onSiteDisplay && (
                                                         <OnSiteBadge
                                                           label={t("teach.onSiteDisplay")}

@@ -129,7 +129,7 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     en: "No file or on-site display registered for this item.",
     ko: "등록된 파일 또는 On Site Display가 없습니다.",
   },
-  "explore.itemDetailFile": { en: "Cloud Folder (Box) Link", ko: "Cloud Folder (Box) Link" },
+  "explore.itemDetailFile": { en: "File / OneDrive", ko: "자료(OneDrive)" },
   // signin
   "signin.title": { en: "Sign in", ko: "로그인" },
   "signin.hint": {
@@ -256,7 +256,7 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   "teach.itemsCodes": { en: "Items & codes", ko: "항목·코드" },
   "teach.closeLink": { en: "Close link panel", ko: "연결 패널 닫기" },
-  "teach.openLink": { en: "Cloud Folder (Box) Link", ko: "Cloud Folder (Box) Link" },
+  "teach.openLink": { en: "Link from OneDrive", ko: "OneDrive에서 연결" },
   "teach.saveCodes": { en: "Save codes", ko: "코드 저장" },
   "teach.saveLink": { en: "Save link", ko: "링크 저장" },
   "teach.saveCodeSelection": {
@@ -274,7 +274,7 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   "teach.save": { en: "Save", ko: "저장" },
   "teach.unlink": { en: "Unlink", ko: "연결 끊기" },
-  "teach.odRoot": { en: "Cloud Folder (Box) Link", ko: "Cloud Folder (Box) Link" },
+  "teach.odRoot": { en: "OneDrive root", ko: "OneDrive 루트" },
   "teach.newFolderName": { en: "New folder name", ko: "새 폴더 이름" },
   "teach.createFolder": { en: "Create folder", ko: "폴더 만들기" },
   "teach.linkToItem": { en: "Link to this item", ko: "이 항목에 연결" },
@@ -337,8 +337,8 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   "teach.loading": { en: "Loading…", ko: "로딩 중…" },
   "teach.odApiFail": {
-    en: "Could not open the Cloud Folder (Box) Link. Check the pasted URL.",
-    ko: "Cloud Folder (Box) Link를 열 수 없습니다. 붙여넣은 URL을 확인하세요.",
+    en: "OneDrive API failed. Sign in with your school Microsoft (Entra) account.",
+    ko: "OneDrive API에 실패했습니다. 학교 Microsoft(Entra) 계정으로 로그인했는지 확인하세요.",
   },
   // admin layout
   "admin.navTitle": { en: "Admin", ko: "관리" },
@@ -738,15 +738,15 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "admin.profPageLink": { en: "Open Schedule", ko: "학기/배정 열기" },
   "teach.itemTitleOpt": { en: "Title (optional)", ko: "제목(선택)" },
   "teach.customTitle": { en: "Custom title", ko: "사용자 지정 제목" },
-  "teach.odShareLink": { en: "Cloud Folder (Box) Link", ko: "Cloud Folder (Box) Link" },
+  "teach.odShareLink": { en: "OneDrive share link", ko: "OneDrive 공유 링크" },
   "teach.onSiteDisplay": { en: "On Site Display", ko: "On Site Display" },
   "teach.onSiteDisplayHint": {
-    en: "Check when work is also shown on site. You can still add a Cloud Folder (Box) Link; Explore can show both.",
-    ko: "현장 전시인 경우 선택하세요. Cloud Folder (Box) Link와 함께 둘 다 등록·표시할 수 있습니다.",
+    en: "Check when work is also shown on site. You can still add a OneDrive link; Explore can show both.",
+    ko: "현장 전시인 경우 선택하세요. OneDrive 링크와 함께 둘 다 등록·표시할 수 있습니다.",
   },
   "teach.syllabusShareLink": {
-    en: "Syllabus Cloud Folder (Box) Link",
-    ko: "강의계획서 Cloud Folder (Box) Link",
+    en: "Syllabus share link (OneDrive or web)",
+    ko: "강의계획서 공유 링크(OneDrive 등)",
   },
   "teach.syllabusLinkLabel": {
     en: "Syllabus link label (optional)",
@@ -754,7 +754,18 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   "teach.linkLabelOpt": { en: "Link label (optional)", ko: "링크 이름(선택)" },
   "teach.openFile": { en: "Open file", ko: "파일 열기" },
-  "explore.fileLinkDefault": { en: "Cloud Folder (Box) Link", ko: "Cloud Folder (Box) Link" },
+  "explore.fileLinkDefault": { en: "OneDrive / file link", ko: "OneDrive·파일 링크" },
+  "linkHealth.ok": { en: "This share link is working.", ko: "이 공유 링크는 사용할 수 있습니다." },
+  "linkHealth.unknown": {
+    en: "This link could not be confirmed.",
+    ko: "이 링크를 확인하지 못했습니다.",
+  },
+  "linkHealth.dead": {
+    en: "This link could not be opened.",
+    ko: "이 링크에 연결할 수 없습니다.",
+  },
+  "linkHealth.checking": { en: "Checking link…", ko: "링크 확인 중…" },
+  "explore.treeSyllabus": { en: "Syllabus", ko: "강의계획서" },
   "locale.en": { en: "EN", ko: "EN" },
   "locale.ko": { en: "KO", ko: "한" },
   "locale.label": { en: "Language", ko: "언어" },
