@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { formatTermForDisplay } from "@/lib/term-display";
+import { formatTermForDisplay, isGroupTerm, termChronology } from "@/lib/term-display";
 import { cache } from "react";
 
 export type ExploreCode = {
@@ -32,6 +32,8 @@ export type ExploreCourse = {
   instructors: { name: string | null; email: string | null }[];
   syllabusUrl: string | null;
   syllabusLinkTitle: string | null;
+  /** Extra-curricular / custom group: one labeled link, no assignments */
+  linkOnly: boolean;
   items: ExploreItem[];
   shared: boolean;
 };
@@ -120,9 +122,11 @@ export const getExploreData = cache(
     const rows = sections.map((sec) => {
       const term = sec.courseOffering.term;
       const c = sec.courseOffering.course.name;
-      const pathLabel = `${formatTermForDisplay(term)} · ${c} · Sec ${sec.label}`;
-      const y = term.academicYear.startYear ?? 0;
-      const termSort = y * 10_000 + term.sortOrder;
+      const linkOnly = isGroupTerm(term);
+      const pathLabel = linkOnly
+        ? `${formatTermForDisplay(term)} · ${c}`
+        : `${formatTermForDisplay(term)} · ${c} · Sec ${sec.label}`;
+      const termSort = termChronology(term);
       const share = shareByOffering.get(sec.courseOfferingId);
       const sectionHasMember = !!share && (
         sec.id === share.poolSectionId ||
@@ -145,7 +149,8 @@ export const getExploreData = cache(
         })),
         syllabusUrl: sec.syllabusUrl,
         syllabusLinkTitle: sec.syllabusLinkTitle,
-        items: mapItems(itemSource.courseItems),
+        linkOnly,
+        items: linkOnly ? [] : mapItems(itemSource.courseItems),
         shared: sectionHasMember,
       };
     });

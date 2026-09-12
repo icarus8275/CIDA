@@ -57,7 +57,7 @@ const Section = ({
           <button
             type="button"
             onClick={onTitleClick}
-            className="min-w-0 truncate text-left hover:text-app-link hover:underline"
+            className="min-w-0 !cursor-pointer truncate text-left transition-colors hover:text-app-link hover:underline"
           >
             {title}
           </button>
@@ -119,7 +119,7 @@ const Row = ({
         onClick?.();
       }
     }}
-    className="flex cursor-pointer select-none items-center justify-between gap-3 rounded-lg px-2 py-2 hover:bg-app-card/55"
+    className="group flex !cursor-pointer select-none items-center justify-between gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-app-card/55"
   >
     <div className="flex items-center gap-2">
       {isOpen ? (
@@ -377,7 +377,9 @@ export function CourseCodeExplorer({
           </div>
           <div>
             <p className="mb-1 text-xs font-medium text-app-muted/85">
-              {t("explore.courseDetailSyllabus")}
+              {course.linkOnly
+                ? course.syllabusLinkTitle || t("explore.linkNameDefault")
+                : t("explore.courseDetailSyllabus")}
             </p>
             {course.syllabusUrl ? (
               <span className="inline-flex items-center gap-2">
@@ -387,13 +389,18 @@ export function CourseCodeExplorer({
                   rel="noreferrer"
                   className="inline-flex text-sm font-medium text-app-link hover:underline"
                 >
-                  {course.syllabusLinkTitle || t("explore.syllabusLinkDefault")}
+                  {course.syllabusLinkTitle ||
+                    (course.linkOnly
+                      ? t("explore.linkNameDefault")
+                      : t("explore.syllabusLinkDefault"))}
                 </a>
                 <LinkHealthDot status={linkHealth[course.syllabusUrl.trim()] ?? "checking"} />
               </span>
             ) : (
               <p className="text-sm text-app-muted/85">
-                {t("explore.courseDetailNoSyllabus")}
+                {course.linkOnly
+                  ? t("explore.linkOnlyEmpty")
+                  : t("explore.courseDetailNoSyllabus")}
               </p>
             )}
           </div>
@@ -516,7 +523,7 @@ export function CourseCodeExplorer({
                   />
                   <button
                     type="button"
-                    className="w-full min-w-0 rounded-lg border border-app-border/70 bg-app-card/40 p-2.5 text-left text-app-fg transition hover:border-app-primary/35 hover:bg-app-card/65 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-link/30"
+                    className="group w-full min-w-0 !cursor-pointer rounded-lg border border-app-border/70 bg-app-card/40 p-2.5 text-left text-app-fg transition hover:border-app-primary/35 hover:bg-app-card/65 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-link/30"
                     onClick={() => {
                       if (crs && itm) {
                         showItemDetails(crs, itm);
@@ -532,7 +539,7 @@ export function CourseCodeExplorer({
                         {itemLabel}
                       </span>
                     </div>
-                    <div className="text-sm font-medium text-app-fg">
+                    <div className="text-sm font-medium text-app-fg transition-colors group-hover:text-app-link">
                       {r.course}
                     </div>
                     <div className="mt-0.5 text-xs text-app-muted/85">
@@ -637,20 +644,44 @@ export function CourseCodeExplorer({
                           />
                           <span className="truncate">{tg.termLabel}</span>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setOpen((o) => ({
-                              ...o,
-                              [kTerm(tg.termId)]: !isTermOpen,
-                            }))
-                          }
-                          className="shrink-0 text-sm text-app-muted/90 hover:text-app-link hover:underline"
-                        >
-                          {isTermOpen
-                            ? t("explore.collapse")
-                            : t("explore.expand")}
-                        </button>
+                        <div className="flex shrink-0 flex-wrap items-center justify-end gap-x-3 gap-y-1">
+                          {isTermOpen && tg.courses.length > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const anyOpen = tg.courses.some(
+                                  (c) => open[kCourse(c)] ?? true
+                                );
+                                setOpen((o) => {
+                                  const next = { ...o };
+                                  for (const c of tg.courses) {
+                                    next[kCourse(c)] = !anyOpen;
+                                  }
+                                  return next;
+                                });
+                              }}
+                              className="cursor-pointer text-sm text-app-muted/90 hover:text-app-link hover:underline"
+                            >
+                              {tg.courses.some((c) => open[kCourse(c)] ?? true)
+                                ? t("explore.collapseAllCourses")
+                                : t("explore.expandAllCourses")}
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setOpen((o) => ({
+                                ...o,
+                                [kTerm(tg.termId)]: !isTermOpen,
+                              }))
+                            }
+                            className="cursor-pointer text-sm text-app-muted/90 hover:text-app-link hover:underline"
+                          >
+                            {isTermOpen
+                              ? t("explore.collapse")
+                              : t("explore.expand")}
+                          </button>
+                        </div>
                       </div>
                       {isTermOpen && (
                         <div className="space-y-4 p-4 pt-2">
@@ -682,7 +713,7 @@ export function CourseCodeExplorer({
                                         [kCourse(course)]: !isCourseOpen,
                                       }))
                                     }
-                                    className="text-sm text-app-muted/90 hover:text-app-link hover:underline"
+                                    className="cursor-pointer text-sm text-app-muted/90 hover:text-app-link hover:underline"
                                   >
                                     {isCourseOpen
                                       ? t("explore.collapse")
@@ -692,22 +723,27 @@ export function CourseCodeExplorer({
                               >
                                 {isCourseOpen && (
                                   <div className="divide-y divide-app-border/70">
-                                    {course.syllabusUrl && (
+                                    {(course.syllabusUrl || course.linkOnly) && (
                                       <div className="py-2">
                                         <button
                                           type="button"
-                                          className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-app-card/55"
+                                          className="group flex w-full !cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition-colors hover:bg-app-card/55"
                                           onClick={() => showCourseDetails(course)}
                                         >
-                                          <span className="font-medium text-app-fg/92">
-                                            {t("explore.treeSyllabus")}
+                                          <span className="font-medium text-app-fg/92 transition-colors group-hover:text-app-link">
+                                            {course.linkOnly
+                                              ? course.syllabusLinkTitle ||
+                                                t("explore.linkNameDefault")
+                                              : t("explore.treeSyllabus")}
                                           </span>
-                                          <LinkHealthDot
-                                            status={
-                                              linkHealth[course.syllabusUrl.trim()] ??
-                                              "checking"
-                                            }
-                                          />
+                                          {course.syllabusUrl ? (
+                                            <LinkHealthDot
+                                              status={
+                                                linkHealth[course.syllabusUrl.trim()] ??
+                                                "checking"
+                                              }
+                                            />
+                                          ) : null}
                                         </button>
                                       </div>
                                     )}
@@ -726,7 +762,7 @@ export function CourseCodeExplorer({
                                               }))
                                             }
                                             left={
-                                              <span className="font-medium text-app-fg/92">
+                                              <span className="font-medium text-app-fg/92 transition-colors group-hover:text-app-link">
                                                 {g}
                                               </span>
                                             }
@@ -754,11 +790,11 @@ export function CourseCodeExplorer({
                                                       );
                                                     }
                                                   }}
-                                                  className="rounded-lg border border-app-border/70 bg-app-card/55 p-2 text-left outline-none ring-app-link/30 transition hover:border-app-border/90 hover:bg-app-card/75 focus-visible:ring-2"
+                                                  className="group !cursor-pointer rounded-lg border border-app-border/70 bg-app-card/55 p-2 text-left outline-none ring-app-link/30 transition hover:border-app-link/35 hover:bg-app-card/75 focus-visible:ring-2"
                                                 >
                                                   <div className="flex min-w-0 flex-col gap-1.5">
                                                     <span className="flex flex-wrap items-center gap-2">
-                                                      <span className="font-medium text-app-fg">
+                                                      <span className="font-medium text-app-fg transition-colors group-hover:text-app-link">
                                                         {labelOf(it)}
                                                       </span>
                                                       {it.oneDriveUrl ? (
@@ -853,7 +889,7 @@ export function CourseCodeExplorer({
                 selection && (
                   <button
                     type="button"
-                    className="text-sm text-app-muted/90 hover:text-app-link hover:underline"
+                    className="cursor-pointer text-sm text-app-muted/90 hover:text-app-link hover:underline"
                     onClick={() => {
                       setSelection(null);
                       setParams({

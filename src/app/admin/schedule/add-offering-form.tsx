@@ -20,8 +20,10 @@ export function AddOfferingForm() {
     setCourses(c);
     const termsFlat = (tList as {
       id: string;
+      kind?: "ACADEMIC" | "GROUP";
+      groupLabel?: string | null;
       academicYear: { label: string; startYear: number };
-      termSeason: { key: string; label: string };
+      termSeason: { key: string; label: string } | null;
     }[]).map((t) => ({
       id: t.id,
       label: formatTermForDisplay(t),

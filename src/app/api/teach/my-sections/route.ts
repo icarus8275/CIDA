@@ -10,7 +10,7 @@ function byTermThenCourse<
       course: { name: string };
       term: {
         academicYear: { startYear?: number | null };
-        termSeason: { key: string };
+        termSeason?: { key: string } | null;
         sortOrder?: number;
       };
     };

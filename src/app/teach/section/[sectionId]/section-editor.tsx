@@ -6,6 +6,8 @@ import { useI18n } from "@/components/locale/locale-provider";
 import { formatTermForDisplay } from "@/lib/term-display";
 import { CopyToModal, type CopyCourseOption } from "@/app/teach/copy-to-modal";
 import { LiveLinkHealthDot } from "@/components/link-health-dot";
+import { SavedToast } from "@/components/saved-toast";
+import { isGroupTerm } from "@/lib/term-display";
 import { type CatalogRow, type CodeLink } from "./section-codes-shared";
 import {
   SectionItemRow,
@@ -85,8 +87,10 @@ type SectionPayload = {
       courseCodes: CodeLink[];
     };
     term: {
+      kind?: "ACADEMIC" | "GROUP";
+      groupLabel?: string | null;
       academicYear: { label: string; startYear: number };
-      termSeason: { key: string; label: string };
+      termSeason: { key: string; label: string } | null;
     };
   };
   courseItems: Item[];
@@ -224,7 +228,10 @@ export function SectionEditor({
     return <p className="text-app-muted/90">{t("teach.loading")}</p>;
   }
 
-  const path = `${formatTermForDisplay(section.courseOffering.term)} · ${section.courseOffering.course.name} · ${section.label}`;
+  const linkOnly = isGroupTerm(section.courseOffering.term);
+  const path = linkOnly
+    ? `${formatTermForDisplay(section.courseOffering.term)} · ${section.courseOffering.course.name}`
+    : `${formatTermForDisplay(section.courseOffering.term)} · ${section.courseOffering.course.name} · ${section.label}`;
   const share = section.share;
 
   async function saveSyllabus() {
@@ -289,14 +296,7 @@ export function SectionEditor({
 
   return (
     <div className="space-y-8">
-      {savedMsg && (
-        <div
-          role="status"
-          className="rounded-lg border border-emerald-300/80 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-900"
-        >
-          {t("teach.savedToast")}
-        </div>
-      )}
+      <SavedToast show={savedMsg} message={t("teach.savedToast")} />
       <div>
         {surrogate && (
           <p className="mb-2 text-sm text-amber-900/90">
@@ -313,28 +313,30 @@ export function SectionEditor({
         >
           {surrogate ? t("admin.facultyBackToList") : t("teach.backList")}
         </Link>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button
-            type="button"
-            className="btn-glass px-3 py-1.5 text-sm"
-            onClick={() => void openCopyTo()}
-          >
-            {t("teach.copyTo")}
-          </button>
-          {section.courseItems.length > 0 && (
+        {!linkOnly && (
+          <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"
-              className="btn-glass px-3 py-1.5 text-sm text-app-danger disabled:opacity-50"
-              disabled={clearBusy}
-              onClick={() => void clearItems()}
+              className="btn-glass px-3 py-1.5 text-sm"
+              onClick={() => void openCopyTo()}
             >
-              {t("teach.deleteAllItems")}
+              {t("teach.copyTo")}
             </button>
-          )}
-        </div>
+            {section.courseItems.length > 0 && (
+              <button
+                type="button"
+                className="btn-glass px-3 py-1.5 text-sm text-app-danger disabled:opacity-50"
+                disabled={clearBusy}
+                onClick={() => void clearItems()}
+              >
+                {t("teach.deleteAllItems")}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
-      {share && (
+      {share && !linkOnly && (
         <section className="glass p-4">
           <h2 className="mb-2 font-medium text-app-fg/92">{t("share.title")}</h2>
           <p className="mb-3 text-xs text-app-muted/85">{t("share.lead")}</p>
@@ -467,12 +469,26 @@ export function SectionEditor({
 
       <section className="glass p-4">
         <h2 className="mb-2 font-medium text-app-fg/92">
-          {t("explore.courseDetailSyllabus")}
+          {linkOnly
+            ? syllabusLabel.trim() || t("explore.linkNameDefault")
+            : t("explore.courseDetailSyllabus")}
         </h2>
         <p className="mb-2 text-[11px] text-app-muted/85">{t("teach.autoSaveHint")}</p>
         <div className="space-y-2">
+          {linkOnly && (
+            <label className="block text-xs text-app-muted/90" htmlFor={`syllabus-label-${sectionId}`}>
+              {t("teach.resourceLinkName")}
+              <input
+                id={`syllabus-label-${sectionId}`}
+                className="input-glass mt-0.5 w-full px-2 py-1.5 text-sm sm:max-w-xs"
+                value={syllabusLabel}
+                onChange={(e) => setSyllabusLabel(e.target.value)}
+                placeholder={t("explore.linkNameDefault")}
+              />
+            </label>
+          )}
           <label className="block text-xs text-app-muted/90" htmlFor={`syllabus-url-${sectionId}`}>
-            {t("teach.syllabusShareLink")}
+            {linkOnly ? t("teach.resourceLinkUrl") : t("teach.syllabusShareLink")}
           </label>
           <div className="flex items-center gap-2">
             <input
@@ -484,13 +500,15 @@ export function SectionEditor({
             />
             <LiveLinkHealthDot url={syllabusUrl} />
           </div>
-          <input
-            className="input-glass w-full px-2 py-1.5 text-sm sm:max-w-xs"
-            value={syllabusLabel}
-            onChange={(e) => setSyllabusLabel(e.target.value)}
-            placeholder={t("teach.syllabusLinkLabel")}
-            aria-label={t("teach.syllabusLinkLabel")}
-          />
+          {!linkOnly && (
+            <input
+              className="input-glass w-full px-2 py-1.5 text-sm sm:max-w-xs"
+              value={syllabusLabel}
+              onChange={(e) => setSyllabusLabel(e.target.value)}
+              placeholder={t("teach.syllabusLinkLabel")}
+              aria-label={t("teach.syllabusLinkLabel")}
+            />
+          )}
           {section.syllabusUrl && (
             <a
               href={section.syllabusUrl}
@@ -511,6 +529,7 @@ export function SectionEditor({
         </div>
       </section>
 
+      {!linkOnly && (
       <section className="glass p-4">
         <h2 className="mb-2 font-medium text-app-fg/92">
           {t("teach.addItem")}
@@ -595,7 +614,9 @@ export function SectionEditor({
           </div>
         </form>
       </section>
+      )}
 
+      {!linkOnly && (
       <section>
         <h2 className="mb-2 font-medium text-app-fg/92">
           {t("teach.itemsCodes")}
@@ -660,6 +681,7 @@ export function SectionEditor({
           ))}
         </div>
       </section>
+      )}
       {copyOpen && (
         <CopyToModal
           sourceId={sectionId}

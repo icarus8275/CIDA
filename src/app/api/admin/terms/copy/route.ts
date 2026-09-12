@@ -23,6 +23,26 @@ export async function POST(req: Request) {
     );
   }
 
+  const [sourceKind, targetKind] = await Promise.all([
+    prisma.term.findUnique({
+      where: { id: body.sourceTermId },
+      select: { kind: true },
+    }),
+    prisma.term.findUnique({
+      where: { id: body.targetTermId },
+      select: { kind: true },
+    }),
+  ]);
+  if (!sourceKind || !targetKind) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+  if (sourceKind.kind === "GROUP" || targetKind.kind === "GROUP") {
+    return NextResponse.json(
+      { error: "group_term", message: "Extra groups cannot be copied." },
+      { status: 400 }
+    );
+  }
+
   const [source, target] = await Promise.all([
     prisma.term.findUnique({
       where: { id: body.sourceTermId },

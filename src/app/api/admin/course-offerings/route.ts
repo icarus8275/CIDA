@@ -13,7 +13,8 @@ function isPrismaUniqueViolation(e: unknown): boolean {
 }
 
 const postSchema = z.object({
-  courseId: z.string().min(1),
+  courseId: z.string().min(1).optional(),
+  name: z.string().min(1).max(500).optional(),
   termId: z.string().min(1),
   sortOrder: z.number().int().optional(),
 });
@@ -53,6 +54,24 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const body = postSchema.parse(await req.json());
+  let courseId = body.courseId;
+  if (!courseId && body.name?.trim()) {
+    const maxCourse = await prisma.course.aggregate({ _max: { sortOrder: true } });
+    const created = await prisma.course.create({
+      data: {
+        name: body.name.trim(),
+        sortOrder: (maxCourse._max.sortOrder ?? 0) + 1,
+      },
+    });
+    courseId = created.id;
+  }
+  if (!courseId) {
+    return NextResponse.json({ error: "course" }, { status: 400 });
+  }
+  const term = await prisma.term.findUnique({ where: { id: body.termId } });
+  if (!term) {
+    return NextResponse.json({ error: "term" }, { status: 404 });
+  }
   const max = await prisma.courseOffering.aggregate({
     where: { termId: body.termId },
     _max: { sortOrder: true },
@@ -60,12 +79,21 @@ export async function POST(req: Request) {
   try {
     const row = await prisma.courseOffering.create({
       data: {
-        courseId: body.courseId,
+        courseId,
         termId: body.termId,
         sortOrder: body.sortOrder ?? (max._max.sortOrder ?? 0) + 1,
       },
       include: { course: true },
     });
+    if (term.kind === "GROUP") {
+      await prisma.section.create({
+        data: {
+          courseOfferingId: row.id,
+          label: "001",
+          sortOrder: 0,
+        },
+      });
+    }
     return NextResponse.json(row);
   } catch (e) {
     if (isPrismaUniqueViolation(e)) {

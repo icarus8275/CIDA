@@ -13,7 +13,7 @@ import {
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { Copy, GripVertical, X } from "lucide-react";
-import { formatTermForDisplay } from "@/lib/term-display";
+import { formatTermForDisplay, isGroupTerm } from "@/lib/term-display";
 import { useI18n } from "@/components/locale/locale-provider";
 import {
   OfferingSectionsModal,
@@ -29,8 +29,10 @@ const D_CAT = (id: string) => `cat:${id}`;
 type TermRow = {
   id: string;
   sortOrder: number;
+  kind?: "ACADEMIC" | "GROUP";
+  groupLabel?: string | null;
   academicYear: { label: string; startYear: number };
-  termSeason: { key: string; label: string };
+  termSeason: { key: string; label: string } | null;
 };
 
 type OffRow = {
@@ -196,6 +198,7 @@ function TermColumn({
   onOpenCopy,
   onRemoveOffering,
   onConfigureOffering,
+  onAddNamedCourse,
 }: {
   term: TermRow;
   offerings: OffRow[];
@@ -203,9 +206,12 @@ function TermColumn({
   onOpenCopy: (t: TermRow) => void;
   onRemoveOffering: (id: string) => void;
   onConfigureOffering: (off: OffRow) => void;
+  onAddNamedCourse?: (termId: string, name: string) => Promise<void>;
 }) {
   const { t } = useI18n();
   const { setNodeRef, isOver } = useDroppable({ id: D_TERM(term.id) });
+  const [newName, setNewName] = useState("");
+  const group = isGroupTerm(term);
   return (
     <div
       ref={setNodeRef}
@@ -220,15 +226,17 @@ function TermColumn({
           {formatTermForDisplay(term)}
         </h3>
         <div className="flex shrink-0 items-center gap-0.5">
-          <button
-            type="button"
-            aria-label={t("admin.schedCopyTerm")}
-            title={t("admin.schedCopyTermTitle")}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-app-link/90 opacity-0 transition hover:bg-app-link/12 group-hover/term:opacity-100"
-            onClick={() => onOpenCopy(term)}
-          >
-            <Copy className="h-3.5 w-3.5" strokeWidth={2.5} />
-          </button>
+          {!group && (
+            <button
+              type="button"
+              aria-label={t("admin.schedCopyTerm")}
+              title={t("admin.schedCopyTermTitle")}
+              className="flex h-7 w-7 items-center justify-center rounded-lg text-app-link/90 opacity-0 transition hover:bg-app-link/12 group-hover/term:opacity-100"
+              onClick={() => onOpenCopy(term)}
+            >
+              <Copy className="h-3.5 w-3.5" strokeWidth={2.5} />
+            </button>
+          )}
           <button
             type="button"
             aria-label={t("admin.schedTDelete")}
@@ -250,6 +258,28 @@ function TermColumn({
           />
         ))}
       </div>
+      {group && onAddNamedCourse && (
+        <form
+          className="mt-auto flex gap-1 pt-1"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const name = newName.trim();
+            if (!name) return;
+            void onAddNamedCourse(term.id, name).then(() => setNewName(""));
+          }}
+        >
+          <input
+            className="input-glass min-w-0 flex-1 px-2 py-1 text-xs"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder={t("admin.schedGroupCoursePh")}
+            aria-label={t("admin.schedAddCourseToGroup")}
+          />
+          <button type="submit" className="btn-glass px-2 py-1 text-xs">
+            {t("admin.schedAdd")}
+          </button>
+        </form>
+      )}
     </div>
   );
 }
@@ -449,6 +479,21 @@ export function ScheduleBoard() {
                 onOpenCopy={setCopySource}
                 onRemoveOffering={removeOffering}
                 onConfigureOffering={openConfigure(term)}
+                onAddNamedCourse={async (termId, name) => {
+                  const r = await fetch("/api/admin/course-offerings", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ termId, name }),
+                  });
+                  if (r.ok) {
+                    window.dispatchEvent(new Event("schedule-refresh"));
+                    return;
+                  }
+                  const j = (await r.json().catch(() => ({}))) as {
+                    message?: string;
+                  };
+                  alert(j.message || t("admin.schedAlrtFail"));
+                }}
               />
             ))}
           </div>

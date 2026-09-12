@@ -3,15 +3,17 @@
 import { useCallback, useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { useI18n } from "@/components/locale/locale-provider";
-import { formatTermForDisplay } from "@/lib/term-display";
+import { formatTermForDisplay, isGroupTerm } from "@/lib/term-display";
 import { listUserLabel } from "@/lib/user-display";
 import { hasFacultyAccess } from "@/lib/role-utils";
 
 type TermRow = {
   id: string;
   sortOrder: number;
+  kind?: "ACADEMIC" | "GROUP";
+  groupLabel?: string | null;
   academicYear: { label: string; startYear: number };
-  termSeason: { key: string; label: string };
+  termSeason: { key: string; label: string } | null;
 };
 
 type OffRow = {
@@ -30,6 +32,8 @@ type SectionApi = {
   id: string;
   label: string;
   sortOrder: number;
+  syllabusUrl?: string | null;
+  syllabusLinkTitle?: string | null;
   instructors: { user: UserOpt }[];
 };
 
@@ -49,6 +53,9 @@ export function OfferingSectionsModal({ offering, onClose }: Props) {
   const [countInput, setCountInput] = useState(1);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [courseName, setCourseName] = useState("");
+  const [linkTitle, setLinkTitle] = useState("");
+  const [linkUrl, setLinkUrl] = useState("");
 
   const load = useCallback(async () => {
     if (!offering) {
@@ -64,10 +71,32 @@ export function OfferingSectionsModal({ offering, onClose }: Props) {
       fetch("/api/admin/users", { cache: "no-store" }),
     ]);
     if (sRes.ok) {
-      const list = (await sRes.json()) as SectionApi[];
+      let list = (await sRes.json()) as SectionApi[];
       list.sort((a, b) => a.sortOrder - b.sortOrder);
+      if (list.length === 0 && isGroupTerm(offering.term)) {
+        await fetch("/api/admin/sections", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            courseOfferingId: offering.id,
+            label: "001",
+          }),
+        });
+        const again = await fetch(
+          `/api/admin/sections?courseOfferingId=${encodeURIComponent(offering.id)}`,
+          { cache: "no-store" }
+        );
+        if (again.ok) {
+          list = ((await again.json()) as SectionApi[]).sort(
+            (a, b) => a.sortOrder - b.sortOrder
+          );
+        }
+      }
       setSections(list);
       setCountInput(Math.max(1, list.length));
+      const first = list[0];
+      setLinkTitle(first?.syllabusLinkTitle ?? "");
+      setLinkUrl(first?.syllabusUrl ?? "");
     }
     if (uRes.ok) {
       const u = (await uRes.json()) as UserOpt[];
@@ -79,6 +108,12 @@ export function OfferingSectionsModal({ offering, onClose }: Props) {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    setCourseName(offering?.course.name ?? "");
+    setLinkTitle("");
+    setLinkUrl("");
+  }, [offering?.id, offering?.course.name]);
 
   useEffect(() => {
     if (!offering) {
@@ -238,6 +273,40 @@ export function OfferingSectionsModal({ offering, onClose }: Props) {
   }
 
   const head = `${formatTermForDisplay(offering.term)} · ${offering.course.name}`;
+  const group = isGroupTerm(offering.term);
+  const primary = sections[0];
+
+  const saveGroupCourse = async () => {
+    setErr(null);
+    const name = courseName.trim();
+    if (name && name !== offering.course.name) {
+      const r = await fetch("/api/admin/courses", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: offering.courseId, name }),
+      });
+      if (!r.ok) {
+        setErr(t("admin.coursesCreateFail"));
+        return;
+      }
+    }
+    if (primary) {
+      const r = await fetch(`/api/teach/section/${primary.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          syllabusUrl: linkUrl.trim() || null,
+          syllabusLinkTitle: linkTitle.trim() || null,
+        }),
+      });
+      if (!r.ok) {
+        setErr(t("admin.schedAlrtFail"));
+        return;
+      }
+    }
+    await load();
+    window.dispatchEvent(new Event("schedule-refresh"));
+  };
 
   return (
     <div
@@ -268,10 +337,51 @@ export function OfferingSectionsModal({ offering, onClose }: Props) {
             <X className="h-5 w-5" />
           </button>
         </div>
-        <p className="mb-3 text-xs text-app-muted/90">{t("admin.osmSub")}</p>
+        <p className="mb-3 text-xs text-app-muted/90">
+          {group ? t("admin.osmLinkOnlyHint") : t("admin.osmSub")}
+        </p>
 
         {err && <p className="mb-2 text-sm text-app-danger">{err}</p>}
 
+        {group && (
+          <div className="mb-4 space-y-3 border-b border-app-border/70 pb-3">
+            <label className="block text-xs text-app-muted/90">
+              {t("admin.schedCourse")}
+              <input
+                className="input-glass mt-0.5 w-full px-2 py-1.5 text-sm"
+                value={courseName}
+                onChange={(e) => setCourseName(e.target.value)}
+              />
+            </label>
+            <label className="block text-xs text-app-muted/90">
+              {t("teach.resourceLinkName")}
+              <input
+                className="input-glass mt-0.5 w-full px-2 py-1.5 text-sm"
+                value={linkTitle}
+                onChange={(e) => setLinkTitle(e.target.value)}
+                placeholder={t("explore.linkNameDefault")}
+              />
+            </label>
+            <label className="block text-xs text-app-muted/90">
+              {t("teach.resourceLinkUrl")}
+              <input
+                className="input-glass mt-0.5 w-full px-2 py-1.5 text-sm"
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                placeholder="https://..."
+              />
+            </label>
+            <button
+              type="button"
+              className="btn-glass-primary px-3 py-1.5 text-sm"
+              onClick={() => void saveGroupCourse()}
+            >
+              {t("admin.osmSaveLink")}
+            </button>
+          </div>
+        )}
+
+        {!group && (
         <div className="mb-4 flex flex-wrap items-end gap-2 border-b border-app-border/70 pb-3">
           <div>
             <label className="text-[11px] text-app-muted/85">
@@ -303,6 +413,7 @@ export function OfferingSectionsModal({ offering, onClose }: Props) {
             {t("admin.osmAddOne")}
           </button>
         </div>
+        )}
 
         {loading ? (
           <p className="text-sm text-app-muted/90">{t("teach.loading")}</p>
@@ -323,15 +434,18 @@ export function OfferingSectionsModal({ offering, onClose }: Props) {
                     key={sec.id}
                     className="group/osmsec relative rounded-lg border border-app-border/70 bg-app-primary/4 p-3 pr-10"
                   >
-                    <button
-                      type="button"
-                      className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-lg text-app-danger/90 opacity-0 shadow-sm transition hover:bg-app-danger/18 group-hover/osmsec:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-danger/35"
-                      title={t("admin.osmDeleteSection")}
-                      aria-label={t("admin.osmDeleteSection")}
-                      onClick={() => void deleteSection(sec)}
-                    >
-                      <X className="h-4 w-4" strokeWidth={2.5} />
-                    </button>
+                    {!group && (
+                      <button
+                        type="button"
+                        className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-lg text-app-danger/90 opacity-0 shadow-sm transition hover:bg-app-danger/18 group-hover/osmsec:opacity-100 focus:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-app-danger/35"
+                        title={t("admin.osmDeleteSection")}
+                        aria-label={t("admin.osmDeleteSection")}
+                        onClick={() => void deleteSection(sec)}
+                      >
+                        <X className="h-4 w-4" strokeWidth={2.5} />
+                      </button>
+                    )}
+                    {!group && (
                     <div className="mb-2 flex items-center gap-2">
                       <span className="text-[11px] uppercase text-app-muted/85">
                         {t("admin.osmLabel")}
@@ -348,6 +462,7 @@ export function OfferingSectionsModal({ offering, onClose }: Props) {
                         }}
                       />
                     </div>
+                    )}
                     <div className="flex flex-wrap gap-1.5">
                       {sec.instructors.map((ins) => (
                         <span

@@ -279,7 +279,7 @@ export function CodesReadonlyGrouped({
             id={`${idPrefix}-${o.id}`}
             title={o.label?.trim() ? o.label : undefined}
             onClick={() => onCodeClick(o.value)}
-            className="min-h-[2.25rem] min-w-[2.5rem] cursor-pointer rounded border border-app-border/70 bg-app-card/55 px-2 font-mono text-xs text-app-fg/92 transition hover:border-app-border hover:bg-app-card/75"
+            className="min-h-[2.25rem] min-w-[2.5rem] !cursor-pointer rounded border border-app-border/70 bg-app-card/55 px-2 font-mono text-xs text-app-fg/92 transition hover:border-app-link/40 hover:bg-app-card/75 hover:text-app-link"
           >
             {o.value}
           </button>
@@ -301,7 +301,7 @@ export function CodesReadonlyGrouped({
               id={`${idPrefix}-${o.id}`}
               title={o.label?.trim() ? o.label : undefined}
               onClick={() => onCodeClick(o.value)}
-              className="min-h-[2.25rem] min-w-[2.5rem] cursor-pointer rounded border border-app-border/70 bg-app-card/55 px-2 font-mono text-xs text-app-fg/92 transition hover:border-app-border hover:bg-app-card/75"
+              className="min-h-[2.25rem] min-w-[2.5rem] !cursor-pointer rounded border border-app-border/70 bg-app-card/55 px-2 font-mono text-xs text-app-fg/92 transition hover:border-app-link/40 hover:bg-app-card/75 hover:text-app-link"
             >
               {o.value}
             </button>

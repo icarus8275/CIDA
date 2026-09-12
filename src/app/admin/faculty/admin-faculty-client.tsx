@@ -20,8 +20,10 @@ type SectionRow = {
   courseOffering: {
     course: { name: string };
     term: {
+      kind?: "ACADEMIC" | "GROUP";
+      groupLabel?: string | null;
       academicYear: { label: string; startYear: number };
-      termSeason: { key: string; label: string };
+      termSeason: { key: string; label: string } | null;
     };
   };
 };

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useI18n } from "@/components/locale/locale-provider";
+import { SavedToast } from "@/components/saved-toast";
 import {
   CodePicker,
   buildOptions,
@@ -22,10 +23,12 @@ function CourseCodesEditor({
   course,
   catalog,
   onSaved,
+  onToast,
 }: {
   course: Course;
   catalog: CatalogRow[];
   onSaved: () => Promise<void>;
+  onToast: () => void;
 }) {
   const { t } = useI18n();
   const courseRef = useRef(course);
@@ -61,6 +64,7 @@ function CourseCodesEditor({
         });
         if (r.ok) {
           await onSaved();
+          onToast();
         } else {
           alert(t("admin.coursesCodesSaveFail"));
           await onSaved();
@@ -68,7 +72,7 @@ function CourseCodesEditor({
       })();
     }, DEBOUNCE_MS);
     return () => clearTimeout(timer);
-  }, [codeIds, course.id, onSaved, t]);
+  }, [codeIds, course.id, onSaved, onToast, t]);
 
   const options = useMemo(
     () => buildOptions(catalog, course.courseCodes),
@@ -106,6 +110,7 @@ export function AdminCoursesForm() {
   const [editing, setEditing] = useState<Course | null>(null);
   const [codesOpenId, setCodesOpenId] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [savedMsg, setSavedMsg] = useState(false);
 
   const load = useCallback(async () => {
     setErr(null);
@@ -146,6 +151,7 @@ export function AdminCoursesForm() {
 
   return (
     <div className="space-y-6">
+      <SavedToast show={savedMsg} message={t("teach.savedToast")} />
       {err && <p className="text-sm text-app-danger">{err}</p>}
       <form
         className="glass flex flex-wrap items-end gap-2 p-4"
@@ -333,6 +339,10 @@ export function AdminCoursesForm() {
                     course={c}
                     catalog={catalog}
                     onSaved={load}
+                    onToast={() => {
+                      setSavedMsg(true);
+                      window.setTimeout(() => setSavedMsg(false), 2500);
+                    }}
                   />
                 )}
               </>

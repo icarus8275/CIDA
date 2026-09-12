@@ -7,7 +7,7 @@ import {
   loadCourseItemsForSection,
   resolveWriteSectionId,
 } from "@/lib/section-share";
-import { formatTermForDisplay, termChronology } from "@/lib/term-display";
+import { formatTermForDisplay, isGroupTerm, termChronology } from "@/lib/term-display";
 
 export type CopyCourseContentsErrorCode =
   | "not_found"
@@ -113,6 +113,7 @@ export async function listCopyTargetSections(opts: {
     const writeId = await resolveWriteSectionId(sec.id, opts.userId, "PROFESSOR");
     if (writeId === sourceWrite) continue;
     const term = sec.courseOffering.term;
+    if (isGroupTerm(term)) continue;
     rows.push({
       id: sec.id,
       label: `${formatTermForDisplay(term)} · ${sec.courseOffering.course.name} · ${sec.label}`,
@@ -156,15 +157,26 @@ export async function copyCourseContents(opts: {
       select: {
         id: true,
         courseOfferingId: true,
+        courseOffering: { select: { term: { select: { kind: true } } } },
       },
     }),
     prisma.section.findUnique({
       where: { id: opts.targetSectionId },
-      select: { id: true, courseOfferingId: true },
+      select: {
+        id: true,
+        courseOfferingId: true,
+        courseOffering: { select: { term: { select: { kind: true } } } },
+      },
     }),
   ]);
   if (!sourceSection || !targetSection) {
     throw new CopyCourseContentsError("not_found");
+  }
+  if (
+    sourceSection.courseOffering.term.kind === "GROUP" ||
+    targetSection.courseOffering.term.kind === "GROUP"
+  ) {
+    throw new CopyCourseContentsError("forbidden");
   }
 
   const [sourceWriteId, targetWriteId] = await Promise.all([

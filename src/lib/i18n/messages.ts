@@ -88,6 +88,13 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "explore.tabCodes": { en: "Codes", ko: "코드" },
   "explore.collapse": { en: "Collapse", ko: "접기" },
   "explore.expand": { en: "Expand", ko: "펼치기" },
+  "explore.collapseAllCourses": { en: "Collapse courses", ko: "수업 모두 접기" },
+  "explore.expandAllCourses": { en: "Expand courses", ko: "수업 모두 펼치기" },
+  "explore.linkOnlyEmpty": {
+    en: "No link yet.",
+    ko: "등록된 링크가 없습니다.",
+  },
+  "explore.linkNameDefault": { en: "Link", ko: "링크" },
   "explore.noResults": {
     en: "No results for this search.",
     ko: "검색 결과가 없습니다.",
@@ -467,6 +474,24 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     ko: "이미 같은 학년·계절 조합의 학기가 있습니다. 중복을 만들 수 없습니다.",
   },
   "admin.schedErrTerm": { en: "Could not add term.", ko: "학기를 추가하지 못했습니다." },
+  "admin.sched4Title": {
+    en: "4 · Extra group (same level as a term)",
+    ko: "4 · 엑스트라 그룹(학기와 같은 레벨)",
+  },
+  "admin.schedGroupHelp": {
+    en: "Add a named group next to regular terms—for extracurriculars or similar. Courses in a group only need a custom-labeled link, not assignments or quizzes.",
+    ko: "정규 학기 옆에 이름 있는 그룹을 둡니다(엑스트라커리큘러 등). 이 그룹의 과목은 assignment/quiz 없이 이름 붙인 링크 하나만 연결하면 됩니다.",
+  },
+  "admin.schedGroupName": { en: "Group name", ko: "그룹 이름" },
+  "admin.schedAddGroup": { en: "Add group", ko: "그룹 추가" },
+  "admin.schedErrGroup": { en: "Could not add group.", ko: "그룹을 추가하지 못했습니다." },
+  "admin.schedAddCourseToGroup": { en: "Add course by name", ko: "과목 이름으로 추가" },
+  "admin.schedGroupCoursePh": { en: "Course name", ko: "과목 이름" },
+  "admin.osmLinkOnlyHint": {
+    en: "This group course has no assignments. Set a link name (instead of Syllabus) and one share URL. You can rename the course here.",
+    ko: "이 그룹 과목에는 assignment가 없습니다. Syllabus 대신 쓸 링크 이름과 공유 URL을 넣고, 과목 이름도 여기서 바꿀 수 있습니다.",
+  },
+  "admin.osmSaveLink": { en: "Save link", ko: "링크 저장" },
   "admin.schedAddCourseRow": { en: "Schedule a course in a term:", ko: "과목을 학기에 배정:" },
   "admin.schedCourse": { en: "Course", ko: "과목" },
   "admin.schedTerm": { en: "Term", ko: "학기" },
@@ -743,6 +768,14 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "teach.onSiteDisplayHint": {
     en: "Check when work is also shown on site. You can still add a OneDrive link; Explore can show both.",
     ko: "현장 전시인 경우 선택하세요. OneDrive 링크와 함께 둘 다 등록·표시할 수 있습니다.",
+  },
+  "teach.resourceLinkName": {
+    en: "Link name",
+    ko: "링크 이름",
+  },
+  "teach.resourceLinkUrl": {
+    en: "Share link (OneDrive or web)",
+    ko: "공유 링크(OneDrive 등)",
   },
   "teach.syllabusShareLink": {
     en: "Syllabus share link (OneDrive or web)",

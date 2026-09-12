@@ -6,8 +6,10 @@ import { formatTermForDisplay } from "@/lib/term-display";
 import { listUserLabel } from "@/lib/user-display";
 
 type TermRef = {
+  kind?: "ACADEMIC" | "GROUP";
+  groupLabel?: string | null;
   academicYear: { label: string; startYear?: number | null };
-  termSeason: { key: string; label: string };
+  termSeason: { key: string; label: string } | null;
 };
 
 type SiRow = {
@@ -57,14 +59,18 @@ function compareByTermCourseSectionUser(a: SiRow, b: SiRow): number {
       return l;
     }
   }
-  const sA = seasonOrder(ta.termSeason.key);
-  const sB = seasonOrder(tb.termSeason.key);
+  const sA = seasonOrder(ta.termSeason?.key ?? "");
+  const sB = seasonOrder(tb.termSeason?.key ?? "");
   if (sA !== sB) {
     return sA - sB;
   }
-  const tsk = ta.termSeason.key.localeCompare(tb.termSeason.key, undefined, {
+  const tsk = (ta.termSeason?.key ?? ta.groupLabel ?? "").localeCompare(
+    tb.termSeason?.key ?? tb.groupLabel ?? "",
+    undefined,
+    {
     sensitivity: "base",
-  });
+    }
+  );
   if (tsk !== 0) {
     return tsk;
   }

@@ -23,7 +23,9 @@ function isPrismaUniqueViolation(e: unknown): boolean {
 
 const postSchema = z.object({
   academicYearId: z.string().min(1),
-  termSeasonId: z.string().min(1),
+  termSeasonId: z.string().min(1).optional(),
+  kind: z.enum(["ACADEMIC", "GROUP"]).optional(),
+  groupLabel: z.string().min(1).max(200).optional(),
   sortOrder: z.number().int().optional(),
 });
 
@@ -53,13 +55,29 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const body = postSchema.parse(await req.json());
+  const asGroup = body.kind === "GROUP";
+  if (asGroup && !body.groupLabel?.trim()) {
+    return NextResponse.json({ error: "groupLabel" }, { status: 400 });
+  }
+  if (!asGroup && !body.termSeasonId) {
+    return NextResponse.json({ error: "termSeasonId" }, { status: 400 });
+  }
   try {
     const term = await prisma.term.create({
-      data: {
-        academicYearId: body.academicYearId,
-        termSeasonId: body.termSeasonId,
-        sortOrder: body.sortOrder ?? 0,
-      },
+      data: asGroup
+        ? {
+            academicYearId: body.academicYearId,
+            kind: "GROUP",
+            groupLabel: body.groupLabel!.trim(),
+            termSeasonId: null,
+            sortOrder: body.sortOrder ?? 0,
+          }
+        : {
+            academicYearId: body.academicYearId,
+            kind: "ACADEMIC",
+            termSeasonId: body.termSeasonId!,
+            sortOrder: body.sortOrder ?? 0,
+          },
       include: { academicYear: true, termSeason: true },
     });
     return NextResponse.json(term);

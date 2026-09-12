@@ -13,6 +13,7 @@ export function TermSetupForm() {
   const [sLabel, setSLabel] = useState("");
   const [termY, setTermY] = useState("");
   const [termS, setTermS] = useState("");
+  const [groupLabel, setGroupLabel] = useState("");
   const [addTermError, setAddTermError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -222,6 +223,78 @@ export function TermSetupForm() {
             {addTermError && (
               <p className="text-xs text-app-danger">{addTermError}</p>
             )}
+          </form>
+        </section>
+
+        <section className="rounded-xl border border-app-border/70 bg-app-primary/4 p-4">
+          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-app-muted/90">
+            {t("admin.sched4Title")}
+          </h3>
+          <p className="mb-3 text-[11px] leading-relaxed text-app-muted/85">
+            {t("admin.schedGroupHelp")}
+          </p>
+          <form
+            className="flex flex-col gap-2"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setAddTermError(null);
+              const label = groupLabel.trim();
+              if (!termY || !label) return;
+              const r = await fetch("/api/admin/terms", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  kind: "GROUP",
+                  academicYearId: termY,
+                  groupLabel: label,
+                }),
+              });
+              if (!r.ok) {
+                const j = (await r.json().catch(() => ({}))) as {
+                  message?: string;
+                };
+                setAddTermError(j.message || t("admin.schedErrGroup"));
+                return;
+              }
+              setGroupLabel("");
+              window.dispatchEvent(new Event("schedule-refresh"));
+            }}
+          >
+            <div className="flex flex-wrap items-end gap-3">
+              <label className="flex min-w-[11rem] flex-col gap-1">
+                <span className="text-xs text-app-muted/90">
+                  {t("admin.schedAcademicYear")}
+                </span>
+                <select
+                  className="input-glass px-2 py-1.5"
+                  value={termY}
+                  onChange={(e) => setTermY(e.target.value)}
+                >
+                  {years.length === 0 && (
+                    <option value="">{t("admin.schedPickYear")}</option>
+                  )}
+                  {years.map((y) => (
+                    <option key={y.id} value={y.id}>
+                      {y.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex min-w-[11rem] flex-col gap-1">
+                <span className="text-xs text-app-muted/90">
+                  {t("admin.schedGroupName")}
+                </span>
+                <input
+                  className="input-glass px-2 py-1.5"
+                  value={groupLabel}
+                  onChange={(e) => setGroupLabel(e.target.value)}
+                  placeholder="Extracurricular"
+                />
+              </label>
+              <button type="submit" className="btn-glass px-4 py-2 text-sm">
+                {t("admin.schedAddGroup")}
+              </button>
+            </div>
           </form>
         </section>
       </div>

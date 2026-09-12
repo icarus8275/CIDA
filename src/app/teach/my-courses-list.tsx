@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useI18n } from "@/components/locale/locale-provider";
 import { CopyToModal, type CopyCourseOption } from "./copy-to-modal";
+import { SavedToast } from "@/components/saved-toast";
 
 export type MyCourseCard = {
   id: string;
@@ -19,6 +20,7 @@ export type MyCourseCard = {
   termLabel: string;
   termRank: number;
   hasContent: boolean;
+  linkOnly?: boolean;
 };
 
 function cardLabel(c: MyCourseCard, sectionBadge: string) {
@@ -65,14 +67,7 @@ export function MyCoursesList({ courses }: { courses: MyCourseCard[] }) {
 
   return (
     <>
-      {savedMsg && (
-        <div
-          role="status"
-          className="rounded-lg border border-emerald-300/80 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-900"
-        >
-          {t("teach.copyToDone")}
-        </div>
-      )}
+      <SavedToast show={savedMsg} message={t("teach.copyToDone")} />
       {groups.map((group) => (
         <section key={group.termId} className="space-y-3">
           <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-app-muted/90">
@@ -94,9 +89,11 @@ export function MyCoursesList({ courses }: { courses: MyCourseCard[] }) {
                       <span className="block truncate font-semibold text-app-fg group-hover:text-app-link">
                         {sec.courseName}
                       </span>
-                      <span className="mt-1 text-sm text-app-muted/90">
-                        {t("teach.sectionBadge")} {sec.sectionLabel}
-                      </span>
+                      {!sec.linkOnly && (
+                        <span className="mt-1 text-sm text-app-muted/90">
+                          {t("teach.sectionBadge")} {sec.sectionLabel}
+                        </span>
+                      )}
                       <span className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-app-link">
                         {t("teach.editCourse")}
                         <ChevronRight className="h-4 w-4 transition group-hover:translate-x-0.5" />

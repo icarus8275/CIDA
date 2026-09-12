@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { formatTermForDisplay, termChronology } from "@/lib/term-display";
+import { formatTermForDisplay, isGroupTerm, termChronology } from "@/lib/term-display";
 import { t } from "@/lib/i18n/messages";
 import { getServerLocale } from "@/lib/i18n/server";
 import {
@@ -57,7 +57,8 @@ export default async function TeachHomePage() {
           termId: term.id,
           termLabel: formatTermForDisplay(term),
           termRank: termChronology(term),
-          hasContent: items.length > 0,
+          hasContent: !isGroupTerm(term) && items.length > 0,
+          linkOnly: isGroupTerm(term),
         };
       })
     )

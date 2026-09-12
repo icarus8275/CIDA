@@ -3,13 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { useI18n } from "@/components/locale/locale-provider";
-import { formatTermForDisplay } from "@/lib/term-display";
+import { formatTermForDisplay, isGroupTerm } from "@/lib/term-display";
 
 export type TermRow = {
   id: string;
   sortOrder: number;
+  kind?: "ACADEMIC" | "GROUP";
+  groupLabel?: string | null;
   academicYear: { label: string; startYear: number };
-  termSeason: { key: string; label: string };
+  termSeason: { key: string; label: string } | null;
 };
 
 type Props = {
@@ -25,7 +27,10 @@ export function TermCopyModal({ source, allTerms, onClose }: Props) {
   const [busy, setBusy] = useState(false);
 
   const candidates = useMemo(
-    () => (source ? allTerms.filter((x) => x.id !== source.id) : []),
+    () =>
+      source
+        ? allTerms.filter((x) => x.id !== source.id && !isGroupTerm(x))
+        : [],
     [allTerms, source]
   );
 
