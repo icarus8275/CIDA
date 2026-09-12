@@ -138,6 +138,85 @@ function labelOf(item: ExploreCourse["items"][0]) {
   return `${item.typeLabel} ${item.number}`;
 }
 
+function courseHeading(course: ExploreCourse) {
+  const n = course.name.trim();
+  const cut = n.lastIndexOf(" — ");
+  return cut > 0 ? n.slice(0, cut) : n;
+}
+
+function DetailEyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-app-primary/75">
+      {children}
+    </p>
+  );
+}
+
+function DetailTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h3 className="mt-1 text-base font-semibold leading-snug tracking-tight text-app-fg">
+      {children}
+    </h3>
+  );
+}
+
+function DetailMeta({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="mt-1 text-xs italic leading-relaxed text-app-muted/75">
+      {children}
+    </p>
+  );
+}
+
+function DetailField({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="border-t border-app-border/55 pt-3">
+      <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[0.12em] text-app-muted/70">
+        {label}
+      </p>
+      <div className="text-sm leading-relaxed text-app-fg">{children}</div>
+    </div>
+  );
+}
+
+function DetailEmpty({ children }: { children: React.ReactNode }) {
+  return <p className="text-sm italic text-app-muted/65">{children}</p>;
+}
+
+function DetailFaculty({
+  instructors,
+  empty,
+}: {
+  instructors: { name: string | null; email: string | null }[] | undefined;
+  empty: string;
+}) {
+  if (!instructors?.length) {
+    return <DetailEmpty>{empty}</DetailEmpty>;
+  }
+  return (
+    <ul className="space-y-1">
+      {instructors.map((i, idx) => {
+        const name = i.name?.trim();
+        const email = i.email?.trim();
+        return (
+          <li key={idx}>
+            <span className="font-medium text-app-fg">{name || email || "—"}</span>
+            {name && email ? (
+              <span className="text-app-muted/70"> · {email}</span>
+            ) : null}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 function groupByType(items: ExploreCourse["items"]) {
   const groups: Record<string, ExploreCourse["items"]> = {};
   for (const it of items) {
@@ -347,62 +426,57 @@ export function CourseCodeExplorer({
   const DetailsPanel = () => {
     if (!selection) {
       return (
-        <p className="text-sm text-app-muted/90">{t("explore.emptySelect")}</p>
+        <p className="py-6 text-center text-sm italic leading-relaxed text-app-muted/65">
+          {t("explore.emptySelect")}
+        </p>
       );
     }
     if (selection.kind === "course") {
       const { course } = selection;
       return (
-        <div className="space-y-3">
-          <p className="text-sm text-app-muted/90">{t("explore.selectedCourse")}</p>
-          <p className="text-lg font-semibold text-app-fg">{course.pathLabel}</p>
-          <p className="text-sm font-medium text-app-muted">{course.name}</p>
-          <div>
-            <p className="mb-0.5 text-xs text-app-muted/85">
-              {t("explore.itemDetailInstructors")}
-            </p>
-            {(course.instructors?.length ?? 0) > 0 ? (
-              <ul className="list-inside list-disc text-sm text-app-fg/92">
-                {course.instructors!.map((i, idx) => (
-                  <li key={idx} className="marker:text-app-muted/85">
-                    {listUserLabel(i.name, i.email)}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-app-muted/85">
-                {t("explore.itemDetailNoInstructors")}
-              </p>
-            )}
-          </div>
-          <div>
-            <p className="mb-1 text-xs font-medium text-app-muted/85">
-              {course.linkOnly
-                ? course.syllabusLinkTitle || t("explore.linkNameDefault")
-                : t("explore.courseDetailSyllabus")}
-            </p>
-            {course.syllabusUrl ? (
-              <span className="inline-flex items-center gap-2">
-                <a
-                  href={course.syllabusUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex text-sm font-medium text-app-link hover:underline"
-                >
-                  {course.syllabusLinkTitle ||
-                    (course.linkOnly
-                      ? t("explore.linkNameDefault")
-                      : t("explore.syllabusLinkDefault"))}
-                </a>
-                <LinkHealthDot status={linkHealth[course.syllabusUrl.trim()] ?? "checking"} />
-              </span>
-            ) : (
-              <p className="text-sm text-app-muted/85">
-                {course.linkOnly
-                  ? t("explore.linkOnlyEmpty")
-                  : t("explore.courseDetailNoSyllabus")}
-              </p>
-            )}
+        <div>
+          <DetailEyebrow>{t("explore.selectedCourse")}</DetailEyebrow>
+          <DetailTitle>{courseHeading(course)}</DetailTitle>
+          <DetailMeta>{course.pathLabel}</DetailMeta>
+          <div className="mt-4">
+            <DetailField label={t("explore.itemDetailInstructors")}>
+              <DetailFaculty
+                instructors={course.instructors}
+                empty={t("explore.itemDetailNoInstructors")}
+              />
+            </DetailField>
+            <DetailField
+              label={
+                course.linkOnly
+                  ? course.syllabusLinkTitle || t("explore.linkNameDefault")
+                  : t("explore.courseDetailSyllabus")
+              }
+            >
+              {course.syllabusUrl ? (
+                <span className="inline-flex items-center gap-2">
+                  <a
+                    href={course.syllabusUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-medium text-app-link hover:underline"
+                  >
+                    {course.syllabusLinkTitle ||
+                      (course.linkOnly
+                        ? t("explore.linkNameDefault")
+                        : t("explore.syllabusLinkDefault"))}
+                  </a>
+                  <LinkHealthDot
+                    status={linkHealth[course.syllabusUrl.trim()] ?? "checking"}
+                  />
+                </span>
+              ) : (
+                <DetailEmpty>
+                  {course.linkOnly
+                    ? t("explore.linkOnlyEmpty")
+                    : t("explore.courseDetailNoSyllabus")}
+                </DetailEmpty>
+              )}
+            </DetailField>
           </div>
         </div>
       );
@@ -410,80 +484,62 @@ export function CourseCodeExplorer({
     if (selection.kind === "item") {
       const { course, item } = selection;
       return (
-        <div className="space-y-3">
-          <p className="text-sm text-app-muted/90">{t("explore.selectedItem")}</p>
-          <p className="text-xs text-app-muted/85">{course.pathLabel}</p>
-          <p className="text-sm font-medium text-app-muted">{course.name}</p>
-          <div>
-            <p className="mb-0.5 text-xs text-app-muted/85">
-              {t("explore.itemDetailInstructors")}
-            </p>
-            {(course.instructors?.length ?? 0) > 0 ? (
-              <ul className="list-inside list-disc text-sm text-app-fg/92">
-                {course.instructors!.map((i, idx) => (
-                  <li key={idx} className="marker:text-app-muted/85">
-                    {listUserLabel(i.name, i.email)}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-app-muted/85">
-                {t("explore.itemDetailNoInstructors")}
-              </p>
-            )}
-          </div>
-          <p className="text-xs text-app-muted/85">
-            {t("explore.itemDetailType")}:{" "}
-            <span className="text-app-fg/92">
-              {item.typeLabel} {item.number}
-            </span>
-          </p>
-          <p className="text-lg font-semibold text-app-fg">
-            {labelOf(item)}
-          </p>
-          <div>
-            <p className="mb-1 text-xs font-medium text-app-muted/85">
-              {t("explore.itemDetailFile")}
-            </p>
-            {!item.onSiteDisplay && !item.oneDriveUrl ? (
-              <p className="text-sm text-app-muted/85">
-                {t("explore.itemDetailNoLink")}
-              </p>
-            ) : (
-              <div className="space-y-1">
-                {item.onSiteDisplay && (
-                  <OnSiteBadge label={t("teach.onSiteDisplay")} />
-                )}
-                {item.oneDriveUrl && (
-                  <span className="inline-flex items-center gap-2">
-                    <a
-                      href={item.oneDriveUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex text-sm font-medium text-app-link hover:underline"
-                    >
-                      {item.linkTitle || t("explore.fileLinkDefault")}
-                    </a>
-                    <LinkHealthDot status={linkHealth[item.oneDriveUrl.trim()] ?? "checking"} />
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-          <div>
-            <p className="mb-1.5 text-xs font-medium text-app-muted/85">
-              {t("explore.itemDetailCodes")}
-            </p>
-            {item.codes.length === 0 ? (
-              <span className="text-sm text-app-muted/85">?</span>
-            ) : (
-              <CodesReadonlyGrouped
-                oneLine
-                codes={item.codes}
-                onCodeClick={(v) => showCodeDetails(v)}
-                idPrefix={`panel-${item.id}`}
+        <div>
+          <DetailEyebrow>{t("explore.selectedItem")}</DetailEyebrow>
+          <DetailTitle>{labelOf(item)}</DetailTitle>
+          <DetailMeta>{course.pathLabel}</DetailMeta>
+          <div className="mt-4">
+            <DetailField label={t("explore.itemDetailInstructors")}>
+              <DetailFaculty
+                instructors={course.instructors}
+                empty={t("explore.itemDetailNoInstructors")}
               />
-            )}
+            </DetailField>
+            <DetailField label={t("explore.itemDetailType")}>
+              <span className="inline-flex rounded-md bg-app-primary/10 px-2 py-0.5 text-xs font-semibold text-app-primary">
+                {item.typeLabel} {item.number}
+              </span>
+            </DetailField>
+            <DetailField label={t("explore.itemDetailFile")}>
+              {!item.onSiteDisplay && !item.oneDriveUrl ? (
+                <DetailEmpty>{t("explore.itemDetailNoLink")}</DetailEmpty>
+              ) : (
+                <div className="space-y-1.5">
+                  {item.onSiteDisplay && (
+                    <OnSiteBadge label={t("teach.onSiteDisplay")} />
+                  )}
+                  {item.oneDriveUrl && (
+                    <span className="inline-flex items-center gap-2">
+                      <a
+                        href={item.oneDriveUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-medium text-app-link hover:underline"
+                      >
+                        {item.linkTitle || t("explore.fileLinkDefault")}
+                      </a>
+                      <LinkHealthDot
+                        status={
+                          linkHealth[item.oneDriveUrl.trim()] ?? "checking"
+                        }
+                      />
+                    </span>
+                  )}
+                </div>
+              )}
+            </DetailField>
+            <DetailField label={t("explore.itemDetailCodes")}>
+              {item.codes.length === 0 ? (
+                <DetailEmpty>—</DetailEmpty>
+              ) : (
+                <CodesReadonlyGrouped
+                  oneLine
+                  codes={item.codes}
+                  onCodeClick={(v) => showCodeDetails(v)}
+                  idPrefix={`panel-${item.id}`}
+                />
+              )}
+            </DetailField>
           </div>
         </div>
       );
@@ -491,71 +547,61 @@ export function CourseCodeExplorer({
     if (selection.kind === "code") {
       const { code, refs } = selection;
       return (
-        <div className="space-y-3">
-          <p className="text-sm text-app-muted/90">{t("explore.selectedCode")}</p>
-          <p className="flex items-center gap-2 text-xl font-semibold text-app-fg">
-            <Hash size={18} />
-            {code}
-          </p>
+        <div>
+          <DetailEyebrow>{t("explore.selectedCode")}</DetailEyebrow>
+          <DetailTitle>
+            <span className="inline-flex items-center gap-1.5 font-mono tracking-tight">
+              <Hash size={16} className="text-app-primary/80" aria-hidden />
+              {code}
+            </span>
+          </DetailTitle>
           {codeLabels[code] != null && codeLabels[code] !== "" && (
-            <p className="text-sm leading-relaxed text-app-muted/90">
-              {codeLabels[code]}
-            </p>
+            <DetailMeta>{codeLabels[code]}</DetailMeta>
           )}
-          <p className="text-sm text-app-muted/90">{t("explore.codeUsedIn")}</p>
-          <ul className="space-y-2">
-            {refs.length === 0 && (
-              <li className="text-sm text-app-muted/85">{t("explore.noMatch")}</li>
-            )}
-            {refs.map((r) => {
-              const crs = initialData.find((c) => c.id === r.courseId);
-              const itm = crs?.items.find((i) => i.id === r.itemId);
-              const itemLabel = `${r.type} ${r.number}`;
-              return (
-                <li
-                  key={`${r.itemId}-${r.code}`}
-                  className="flex items-start gap-2"
-                >
-                  <BookOpen
-                    size={16}
-                    className="mt-2 shrink-0 text-app-primary/80"
-                    aria-hidden
-                  />
-                  <button
-                    type="button"
-                    className="group w-full min-w-0 !cursor-pointer rounded-lg border border-app-border/70 bg-app-card/40 p-2.5 text-left text-app-fg transition hover:border-app-primary/35 hover:bg-app-card/65 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-link/30"
-                    onClick={() => {
-                      if (crs && itm) {
-                        showItemDetails(crs, itm);
-                        setQuery("");
-                      }
-                    }}
-                  >
-                    <div className="mb-1.5 flex flex-wrap items-baseline gap-2">
-                      <span
-                        className="inline-block rounded-md border border-app-primary/25 bg-app-primary/[0.1] px-2 py-0.5 text-sm font-bold tracking-tight text-app-primary"
-                        title={itemLabel}
-                      >
-                        {itemLabel}
-                      </span>
-                    </div>
-                    <div className="text-sm font-medium text-app-fg transition-colors group-hover:text-app-link">
-                      {r.course}
-                    </div>
-                    <div className="mt-0.5 text-xs text-app-muted/85">
-                      {r.pathLabel}
-                    </div>
-                    {r.instructorsLabel ? (
-                      <div className="mt-0.5 text-xs text-app-muted/85">
-                        {t("explore.itemDetailInstructors")}:{" "}
-                        {r.instructorsLabel}
-                      </div>
-                    ) : null}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
+          <div className="mt-4">
+            <DetailField label={t("explore.codeUsedIn")}>
+              {refs.length === 0 ? (
+                <DetailEmpty>{t("explore.noMatch")}</DetailEmpty>
+              ) : (
+                <ul className="space-y-2">
+                  {refs.map((r) => {
+                    const crs = initialData.find((c) => c.id === r.courseId);
+                    const itm = crs?.items.find((i) => i.id === r.itemId);
+                    const itemLabel = `${r.type} ${r.number}`;
+                    return (
+                      <li key={`${r.itemId}-${r.code}`}>
+                        <button
+                          type="button"
+                          className="group w-full min-w-0 !cursor-pointer rounded-lg border border-app-border/70 bg-app-card/40 px-2.5 py-2 text-left transition hover:border-app-primary/35 hover:bg-app-card/65 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-link/30"
+                          onClick={() => {
+                            if (crs && itm) {
+                              showItemDetails(crs, itm);
+                              setQuery("");
+                            }
+                          }}
+                        >
+                          <span className="inline-flex rounded-md bg-app-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-app-primary">
+                            {itemLabel}
+                          </span>
+                          <p className="mt-1.5 text-sm font-medium text-app-fg transition-colors group-hover:text-app-link">
+                            {r.course}
+                          </p>
+                          <p className="mt-0.5 text-xs italic text-app-muted/70">
+                            {r.pathLabel}
+                          </p>
+                          {r.instructorsLabel ? (
+                            <p className="mt-0.5 text-xs text-app-muted/70">
+                              {r.instructorsLabel}
+                            </p>
+                          ) : null}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </DetailField>
+          </div>
         </div>
       );
     }
@@ -881,15 +927,16 @@ export function CourseCodeExplorer({
             )}
           </div>
 
-          <aside className="w-full min-w-0 shrink-0 lg:sticky lg:top-20 lg:max-w-sm lg:self-start z-10 max-h-[min(100vh,56rem)] overflow-y-auto">
-            <Section
-              title={t("explore.panelTitle")}
-              icon={<ChevronRight size={18} />}
-              right={
-                selection && (
+          <aside className="z-10 w-full min-w-0 shrink-0 overflow-y-auto lg:sticky lg:top-20 lg:max-h-[min(100vh,56rem)] lg:max-w-sm lg:self-start">
+            <div className="glass p-4">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-muted/65">
+                  {t("explore.panelTitle")}
+                </p>
+                {selection && (
                   <button
                     type="button"
-                    className="cursor-pointer text-sm text-app-muted/90 hover:text-app-link hover:underline"
+                    className="cursor-pointer text-xs font-medium text-app-muted/75 hover:text-app-link hover:underline"
                     onClick={() => {
                       setSelection(null);
                       setParams({
@@ -901,11 +948,10 @@ export function CourseCodeExplorer({
                   >
                     {t("explore.clear")}
                   </button>
-                )
-              }
-            >
+                )}
+              </div>
               <DetailsPanel />
-            </Section>
+            </div>
           </aside>
         </div>
       </main>

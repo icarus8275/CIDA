@@ -91,8 +91,8 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "explore.collapseAllCourses": { en: "Collapse courses", ko: "수업 모두 접기" },
   "explore.expandAllCourses": { en: "Expand courses", ko: "수업 모두 펼치기" },
   "explore.linkOnlyEmpty": {
-    en: "No link yet.",
-    ko: "등록된 링크가 없습니다.",
+    en: "None yet.",
+    ko: "아직 없음.",
   },
   "explore.linkNameDefault": { en: "Link", ko: "링크" },
   "explore.noResults": {
@@ -110,16 +110,16 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     en: "Select a course, item, or code to see details.",
     ko: "과목·항목·코드를 선택하면 상세가 표시됩니다.",
   },
-  "explore.selectedCourse": { en: "Selected course", ko: "선택한 과목" },
+  "explore.selectedCourse": { en: "Course", ko: "과목" },
   "explore.courseDetailSyllabus": { en: "Syllabus", ko: "강의계획서" },
   "explore.courseDetailNoSyllabus": {
-    en: "No syllabus link yet.",
-    ko: "강의계획서 링크가 없습니다.",
+    en: "None yet.",
+    ko: "아직 없음.",
   },
   "explore.syllabusLinkDefault": { en: "Open syllabus", ko: "강의계획서 열기" },
-  "explore.selectedItem": { en: "Selected item", ko: "선택한 항목" },
-  "explore.selectedCode": { en: "Selected code", ko: "선택한 코드" },
-  "explore.codeUsedIn": { en: "Used in:", ko: "사용처:" },
+  "explore.selectedItem": { en: "Item", ko: "항목" },
+  "explore.selectedCode": { en: "Code", ko: "코드" },
+  "explore.codeUsedIn": { en: "Used in", ko: "사용처" },
   "explore.noMatch": { en: "No matches.", ko: "일치 항목이 없습니다." },
   "explore.footer": {
     en: "Select an item for its codes, or a code to see where it is used.",
@@ -127,16 +127,16 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   },
   "explore.itemDetailInstructors": { en: "Faculty", ko: "담당 교수" },
   "explore.itemDetailNoInstructors": {
-    en: "No faculty assigned to this section.",
-    ko: "이 섹션에 지정된 교수가 없습니다.",
+    en: "None assigned.",
+    ko: "지정된 교수 없음.",
   },
   "explore.itemDetailType": { en: "Type", ko: "유형" },
-  "explore.itemDetailCodes": { en: "Codes on this item", ko: "이 항목의 코드" },
+  "explore.itemDetailCodes": { en: "Codes", ko: "코드" },
   "explore.itemDetailNoLink": {
-    en: "No file or on-site display registered for this item.",
-    ko: "등록된 파일 또는 On Site Display가 없습니다.",
+    en: "None registered.",
+    ko: "등록된 자료 없음.",
   },
-  "explore.itemDetailFile": { en: "File / OneDrive", ko: "자료(OneDrive)" },
+  "explore.itemDetailFile": { en: "File", ko: "자료" },
   // signin
   "signin.title": { en: "Sign in", ko: "로그인" },
   "signin.hint": {
