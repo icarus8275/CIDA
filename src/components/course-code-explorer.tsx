@@ -47,6 +47,8 @@ const Section = ({
   right,
   badge,
   onTitleClick,
+  id,
+  className,
 }: {
   title: string;
   icon: React.ReactNode;
@@ -54,8 +56,13 @@ const Section = ({
   right?: React.ReactNode;
   badge?: React.ReactNode;
   onTitleClick?: () => void;
+  id?: string;
+  className?: string;
 }) => (
-  <div className="glass p-4">
+  <div
+    id={id}
+    className={["glass p-4", className].filter(Boolean).join(" ")}
+  >
     <div className="mb-3 flex items-center justify-between gap-3">
       <div className="flex min-w-0 items-center gap-2 font-semibold text-app-fg">
         {icon}
@@ -269,10 +276,12 @@ export function CourseCodeExplorer({
   const [tab, setTab] = useState<Tab>("tree");
   const [selection, setSelection] = useState<Selection>(null);
   const detailsRef = useRef<HTMLElement>(null);
+  const pendingScrollCourseId = useRef<string | null>(null);
   const { t } = useI18n();
 
   useEffect(() => {
     if (!selection) return;
+    if (pendingScrollCourseId.current) return;
     detailsRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [selection]);
 
@@ -394,9 +403,22 @@ export function CourseCodeExplorer({
     setParams({ courseId: course.id, itemId: item.id, code: null });
   };
 
-  const showCourseDetails = (course: ExploreCourse) => {
+  const showCourseDetails = (
+    course: ExploreCourse,
+    options?: { revealInTree?: boolean }
+  ) => {
     setSelection({ kind: "course", course });
     setParams({ courseId: course.id, itemId: null, code: null });
+    if (options?.revealInTree) {
+      setTab("tree");
+      setQuery("");
+      setOpen((o) => ({
+        ...o,
+        [`term:${course.termId}`]: true,
+        [`course:${course.id}`]: true,
+      }));
+      pendingScrollCourseId.current = course.id;
+    }
   };
 
   const showCodeDetails = (
@@ -458,6 +480,28 @@ export function CourseCodeExplorer({
   const kTerm = (termId: string) => `term:${termId}`;
   const kCourse = (c: ExploreCourse) => `course:${c.id}`;
   const kGroup = (c: ExploreCourse, g: string) => `group:${c.id}:${g}`;
+
+  useEffect(() => {
+    const id = pendingScrollCourseId.current;
+    if (!id || tab !== "tree") return;
+
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      if (cancelled) return;
+      const el = document.getElementById(`explore-course-${id}`);
+      if (!el) return;
+      pendingScrollCourseId.current = null;
+      el.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+        inline: "nearest",
+      });
+    }, 80);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [open, query, tab, selection]);
 
   const DetailsPanel = () => {
     if (!selection) {
@@ -687,8 +731,7 @@ export function CourseCodeExplorer({
                           type="button"
                           className="group w-full min-w-0 !cursor-pointer rounded-lg border border-app-border/70 bg-app-card/40 px-2.5 py-2 text-left transition hover:border-app-primary/35 hover:bg-app-card/65 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-link/30"
                           onClick={() => {
-                            showCourseDetails(crs);
-                            setQuery("");
+                            showCourseDetails(crs, { revealInTree: true });
                           }}
                         >
                           <p className="text-sm font-medium text-app-fg transition-colors group-hover:text-app-link">
@@ -850,6 +893,13 @@ export function CourseCodeExplorer({
                             return (
                               <Section
                                 key={course.id}
+                                id={`explore-course-${course.id}`}
+                                className={
+                                  selection?.kind === "course" &&
+                                  selection.course.id === course.id
+                                    ? "scroll-mt-28 ring-2 ring-app-primary/30"
+                                    : "scroll-mt-28"
+                                }
                                 title={course.pathLabel}
                                 icon={<BookOpen size={18} />}
                                 badge={
