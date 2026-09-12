@@ -291,10 +291,11 @@ export function OfferingSectionsModal({ offering, onClose }: Props) {
       }
     }
     if (primary) {
-      const r = await fetch(`/api/teach/section/${primary.id}`, {
+      const r = await fetch("/api/admin/sections", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          id: primary.id,
           syllabusUrl: linkUrl.trim() || null,
           syllabusLinkTitle: linkTitle.trim() || null,
         }),

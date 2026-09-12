@@ -1,7 +1,15 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { NextResponse } from "next/server";
+
+function revalidateTeachAndExplore() {
+  revalidatePath("/teach");
+  revalidatePath("/teach", "layout");
+  revalidatePath("/explore");
+  revalidatePath("/explore", "layout");
+}
 
 function isPrismaUniqueViolation(e: unknown): boolean {
   return (
@@ -94,6 +102,7 @@ export async function POST(req: Request) {
         },
       });
     }
+    revalidateTeachAndExplore();
     return NextResponse.json(row);
   } catch (e) {
     if (isPrismaUniqueViolation(e)) {
@@ -135,5 +144,6 @@ export async function DELETE(req: Request) {
   const id = searchParams.get("id");
   if (!id) return NextResponse.json({ error: "id" }, { status: 400 });
   await prisma.courseOffering.delete({ where: { id } });
+  revalidateTeachAndExplore();
   return NextResponse.json({ ok: true });
 }

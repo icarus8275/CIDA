@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -189,6 +190,14 @@ function DetailEmpty({ children }: { children: React.ReactNode }) {
   return <p className="text-sm italic text-app-muted/65">{children}</p>;
 }
 
+function facultyNames(
+  instructors: { name: string | null; email: string | null }[] | undefined
+) {
+  return (instructors ?? [])
+    .map((i) => i.name?.trim() || i.email?.trim() || "")
+    .filter(Boolean);
+}
+
 function DetailFaculty({
   instructors,
   empty,
@@ -254,7 +263,13 @@ export function CourseCodeExplorer({
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const [tab, setTab] = useState<Tab>("tree");
   const [selection, setSelection] = useState<Selection>(null);
+  const detailsRef = useRef<HTMLElement>(null);
   const { t } = useI18n();
+
+  useEffect(() => {
+    if (!selection) return;
+    detailsRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [selection]);
 
   const allLinkUrls = useMemo(() => {
     const urls: string[] = [];
@@ -408,6 +423,10 @@ export function CourseCodeExplorer({
       const item = course?.items.find((x) => x.id === iid);
       if (course && item) {
         setSelection({ kind: "item", course, item });
+        return;
+      }
+      if (course) {
+        setSelection({ kind: "course", course });
       }
       return;
     }
@@ -453,22 +472,29 @@ export function CourseCodeExplorer({
               }
             >
               {course.syllabusUrl ? (
-                <span className="inline-flex items-center gap-2">
-                  <a
-                    href={course.syllabusUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-medium text-app-link hover:underline"
-                  >
-                    {course.syllabusLinkTitle ||
-                      (course.linkOnly
-                        ? t("explore.linkNameDefault")
-                        : t("explore.syllabusLinkDefault"))}
-                  </a>
-                  <LinkHealthDot
-                    status={linkHealth[course.syllabusUrl.trim()] ?? "checking"}
-                  />
-                </span>
+                <div className="space-y-0.5">
+                  <span className="inline-flex items-center gap-2">
+                    <a
+                      href={course.syllabusUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-medium text-app-link hover:underline"
+                    >
+                      {course.syllabusLinkTitle ||
+                        (course.linkOnly
+                          ? t("explore.linkNameDefault")
+                          : t("explore.syllabusLinkDefault"))}
+                    </a>
+                    <LinkHealthDot
+                      status={linkHealth[course.syllabusUrl.trim()] ?? "checking"}
+                    />
+                  </span>
+                  {course.linkOnly && (
+                    <p className="break-all text-xs text-app-muted/70">
+                      {course.syllabusUrl}
+                    </p>
+                  )}
+                </div>
               ) : (
                 <DetailEmpty>
                   {course.linkOnly
@@ -751,6 +777,7 @@ export function CourseCodeExplorer({
                                 }
                                 onTitleClick={() => showCourseDetails(course)}
                                 right={
+                                  course.linkOnly ? undefined : (
                                   <button
                                     type="button"
                                     onClick={() =>
@@ -765,9 +792,50 @@ export function CourseCodeExplorer({
                                       ? t("explore.collapse")
                                       : t("explore.expand")}
                                   </button>
+                                  )
                                 }
                               >
-                                {isCourseOpen && (
+                                {course.linkOnly ? (
+                                  <button
+                                    type="button"
+                                    className="group w-full !cursor-pointer rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-app-card/55"
+                                    onClick={() => showCourseDetails(course)}
+                                  >
+                                    <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-app-muted/70">
+                                      {t("explore.itemDetailInstructors")}
+                                    </p>
+                                    {facultyNames(course.instructors).length > 0 ? (
+                                      <p className="mt-1 text-sm font-medium text-app-fg transition-colors group-hover:text-app-link">
+                                        {facultyNames(course.instructors).join(" · ")}
+                                      </p>
+                                    ) : (
+                                      <p className="mt-1 text-sm italic text-app-muted/65">
+                                        {t("explore.itemDetailNoInstructors")}
+                                      </p>
+                                    )}
+                                    <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.12em] text-app-muted/70">
+                                      {course.syllabusLinkTitle ||
+                                        t("explore.linkNameDefault")}
+                                    </p>
+                                    {course.syllabusUrl ? (
+                                      <span className="mt-1 inline-flex items-center gap-2 text-sm font-medium text-app-link">
+                                        {course.syllabusLinkTitle ||
+                                          t("explore.linkNameDefault")}
+                                        <LinkHealthDot
+                                          status={
+                                            linkHealth[course.syllabusUrl.trim()] ??
+                                            "checking"
+                                          }
+                                        />
+                                      </span>
+                                    ) : (
+                                      <p className="mt-1 text-sm italic text-app-muted/65">
+                                        {t("explore.linkOnlyEmpty")}
+                                      </p>
+                                    )}
+                                  </button>
+                                ) : (
+                                isCourseOpen && (
                                   <div className="divide-y divide-app-border/70">
                                     {(course.syllabusUrl || course.linkOnly) && (
                                       <div className="py-2">
@@ -886,6 +954,7 @@ export function CourseCodeExplorer({
                                       );
                                     })}
                                   </div>
+                                )
                                 )}
                               </Section>
                             );
@@ -927,7 +996,10 @@ export function CourseCodeExplorer({
             )}
           </div>
 
-          <aside className="z-10 w-full min-w-0 shrink-0 overflow-y-auto lg:sticky lg:top-20 lg:max-h-[min(100vh,56rem)] lg:max-w-sm lg:self-start">
+          <aside
+            ref={detailsRef}
+            className="z-10 w-full min-w-0 shrink-0 overflow-y-auto lg:sticky lg:top-20 lg:max-h-[min(100vh,56rem)] lg:max-w-sm lg:self-start"
+          >
             <div className="glass p-4">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-muted/65">

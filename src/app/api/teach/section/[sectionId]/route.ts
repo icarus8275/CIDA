@@ -3,6 +3,7 @@ import { logActivity } from "@/lib/activity-log";
 import { canEditSection } from "@/lib/guards";
 import { describeSectionPath } from "@/lib/item-labels";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 import {
   loadCourseItemsForSection,
   shareStateForSection,
@@ -151,5 +152,9 @@ export async function PATCH(
       `${s.user.name || s.user.email} 님이 ${path} 강의계획서를 수정했습니다`
     );
   }
+  revalidatePath("/teach");
+  revalidatePath("/teach", "layout");
+  revalidatePath("/explore");
+  revalidatePath("/explore", "layout");
   return NextResponse.json({ ...section, courseItems, share });
 }

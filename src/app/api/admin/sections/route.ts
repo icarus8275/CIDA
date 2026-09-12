@@ -19,7 +19,24 @@ const patchLabelSchema = z.object({
   id: z.string().min(1),
   label: z.string().min(1).max(32).optional(),
   sortOrder: z.number().int().optional(),
+  syllabusUrl: z.string().max(2000).optional().nullable(),
+  syllabusLinkTitle: z.string().max(500).optional().nullable(),
 });
+
+function normalizeShareUrl(u: string | null | undefined): string | null {
+  if (u == null) return null;
+  const t = u.trim();
+  if (!t) return null;
+  if (!/^https?:\/\//i.test(t)) return null;
+  return t;
+}
+
+function revalidateTeachAndExplore() {
+  revalidatePath("/teach");
+  revalidatePath("/teach", "layout");
+  revalidatePath("/explore");
+  revalidatePath("/explore", "layout");
+}
 
 export async function GET(req: Request) {
   const s = await auth();
@@ -63,6 +80,7 @@ export async function POST(req: Request) {
       sortOrder: body.sortOrder ?? (max._max.sortOrder ?? 0) + 1,
     },
   });
+  revalidateTeachAndExplore();
   return NextResponse.json(row);
 }
 
@@ -85,10 +103,24 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ ok: true });
   }
   const u = patchLabelSchema.parse(raw);
+  const data: {
+    label?: string;
+    sortOrder?: number;
+    syllabusUrl?: string | null;
+    syllabusLinkTitle?: string | null;
+  } = {};
+  if (u.label !== undefined) data.label = u.label;
+  if (u.sortOrder !== undefined) data.sortOrder = u.sortOrder;
+  if (u.syllabusUrl !== undefined) data.syllabusUrl = normalizeShareUrl(u.syllabusUrl);
+  if (u.syllabusLinkTitle !== undefined) {
+    const title = u.syllabusLinkTitle?.trim();
+    data.syllabusLinkTitle = title ? title : null;
+  }
   const row = await prisma.section.update({
     where: { id: u.id },
-    data: { label: u.label, sortOrder: u.sortOrder },
+    data,
   });
+  revalidateTeachAndExplore();
   return NextResponse.json(row);
 }
 
