@@ -9,7 +9,9 @@ function byTermThenCourse<
     courseOffering: {
       course: { name: string };
       term: {
-        academicYear: { startYear?: number | null };
+        kind?: string | null;
+        groupLabel?: string | null;
+        academicYear?: { startYear?: number | null } | null;
         termSeason?: { key: string } | null;
         sortOrder?: number;
       };

@@ -130,14 +130,15 @@ enum TermKind {
 
 model Term {
   id             String       @id @default(cuid())
-  academicYearId String
+  /// Null when kind is GROUP — extra groups are not tied to a year
+  academicYearId String?
   /// Null when kind is GROUP (custom extra-curricular / activity group)
   termSeasonId   String?
   kind           TermKind     @default(ACADEMIC)
   /// Display name for GROUP terms (e.g. Extracurricular)
   groupLabel     String?      @map("group_label")
   sortOrder      Int          @default(0)
-  academicYear   AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
   termSeason     TermSeason?  @relation(fields: [termSeasonId], references: [id], onDelete: Restrict)
   offerings      CourseOffering[]
 

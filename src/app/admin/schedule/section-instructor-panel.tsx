@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useI18n } from "@/components/locale/locale-provider";
-import { formatTermForDisplay } from "@/lib/term-display";
+import { compareTerms, formatTermForDisplay } from "@/lib/term-display";
 import { listUserLabel } from "@/lib/user-display";
 
 type TermRef = {
   kind?: "ACADEMIC" | "GROUP";
   groupLabel?: string | null;
-  academicYear: { label: string; startYear?: number | null };
+  academicYear: { label: string; startYear?: number | null } | null;
   termSeason: { key: string; label: string } | null;
 };
 
@@ -26,53 +26,12 @@ type SiRow = {
   };
 };
 
-/** Fall → Spring → Summer within the same academic year, then by season key. */
-function seasonOrder(key: string): number {
-  const k = key.toLowerCase();
-  if (k.includes("fall")) return 0;
-  if (k.includes("spring")) return 1;
-  if (k.includes("summer")) return 2;
-  return 3;
-}
-
 function compareByTermCourseSectionUser(a: SiRow, b: SiRow): number {
   const A = a.section.courseOffering;
   const B = b.section.courseOffering;
-  const ta = A.term;
-  const tb = B.term;
-  const yA = ta.academicYear.startYear;
-  const yB = tb.academicYear.startYear;
-  if (yA != null && yB != null && yA !== yB) {
-    return yA - yB;
-  }
-  if (yA == null && yB != null) {
-    return 1;
-  }
-  if (yA != null && yB == null) {
-    return -1;
-  }
-  if (yA == null && yB == null) {
-    const l = ta.academicYear.label.localeCompare(tb.academicYear.label, undefined, {
-      sensitivity: "base",
-    });
-    if (l !== 0) {
-      return l;
-    }
-  }
-  const sA = seasonOrder(ta.termSeason?.key ?? "");
-  const sB = seasonOrder(tb.termSeason?.key ?? "");
-  if (sA !== sB) {
-    return sA - sB;
-  }
-  const tsk = (ta.termSeason?.key ?? ta.groupLabel ?? "").localeCompare(
-    tb.termSeason?.key ?? tb.groupLabel ?? "",
-    undefined,
-    {
-    sensitivity: "base",
-    }
-  );
-  if (tsk !== 0) {
-    return tsk;
+  const termCmp = compareTerms(A.term, B.term);
+  if (termCmp !== 0) {
+    return termCmp;
   }
   const c = A.course.name.localeCompare(B.course.name, undefined, { sensitivity: "base" });
   if (c !== 0) {

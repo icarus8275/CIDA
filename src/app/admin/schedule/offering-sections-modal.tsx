@@ -12,7 +12,7 @@ type TermRow = {
   sortOrder: number;
   kind?: "ACADEMIC" | "GROUP";
   groupLabel?: string | null;
-  academicYear: { label: string; startYear: number };
+  academicYear: { label: string; startYear: number } | null;
   termSeason: { key: string; label: string } | null;
 };
 

@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { compareTerms } from "@/lib/term-display";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { NextResponse } from "next/server";
@@ -22,7 +23,7 @@ function isPrismaUniqueViolation(e: unknown): boolean {
 }
 
 const postSchema = z.object({
-  academicYearId: z.string().min(1),
+  academicYearId: z.string().min(1).optional(),
   termSeasonId: z.string().min(1).optional(),
   kind: z.enum(["ACADEMIC", "GROUP"]).optional(),
   groupLabel: z.string().min(1).max(200).optional(),
@@ -40,12 +41,12 @@ export async function GET() {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   const list = await prisma.term.findMany({
-    orderBy: { sortOrder: "asc" },
     include: {
       academicYear: true,
       termSeason: true,
     },
   });
+  list.sort(compareTerms);
   return NextResponse.json(list);
 }
 
@@ -59,21 +60,29 @@ export async function POST(req: Request) {
   if (asGroup && !body.groupLabel?.trim()) {
     return NextResponse.json({ error: "groupLabel" }, { status: 400 });
   }
-  if (!asGroup && !body.termSeasonId) {
+  if (!asGroup && (!body.academicYearId || !body.termSeasonId)) {
     return NextResponse.json({ error: "termSeasonId" }, { status: 400 });
   }
   try {
+    let groupSort = body.sortOrder;
+    if (asGroup && groupSort == null) {
+      const last = await prisma.term.aggregate({
+        where: { kind: "GROUP" },
+        _max: { sortOrder: true },
+      });
+      groupSort = (last._max.sortOrder ?? 0) + 1;
+    }
     const term = await prisma.term.create({
       data: asGroup
         ? {
-            academicYearId: body.academicYearId,
+            academicYearId: null,
             kind: "GROUP",
             groupLabel: body.groupLabel!.trim(),
             termSeasonId: null,
-            sortOrder: body.sortOrder ?? 0,
+            sortOrder: groupSort ?? 1,
           }
         : {
-            academicYearId: body.academicYearId,
+            academicYearId: body.academicYearId!,
             kind: "ACADEMIC",
             termSeasonId: body.termSeasonId!,
             sortOrder: body.sortOrder ?? 0,

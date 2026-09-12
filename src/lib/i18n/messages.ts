@@ -479,8 +479,8 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     ko: "4 · 엑스트라 그룹(학기와 같은 레벨)",
   },
   "admin.schedGroupHelp": {
-    en: "Add a named group next to regular terms—for extracurriculars or similar. Courses in a group only need a custom-labeled link, not assignments or quizzes.",
-    ko: "정규 학기 옆에 이름 있는 그룹을 둡니다(엑스트라커리큘러 등). 이 그룹의 과목은 assignment/quiz 없이 이름 붙인 링크 하나만 연결하면 됩니다.",
+    en: "Add a named group after every academic term—for extracurriculars or similar. No year is needed. Courses in a group only need a custom-labeled link, not assignments or quizzes.",
+    ko: "학기가 몇 개든 맨 뒤에 이름 있는 그룹을 둡니다(엑스트라커리큘러 등). 년도는 필요 없습니다. 이 그룹의 과목은 assignment/quiz 없이 이름 붙인 링크 하나만 연결하면 됩니다.",
   },
   "admin.schedGroupName": { en: "Group name", ko: "그룹 이름" },
   "admin.schedAddGroup": { en: "Add group", ko: "그룹 추가" },

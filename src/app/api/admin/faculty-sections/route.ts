@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { compareTerms } from "@/lib/term-display";
 import { NextResponse } from "next/server";
 
 /**
@@ -16,12 +17,6 @@ export async function GET(req: Request) {
   }
   const sections = await prisma.section.findMany({
     where: { instructors: { some: { userId } } },
-    orderBy: [
-      { courseOffering: { term: { academicYear: { startYear: "asc" } } } },
-      { courseOffering: { term: { sortOrder: "asc" } } },
-      { courseOffering: { course: { name: "asc" } } },
-      { label: "asc" },
-    ],
     include: {
       courseOffering: {
         include: {
@@ -32,6 +27,15 @@ export async function GET(req: Request) {
         },
       },
     },
+  });
+  sections.sort((a, b) => {
+    const byTerm = compareTerms(a.courseOffering.term, b.courseOffering.term);
+    if (byTerm !== 0) return byTerm;
+    const byCourse = a.courseOffering.course.name.localeCompare(
+      b.courseOffering.course.name
+    );
+    if (byCourse !== 0) return byCourse;
+    return a.label.localeCompare(b.label, undefined, { numeric: true });
   });
   return NextResponse.json(sections);
 }

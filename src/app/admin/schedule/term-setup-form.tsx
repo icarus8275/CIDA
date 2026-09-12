@@ -239,13 +239,12 @@ export function TermSetupForm() {
               e.preventDefault();
               setAddTermError(null);
               const label = groupLabel.trim();
-              if (!termY || !label) return;
+              if (!label) return;
               const r = await fetch("/api/admin/terms", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   kind: "GROUP",
-                  academicYearId: termY,
                   groupLabel: label,
                 }),
               });
@@ -261,25 +260,6 @@ export function TermSetupForm() {
             }}
           >
             <div className="flex flex-wrap items-end gap-3">
-              <label className="flex min-w-[11rem] flex-col gap-1">
-                <span className="text-xs text-app-muted/90">
-                  {t("admin.schedAcademicYear")}
-                </span>
-                <select
-                  className="input-glass px-2 py-1.5"
-                  value={termY}
-                  onChange={(e) => setTermY(e.target.value)}
-                >
-                  {years.length === 0 && (
-                    <option value="">{t("admin.schedPickYear")}</option>
-                  )}
-                  {years.map((y) => (
-                    <option key={y.id} value={y.id}>
-                      {y.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
               <label className="flex min-w-[11rem] flex-col gap-1">
                 <span className="text-xs text-app-muted/90">
                   {t("admin.schedGroupName")}

@@ -1,7 +1,7 @@
 export type TermLike = {
   kind?: "ACADEMIC" | "GROUP" | string | null;
   groupLabel?: string | null;
-  academicYear: { label?: string; startYear?: number | null };
+  academicYear?: { label?: string; startYear?: number | null } | null;
   termSeason?: { key: string; label?: string } | null;
   sortOrder?: number;
 };
@@ -19,14 +19,12 @@ export function isGroupTerm(t: {
  */
 export function formatTermForDisplay(t: TermLike): string {
   if (isGroupTerm(t)) {
-    const name = t.groupLabel?.trim() || "Group";
-    const year = t.academicYear.label?.trim();
-    return year ? `${year} · ${name}` : name;
+    return t.groupLabel?.trim() || "Group";
   }
   const season = t.termSeason!;
-  const start = t.academicYear.startYear;
+  const start = t.academicYear?.startYear;
   if (start == null || Number.isNaN(Number(start))) {
-    return `${t.academicYear.label ?? ""} · ${season.label ?? season.key}`;
+    return `${t.academicYear?.label ?? ""} · ${season.label ?? season.key}`;
   }
   const y = Number(start);
   const k = season.key.toLowerCase();
@@ -42,17 +40,17 @@ export function formatTermForDisplay(t: TermLike): string {
     return `${y + 1} ${seasonWords}`;
   }
 
-  return `${t.academicYear.label ?? ""} · ${season.label ?? season.key}`;
+  return `${t.academicYear?.label ?? ""} · ${season.label ?? season.key}`;
 }
 
-/** Higher = later in the calendar (Spring 2026 < Summer 2026 < Fall 2026). Groups sort after that year’s terms. */
+/** Higher = later. Academic terms follow the calendar; extra groups always come last. */
 export function termChronology(t: TermLike): number {
-  const y = Number(t.academicYear.startYear);
+  if (isGroupTerm(t)) {
+    return 1_000_000_000 + (t.sortOrder ?? 0);
+  }
+  const y = Number(t.academicYear?.startYear);
   if (Number.isNaN(y)) {
     return t.sortOrder ?? 0;
-  }
-  if (isGroupTerm(t)) {
-    return (y + 1) * 10 + 8 + (t.sortOrder ?? 0) / 1000;
   }
   const k = (t.termSeason?.key ?? "").toLowerCase();
   let season = 0;
@@ -62,4 +60,12 @@ export function termChronology(t: TermLike): number {
   else if (typeof t.sortOrder === "number") season = t.sortOrder + 1;
   const calendarYear = season === 3 ? y : y + 1;
   return calendarYear * 10 + season;
+}
+
+export function compareTerms(a: TermLike, b: TermLike): number {
+  const d = termChronology(a) - termChronology(b);
+  if (d !== 0) return d;
+  return (a.groupLabel ?? "").localeCompare(b.groupLabel ?? "", undefined, {
+    sensitivity: "base",
+  });
 }

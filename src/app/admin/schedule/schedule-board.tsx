@@ -13,7 +13,7 @@ import {
 } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { Copy, GripVertical, X } from "lucide-react";
-import { formatTermForDisplay, isGroupTerm } from "@/lib/term-display";
+import { compareTerms, formatTermForDisplay, isGroupTerm } from "@/lib/term-display";
 import { useI18n } from "@/components/locale/locale-provider";
 import {
   OfferingSectionsModal,
@@ -31,7 +31,7 @@ type TermRow = {
   sortOrder: number;
   kind?: "ACADEMIC" | "GROUP";
   groupLabel?: string | null;
-  academicYear: { label: string; startYear: number };
+  academicYear: { label: string; startYear: number } | null;
   termSeason: { key: string; label: string } | null;
 };
 
@@ -470,7 +470,7 @@ export function ScheduleBoard() {
             courseById={courseById}
           />
           <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-2">
-            {terms.map((term) => (
+            {[...terms].sort(compareTerms).map((term) => (
               <TermColumn
                 key={term.id}
                 term={term}
