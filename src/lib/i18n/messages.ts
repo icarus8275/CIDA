@@ -120,6 +120,12 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "explore.selectedItem": { en: "Item", ko: "항목" },
   "explore.selectedCode": { en: "Code", ko: "코드" },
   "explore.codeUsedIn": { en: "Used in", ko: "사용처" },
+  "explore.codeInThisCourse": { en: "In this course", ko: "이 수업" },
+  "explore.codeOtherCourses": { en: "Other courses", ko: "다른 수업" },
+  "explore.codeNoOtherCourses": {
+    en: "No other courses use this code.",
+    ko: "이 코드를 쓰는 다른 수업이 없습니다.",
+  },
   "explore.noMatch": { en: "No matches.", ko: "일치 항목이 없습니다." },
   "explore.footer": {
     en: "Select an item for its codes, or a code to see where it is used.",

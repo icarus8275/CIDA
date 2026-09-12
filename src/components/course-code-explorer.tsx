@@ -32,7 +32,12 @@ import { CodesReadonlyGrouped } from "@/app/teach/section/[sectionId]/section-co
 type Selection =
   | { kind: "item"; course: ExploreCourse; item: ExploreCourse["items"][0] }
   | { kind: "course"; course: ExploreCourse }
-  | { kind: "code"; code: string; refs: CodeRef[] }
+  | {
+      kind: "code";
+      code: string;
+      refs: CodeRef[];
+      sourceCourse: ExploreCourse | null;
+    }
   | null;
 
 const Section = ({
@@ -394,14 +399,22 @@ export function CourseCodeExplorer({
     setParams({ courseId: course.id, itemId: null, code: null });
   };
 
-  const showCodeDetails = (code: string) => {
+  const showCodeDetails = (
+    code: string,
+    sourceCourse?: ExploreCourse | null
+  ) => {
     const c = code.toUpperCase();
     setSelection({
       kind: "code",
       code: c,
       refs: codeIndex.get(c) || [],
+      sourceCourse: sourceCourse ?? null,
     });
-    setParams({ code: c, itemId: null, courseId: null });
+    setParams({
+      code: c,
+      itemId: null,
+      courseId: sourceCourse?.id ?? null,
+    });
   };
 
   // Hydrate from URL
@@ -411,10 +424,14 @@ export function CourseCodeExplorer({
     const cd = searchParams.get("code");
     if (cd) {
       const c = cd.toUpperCase();
+      const source = cid
+        ? initialData.find((x) => x.id === cid) ?? null
+        : null;
       setSelection({
         kind: "code",
         code: c,
         refs: codeIndex.get(c) || [],
+        sourceCourse: source,
       });
       return;
     }
@@ -561,7 +578,7 @@ export function CourseCodeExplorer({
                 <CodesReadonlyGrouped
                   oneLine
                   codes={item.codes}
-                  onCodeClick={(v) => showCodeDetails(v)}
+                  onCodeClick={(v) => showCodeDetails(v, course)}
                   idPrefix={`panel-${item.id}`}
                 />
               )}
@@ -571,7 +588,64 @@ export function CourseCodeExplorer({
       );
     }
     if (selection.kind === "code") {
-      const { code, refs } = selection;
+      const { code, refs, sourceCourse } = selection;
+      const inCourse = sourceCourse
+        ? refs.filter((r) => r.courseId === sourceCourse.id)
+        : refs;
+      const otherCourses: ExploreCourse[] = [];
+      if (sourceCourse) {
+        const seen = new Set<string>();
+        for (const r of refs) {
+          if (r.courseId === sourceCourse.id || seen.has(r.courseId)) continue;
+          seen.add(r.courseId);
+          const crs = initialData.find((c) => c.id === r.courseId);
+          if (crs) otherCourses.push(crs);
+        }
+      }
+      const renderItemRef = (r: CodeRef) => {
+        const crs = initialData.find((c) => c.id === r.courseId);
+        const itm = crs?.items.find((i) => i.id === r.itemId);
+        const itemLabel = `${r.type} ${r.number}`;
+        const title = itm ? labelOf(itm) : itemLabel;
+        return (
+          <li key={`${r.itemId}-${r.code}`}>
+            <button
+              type="button"
+              className="group w-full min-w-0 !cursor-pointer rounded-lg border border-app-border/70 bg-app-card/40 px-2.5 py-2 text-left transition hover:border-app-primary/35 hover:bg-app-card/65 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-link/30"
+              onClick={() => {
+                if (crs && itm) {
+                  showItemDetails(crs, itm);
+                  setQuery("");
+                }
+              }}
+            >
+              <span className="inline-flex rounded-md bg-app-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-app-primary">
+                {itemLabel}
+              </span>
+              {title !== itemLabel && (
+                <p className="mt-1.5 text-sm font-medium text-app-fg transition-colors group-hover:text-app-link">
+                  {title}
+                </p>
+              )}
+              {!sourceCourse && (
+                <>
+                  <p className="mt-1.5 text-sm font-medium text-app-fg transition-colors group-hover:text-app-link">
+                    {r.course}
+                  </p>
+                  <p className="mt-0.5 text-xs italic text-app-muted/70">
+                    {r.pathLabel}
+                  </p>
+                  {r.instructorsLabel ? (
+                    <p className="mt-0.5 text-xs text-app-muted/70">
+                      {r.instructorsLabel}
+                    </p>
+                  ) : null}
+                </>
+              )}
+            </button>
+          </li>
+        );
+      };
       return (
         <div>
           <DetailEyebrow>{t("explore.selectedCode")}</DetailEyebrow>
@@ -584,49 +658,57 @@ export function CourseCodeExplorer({
           {codeLabels[code] != null && codeLabels[code] !== "" && (
             <DetailMeta>{codeLabels[code]}</DetailMeta>
           )}
+          {sourceCourse && (
+            <DetailMeta>{sourceCourse.pathLabel}</DetailMeta>
+          )}
           <div className="mt-4">
-            <DetailField label={t("explore.codeUsedIn")}>
-              {refs.length === 0 ? (
+            <DetailField
+              label={
+                sourceCourse
+                  ? t("explore.codeInThisCourse")
+                  : t("explore.codeUsedIn")
+              }
+            >
+              {inCourse.length === 0 ? (
                 <DetailEmpty>{t("explore.noMatch")}</DetailEmpty>
               ) : (
-                <ul className="space-y-2">
-                  {refs.map((r) => {
-                    const crs = initialData.find((c) => c.id === r.courseId);
-                    const itm = crs?.items.find((i) => i.id === r.itemId);
-                    const itemLabel = `${r.type} ${r.number}`;
-                    return (
-                      <li key={`${r.itemId}-${r.code}`}>
+                <ul className="space-y-2">{inCourse.map(renderItemRef)}</ul>
+              )}
+            </DetailField>
+            {sourceCourse && (
+              <DetailField label={t("explore.codeOtherCourses")}>
+                {otherCourses.length === 0 ? (
+                  <DetailEmpty>{t("explore.codeNoOtherCourses")}</DetailEmpty>
+                ) : (
+                  <ul className="space-y-2">
+                    {otherCourses.map((crs) => (
+                      <li key={crs.id}>
                         <button
                           type="button"
                           className="group w-full min-w-0 !cursor-pointer rounded-lg border border-app-border/70 bg-app-card/40 px-2.5 py-2 text-left transition hover:border-app-primary/35 hover:bg-app-card/65 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-link/30"
                           onClick={() => {
-                            if (crs && itm) {
-                              showItemDetails(crs, itm);
-                              setQuery("");
-                            }
+                            showCourseDetails(crs);
+                            setQuery("");
                           }}
                         >
-                          <span className="inline-flex rounded-md bg-app-primary/10 px-1.5 py-0.5 text-[11px] font-semibold text-app-primary">
-                            {itemLabel}
-                          </span>
-                          <p className="mt-1.5 text-sm font-medium text-app-fg transition-colors group-hover:text-app-link">
-                            {r.course}
+                          <p className="text-sm font-medium text-app-fg transition-colors group-hover:text-app-link">
+                            {courseHeading(crs)}
                           </p>
                           <p className="mt-0.5 text-xs italic text-app-muted/70">
-                            {r.pathLabel}
+                            {crs.pathLabel}
                           </p>
-                          {r.instructorsLabel ? (
+                          {facultyNames(crs.instructors).length > 0 ? (
                             <p className="mt-0.5 text-xs text-app-muted/70">
-                              {r.instructorsLabel}
+                              {facultyNames(crs.instructors).join(" · ")}
                             </p>
                           ) : null}
                         </button>
                       </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </DetailField>
+                    ))}
+                  </ul>
+                )}
+              </DetailField>
+            )}
           </div>
         </div>
       );
@@ -939,7 +1021,7 @@ export function CourseCodeExplorer({
                                                           oneLine
                                                           codes={it.codes}
                                                           onCodeClick={(v) =>
-                                                            showCodeDetails(v)
+                                                            showCodeDetails(v, course)
                                                           }
                                                           idPrefix={`row-${course.id}-${it.id}`}
                                                         />
@@ -998,9 +1080,9 @@ export function CourseCodeExplorer({
 
           <aside
             ref={detailsRef}
-            className="z-10 w-full min-w-0 shrink-0 overflow-y-auto lg:sticky lg:top-20 lg:max-h-[min(100vh,56rem)] lg:max-w-sm lg:self-start"
+            className="z-10 w-full min-w-0 shrink-0 overflow-y-auto overscroll-contain lg:sticky lg:top-[5.5rem] lg:max-h-[calc(100dvh-6.5rem)] lg:max-w-sm lg:self-start"
           >
-            <div className="glass p-4">
+            <div className="glass p-4 pb-12">
               <div className="mb-4 flex items-center justify-between gap-3">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-app-muted/65">
                   {t("explore.panelTitle")}
