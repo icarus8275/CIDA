@@ -133,7 +133,7 @@ export async function listCopyTargetSections(opts: {
   return rows.map(({ id, label }) => ({ id, label }));
 }
 
-/** Replace the target section's items (type, title, codes) with a copy of the source. Does not copy file or syllabus links, and does not change faculty assignments. */
+/** Wipe the destination section's items, then copy the source items (type, title, codes). Does not copy file or syllabus links, and does not change faculty assignments. */
 export async function copyCourseContents(opts: {
   actor: Actor;
   sourceSectionId: string;
@@ -187,18 +187,32 @@ export async function copyCourseContents(opts: {
     throw new CopyCourseContentsError("same_section");
   }
 
-  const [sourceItems, allowedCodes] = await Promise.all([
+  const [sourceItems, targetItems, allowedCodes] = await Promise.all([
     loadCourseItemsForSection({
       sectionId: opts.sourceSectionId,
       courseOfferingId: sourceSection.courseOfferingId,
       userId: opts.actor.id,
       role: opts.actor.role,
     }),
+    loadCourseItemsForSection({
+      sectionId: opts.targetSectionId,
+      courseOfferingId: targetSection.courseOfferingId,
+      userId: opts.actor.id,
+      role: opts.actor.role,
+    }),
     allowedCodeIdsForSection(targetWriteId),
   ]);
 
+  const clearSectionIds = [...new Set([targetWriteId, targetSection.id])];
+  const clearItemIds = targetItems.map((item) => item.id);
+
   await prisma.$transaction(async (tx) => {
-    await tx.courseItem.deleteMany({ where: { sectionId: targetWriteId } });
+    if (clearItemIds.length > 0) {
+      await tx.courseItem.deleteMany({ where: { id: { in: clearItemIds } } });
+    }
+    await tx.courseItem.deleteMany({
+      where: { sectionId: { in: clearSectionIds } },
+    });
     for (const item of sourceItems) {
       const codeNumberIds = item.codes
         .map((c) => c.codeNumberId)

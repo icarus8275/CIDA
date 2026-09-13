@@ -19,13 +19,77 @@ const DEAD_PHRASES = [
   "file or folder has been deleted",
   "link you followed may be broken",
   "page not found",
+  "file not found",
+  "file/page not found",
+  "error 404",
+  "http 404",
   "we couldn't find that",
   "sorry, this page isn't available",
+  "sorry, something went wrong",
   "this shared file is no longer available",
   "the shared file you're trying to access is no longer available",
   "this folder is no longer available",
   "the invitation is invalid",
+  "itemnotfound",
+  "item does not exist",
+  "resource could not be found",
+  "we've run into a problem",
+  "that item is no longer available",
+  "this item is no longer available",
+  "no longer shared",
+  "sharing link expired",
+  "이 링크는 더 이상 사용할 수 없습니다",
+  "이 항목이 삭제되었거나",
+  "파일을 찾을 수 없습니다",
+  "페이지를 찾을 수 없습니다",
+  "더 이상 사용할 수 없",
 ];
+
+const AUTH_HOSTS = [
+  "login.microsoftonline.com",
+  "login.live.com",
+  "login.windows.net",
+  "account.live.com",
+  "login.microsoft.com",
+];
+
+function hostnameOf(raw: string): string {
+  try {
+    return new URL(raw).hostname.toLowerCase();
+  } catch {
+    return "";
+  }
+}
+
+function isAuthWallHost(host: string): boolean {
+  return AUTH_HOSTS.some((h) => host === h || host.endsWith(`.${h}`));
+}
+
+function isMicrosoftShareHost(host: string): boolean {
+  return (
+    host.endsWith(".sharepoint.com") ||
+    host.endsWith(".sharepoint.us") ||
+    host === "1drv.ms" ||
+    host.endsWith(".1drv.ms") ||
+    host === "onedrive.live.com" ||
+    host.endsWith(".onedrive.live.com") ||
+    host === "onedrive.live.net"
+  );
+}
+
+function locationLooksDead(href: string): boolean {
+  try {
+    const u = new URL(href);
+    const blob = `${u.pathname}${u.search}${u.hash}`.toLowerCase();
+    if (/error=(itemnotfound|notfound|nofile|expired|invalid)/i.test(blob)) {
+      return true;
+    }
+    if (/_layouts\/\d+\/error\.aspx/i.test(u.pathname)) return true;
+    return false;
+  } catch {
+    return false;
+  }
+}
 
 function isPrivateIp(ip: string): boolean {
   const lower = ip.toLowerCase();
@@ -72,7 +136,8 @@ async function assertPublicHttpUrl(raw: string): Promise<URL> {
 }
 
 function classifyStatus(code: number): LinkHealthStatus | null {
-  if (code >= 200 && code < 400) return "ok";
+  if (code >= 200 && code < 300) return "ok";
+  if (code >= 300 && code < 400) return "unknown";
   if (code === 401 || code === 403 || code === 429) return "unknown";
   if (code === 404 || code === 410 || code === 422) return "dead";
   if (code >= 500) return "unknown";
@@ -81,7 +146,15 @@ function classifyStatus(code: number): LinkHealthStatus | null {
 
 function bodyLooksDead(text: string): boolean {
   const hay = text.toLowerCase();
-  return DEAD_PHRASES.some((p) => hay.includes(p));
+  if (DEAD_PHRASES.some((p) => hay.includes(p))) return true;
+  if (/<title>[^<]*(404|file not found|page not found)[^<]*<\/title>/i.test(text)) {
+    return true;
+  }
+  if (/"errorcode"\s*:\s*"(itemnotfound|notfound|resourcenotfound)"/i.test(text)) {
+    return true;
+  }
+  if (/"code"\s*:\s*"itemnotfound"/i.test(text)) return true;
+  return false;
 }
 
 async function fetchOnce(url: string, signal: AbortSignal): Promise<Response> {
@@ -92,7 +165,7 @@ async function fetchOnce(url: string, signal: AbortSignal): Promise<Response> {
     headers: {
       Accept: "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8",
       "User-Agent":
-        "Mozilla/5.0 (compatible; CIDA-LinkCheck/1.0; +https://cida.jakeson.net)",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
     },
   });
 }
@@ -117,15 +190,23 @@ async function probe(raw: string): Promise<LinkHealthStatus> {
       if (res.status >= 300 && res.status < 400) {
         const loc = res.headers.get("location");
         if (!loc) return "unknown";
-        current = new URL(loc, safe.href).href;
+        const next = new URL(loc, safe.href).href;
+        if (locationLooksDead(next)) return "dead";
+        if (isAuthWallHost(hostnameOf(next))) return "unknown";
+        current = next;
         continue;
       }
+      const host = hostnameOf(safe.href);
+      if (isAuthWallHost(host)) return "unknown";
       const byCode = classifyStatus(res.status);
       if (byCode !== "ok") return byCode ?? "unknown";
       const ctype = res.headers.get("content-type") ?? "";
-      if (!/text\/html|application\/xhtml/i.test(ctype)) return "ok";
+      if (!/text\/html|application\/xhtml|application\/json|text\/plain/i.test(ctype)) {
+        return "ok";
+      }
+      const limit = isMicrosoftShareHost(host) ? 200_000 : MAX_BODY;
       const buf = await res.arrayBuffer();
-      const slice = Buffer.from(buf).subarray(0, MAX_BODY).toString("utf8");
+      const slice = Buffer.from(buf).subarray(0, limit).toString("utf8");
       if (bodyLooksDead(slice)) return "dead";
       return "ok";
     }

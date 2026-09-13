@@ -557,11 +557,14 @@ export function CourseCodeExplorer({
                   )}
                 </div>
               ) : (
-                <DetailEmpty>
-                  {course.linkOnly
-                    ? t("explore.linkOnlyEmpty")
-                    : t("explore.courseDetailNoSyllabus")}
-                </DetailEmpty>
+                <span className="inline-flex items-center gap-2">
+                  <DetailEmpty>
+                    {course.linkOnly
+                      ? t("explore.linkOnlyEmpty")
+                      : t("explore.courseDetailNoSyllabus")}
+                  </DetailEmpty>
+                  <LinkHealthDot status="empty" />
+                </span>
               )}
             </DetailField>
           </div>
@@ -589,13 +592,16 @@ export function CourseCodeExplorer({
             </DetailField>
             <DetailField label={t("explore.itemDetailFile")}>
               {!item.onSiteDisplay && !item.oneDriveUrl ? (
-                <DetailEmpty>{t("explore.itemDetailNoLink")}</DetailEmpty>
+                <span className="inline-flex items-center gap-2">
+                  <DetailEmpty>{t("explore.itemDetailNoLink")}</DetailEmpty>
+                  <LinkHealthDot status="empty" />
+                </span>
               ) : (
                 <div className="space-y-1.5">
                   {item.onSiteDisplay && (
                     <OnSiteBadge label={t("teach.onSiteDisplay")} />
                   )}
-                  {item.oneDriveUrl && (
+                  {item.oneDriveUrl ? (
                     <span className="inline-flex items-center gap-2">
                       <a
                         href={item.oneDriveUrl}
@@ -610,6 +616,11 @@ export function CourseCodeExplorer({
                           linkHealth[item.oneDriveUrl.trim()] ?? "checking"
                         }
                       />
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-2">
+                      <DetailEmpty>{t("explore.itemDetailNoLink")}</DetailEmpty>
+                      <LinkHealthDot status="empty" />
                     </span>
                   )}
                 </div>
@@ -961,9 +972,12 @@ export function CourseCodeExplorer({
                                         />
                                       </span>
                                     ) : (
-                                      <p className="mt-1 text-sm italic text-app-muted/65">
-                                        {t("explore.linkOnlyEmpty")}
-                                      </p>
+                                      <span className="mt-1 inline-flex items-center gap-2">
+                                        <p className="text-sm italic text-app-muted/65">
+                                          {t("explore.linkOnlyEmpty")}
+                                        </p>
+                                        <LinkHealthDot status="empty" />
+                                      </span>
                                     )}
                                   </button>
                                 ) : (
@@ -982,14 +996,15 @@ export function CourseCodeExplorer({
                                                 t("explore.linkNameDefault")
                                               : t("explore.treeSyllabus")}
                                           </span>
-                                          {course.syllabusUrl ? (
-                                            <LinkHealthDot
-                                              status={
-                                                linkHealth[course.syllabusUrl.trim()] ??
-                                                "checking"
-                                              }
-                                            />
-                                          ) : null}
+                                          <LinkHealthDot
+                                            status={
+                                              course.syllabusUrl
+                                                ? linkHealth[
+                                                    course.syllabusUrl.trim()
+                                                  ] ?? "checking"
+                                                : "empty"
+                                            }
+                                          />
                                         </button>
                                       </div>
                                     )}
@@ -1043,14 +1058,15 @@ export function CourseCodeExplorer({
                                                       <span className="font-medium text-app-fg transition-colors group-hover:text-app-link">
                                                         {labelOf(it)}
                                                       </span>
-                                                      {it.oneDriveUrl ? (
-                                                        <LinkHealthDot
-                                                          status={
-                                                            linkHealth[it.oneDriveUrl.trim()] ??
-                                                            "checking"
-                                                          }
-                                                        />
-                                                      ) : null}
+                                                      <LinkHealthDot
+                                                        status={
+                                                          it.oneDriveUrl
+                                                            ? linkHealth[
+                                                                it.oneDriveUrl.trim()
+                                                              ] ?? "checking"
+                                                            : "empty"
+                                                        }
+                                                      />
                                                       {it.onSiteDisplay && (
                                                         <OnSiteBadge
                                                           label={t("teach.onSiteDisplay")}

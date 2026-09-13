@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { useI18n } from "@/components/locale/locale-provider";
 
 export type LinkHealthStatus = "ok" | "unknown" | "dead";
-export type LinkDotStatus = LinkHealthStatus | "checking";
+export type LinkDotStatus = LinkHealthStatus | "checking" | "empty";
 
 const DOT: Record<LinkDotStatus, string> = {
   ok: "bg-emerald-500",
   unknown: "bg-amber-400",
+  empty: "bg-amber-400",
   dead: "bg-red-500",
   checking: "bg-app-muted/50 animate-pulse",
 };
@@ -27,9 +28,11 @@ export function LinkHealthDot({
       ? t("linkHealth.ok")
       : status === "unknown"
         ? t("linkHealth.unknown")
-        : status === "dead"
-          ? t("linkHealth.dead")
-          : t("linkHealth.checking");
+        : status === "empty"
+          ? t("linkHealth.empty")
+          : status === "dead"
+            ? t("linkHealth.dead")
+            : t("linkHealth.checking");
   return (
     <span
       className={`inline-block size-2.5 shrink-0 rounded-full ${DOT[status]} ${className}`}
@@ -42,11 +45,13 @@ export function LinkHealthDot({
 
 export function LiveLinkHealthDot({ url }: { url: string }) {
   const trimmed = url.trim();
-  const [status, setStatus] = useState<LinkDotStatus | null>(null);
+  const [status, setStatus] = useState<LinkDotStatus>(
+    trimmed ? "checking" : "empty"
+  );
 
   useEffect(() => {
     if (!trimmed) {
-      setStatus(null);
+      setStatus("empty");
       return;
     }
     if (!/^https?:\/\//i.test(trimmed)) {

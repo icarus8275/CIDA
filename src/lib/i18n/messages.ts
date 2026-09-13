@@ -307,8 +307,8 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
     ko: "이 수업 복사",
   },
   "teach.copyToLead": {
-    en: "This replaces the destination course's assignments, quizzes, exams, projects, and CIDA codes. File and syllabus links are not copied. Faculty assignments are not changed. Codes that are not on the destination course are skipped.",
-    ko: "대상 수업의 과제·퀴즈·시험·프로젝트와 CIDA 코드를 이 수업 내용으로 바꿉니다. 파일·실라버스 링크는 복사하지 않습니다. 교수 배정은 그대로입니다. 대상 과목 표준 코드에 없는 코드는 건너뜁니다.",
+    en: "Existing assignments, quizzes, exams, projects, and CIDA codes on the destination are deleted first, then replaced with a copy of this course. File and syllabus links are not copied. Faculty assignments are not changed. Codes that are not on the destination course are skipped.",
+    ko: "대상 수업에 있는 과제·퀴즈·시험·프로젝트와 CIDA 코드를 먼저 삭제한 뒤, 이 수업 내용으로 바꿉니다. 파일·실라버스 링크는 복사하지 않습니다. 교수 배정은 그대로입니다. 대상 과목 표준 코드에 없는 코드는 건너뜁니다.",
   },
   "teach.copyToSource": { en: "From", ko: "복사할 수업" },
   "teach.copyToTarget": { en: "Copy to", ko: "붙여넣을 수업" },
@@ -802,6 +802,10 @@ export const MESSAGES: Record<string, Record<Locale, string>> = {
   "linkHealth.dead": {
     en: "This link could not be opened.",
     ko: "이 링크에 연결할 수 없습니다.",
+  },
+  "linkHealth.empty": {
+    en: "No file link yet.",
+    ko: "파일 링크가 없습니다.",
   },
   "linkHealth.checking": { en: "Checking link…", ko: "링크 확인 중…" },
   "explore.treeSyllabus": { en: "Syllabus", ko: "강의계획서" },
