@@ -8,7 +8,7 @@ export type LinkDotStatus = LinkHealthStatus | "checking" | "empty";
 
 const DOT: Record<LinkDotStatus, string> = {
   ok: "bg-emerald-500",
-  unknown: "bg-amber-400",
+  unknown: "bg-emerald-300",
   empty: "bg-amber-400",
   dead: "bg-red-500",
   checking: "bg-app-muted/50 animate-pulse",
