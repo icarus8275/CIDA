@@ -66,5 +66,9 @@ if (migrate.status !== 0) {
   }
 }
 
-const nextBuild = run("next build");
+// Hostinger's Node 20 builder crashes in Next 16's default Turbopack
+// production build while spawning the PostCSS worker for globals.css
+// ("node process exited before we could connect", exit 0, no CSS error).
+// Webpack compiles that CSS in-process.
+const nextBuild = run("next build --webpack");
 if (nextBuild.status !== 0) fail(nextBuild);
