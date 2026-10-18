@@ -27,7 +27,15 @@ function cardLabel(c: MyCourseCard, sectionBadge: string) {
   return `${c.termLabel} · ${c.courseName} · ${sectionBadge} ${c.sectionLabel}`;
 }
 
-export function MyCoursesList({ courses }: { courses: MyCourseCard[] }) {
+export function MyCoursesList({
+  courses,
+  hrefFor,
+  copyForUserId,
+}: {
+  courses: MyCourseCard[];
+  hrefFor?: (course: MyCourseCard) => string;
+  copyForUserId?: string;
+}) {
   const { t } = useI18n();
   const [copySource, setCopySource] = useState<MyCourseCard | null>(null);
   const [copyTargets, setCopyTargets] = useState<CopyCourseOption[]>([]);
@@ -55,10 +63,11 @@ export function MyCoursesList({ courses }: { courses: MyCourseCard[] }) {
   }, [courses]);
 
   async function openCopy(sec: MyCourseCard) {
-    const r = await fetch(
-      `/api/teach/copy-targets?fromSectionId=${encodeURIComponent(sec.id)}`,
-      { cache: "no-store" }
-    );
+    const params = new URLSearchParams({ fromSectionId: sec.id });
+    if (copyForUserId) params.set("forUserId", copyForUserId);
+    const r = await fetch(`/api/teach/copy-targets?${params}`, {
+      cache: "no-store",
+    });
     if (!r.ok) return;
     const rows = (await r.json()) as CopyCourseOption[];
     setCopyTargets(rows);
@@ -79,7 +88,9 @@ export function MyCoursesList({ courses }: { courses: MyCourseCard[] }) {
               <li key={sec.id}>
                 <div className="flex h-full flex-col rounded-xl border border-app-border/80 bg-app-card/80 shadow-sm transition hover:border-app-primary/30 hover:shadow-md">
                   <Link
-                    href={`/teach/section/${sec.id}`}
+                    href={
+                      hrefFor ? hrefFor(sec) : `/teach/section/${sec.id}`
+                    }
                     className="group flex flex-1 items-stretch gap-3 p-4"
                   >
                     <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-app-primary/10 text-app-primary">

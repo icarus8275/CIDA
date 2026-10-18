@@ -2,10 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { BookOpen } from "lucide-react";
 import { useI18n } from "@/components/locale/locale-provider";
 import { SectionEditor } from "@/app/teach/section/[sectionId]/section-editor";
+import {
+  MyCoursesList,
+  type MyCourseCard,
+} from "@/app/teach/my-courses-list";
 import { listUserLabel } from "@/lib/user-display";
-import { formatTermForDisplay } from "@/lib/term-display";
 
 type UserRow = {
   id: string;
@@ -14,32 +18,14 @@ type UserRow = {
   role: string;
 };
 
-type SectionRow = {
-  id: string;
-  label: string;
-  courseOffering: {
-    course: { name: string };
-    term: {
-      kind?: "ACADEMIC" | "GROUP";
-      groupLabel?: string | null;
-      academicYear: { label: string; startYear: number } | null;
-      termSeason: { key: string; label: string } | null;
-    };
-  };
-};
-
 const FACULTY_ROLES = new Set(["PROFESSOR", "ADMIN"]);
-
-function sectionPath(s: SectionRow) {
-  return `${formatTermForDisplay(s.courseOffering.term)} · ${s.courseOffering.course.name} · ${s.label}`;
-}
 
 export function AdminFacultyClient() {
   const { t } = useI18n();
   const router = useRouter();
   const sp = useSearchParams();
   const [users, setUsers] = useState<UserRow[]>([]);
-  const [sections, setSections] = useState<SectionRow[]>([]);
+  const [sections, setSections] = useState<MyCourseCard[]>([]);
   const [userId, setUserId] = useState("");
   const [sectionId, setSectionId] = useState("");
   const [loadErr, setLoadErr] = useState<string | null>(null);
@@ -93,7 +79,7 @@ export function AdminFacultyClient() {
           setSections([]);
           return;
         }
-        setSections(await r.json());
+        setSections((await r.json()) as MyCourseCard[]);
       } finally {
         setListBusy(false);
       }
@@ -188,37 +174,37 @@ export function AdminFacultyClient() {
         </select>
       </div>
 
-      {userId && (
-        <div className="space-y-2">
-          <h2 className="text-sm font-medium text-app-fg/92">
-            {t("admin.facultySections")}
-          </h2>
-          {listBusy ? (
-            <p className="text-sm text-app-muted/85">{t("teach.loading")}</p>
-          ) : sections.length === 0 ? (
-            <p className="text-sm text-app-muted/85">
+      {userId &&
+        (listBusy ? (
+          <p className="text-sm text-app-muted/85">{t("teach.loading")}</p>
+        ) : sections.length === 0 ? (
+          <div className="mx-auto max-w-lg rounded-2xl border border-dashed border-app-border/80 bg-app-card/60 px-6 py-10 text-center">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-app-primary/10 text-app-primary">
+              <BookOpen className="h-6 w-6" strokeWidth={1.5} />
+            </div>
+            <p className="mt-4 text-base font-medium text-app-fg">
               {t("admin.facultyNoSections")}
             </p>
-          ) : (
-            <ul className="space-y-1">
-              {sections.map((sec) => (
-                <li key={sec.id}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSectionId(sec.id);
-                      syncQuery(userId, sec.id);
-                    }}
-                    className="link-app w-full text-left"
-                  >
-                    {sectionPath(sec)} · {t("admin.facultyOpenSection")}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
+          </div>
+        ) : (
+          <div className="space-y-5">
+            <header>
+              <h2 className="text-2xl font-bold text-app-fg">
+                {t("teach.myCourses")}
+              </h2>
+              <p className="mt-1 max-w-2xl text-sm text-app-muted/90">
+                {t("teach.sectionsLead")}
+              </p>
+            </header>
+            <MyCoursesList
+              courses={sections}
+              copyForUserId={userId}
+              hrefFor={(course) =>
+                `/admin/faculty?userId=${encodeURIComponent(userId)}&sectionId=${encodeURIComponent(course.id)}`
+              }
+            />
+          </div>
+        ))}
 
       {!userId && (
         <p className="text-sm text-app-muted/85">{t("admin.facultySelectFirst")}</p>
